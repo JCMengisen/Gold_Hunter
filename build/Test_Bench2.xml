@@ -75,26 +75,26 @@
       <Constant type="int32" value="40" outputs="value:9969.v" uid="9969" uid_parent="9960"/>
       <Node _name="Quotient &amp; Remainder" inputs="x:9960i.v,y:9969.v" outputs="x-y*floor(x/y):9970.o0,floor(x/y):9970.o1" uid="9970" uid_parent="9960"/>
       <Constant type="cluster{int32.X,int32.Y}" value="[0,0]" outputs="value:9971.v" uid="9971" uid_parent="9960"/>
-      <Constant type="int32" value="48" outputs="value:9972.v" uid="9972" uid_parent="9960"/>
+      <Constant type="int32" value="32" outputs="value:9972.v" uid="9972" uid_parent="9960"/>
       <Node _name="Multiply" inputs="x:9970.o0,y:9972.v" outputs="x*y:9973.o0" uid="9973" uid_parent="9960"/>
-      <Constant type="int32" value="48" outputs="value:9974.v" uid="9974" uid_parent="9960"/>
+      <Constant type="int32" value="32" outputs="value:9974.v" uid="9974" uid_parent="9960"/>
       <Node _name="Multiply" inputs="x:9970.o1,y:9974.v" outputs="x*y:9975.o0" uid="9975" uid_parent="9960"/>
-      <Constant type="int32" value="120" outputs="value:9976.v" uid="9976" uid_parent="9960"/>
+      <Constant type="int32" value="80" outputs="value:9976.v" uid="9976" uid_parent="9960"/>
       <Node _name="Add" inputs="x:9975.o0,y:9976.v" outputs="x+y:9977.o0" uid="9977" uid_parent="9960"/>
       <Node _name="Bundle By Name" fields="X,Y" inputs="X:9973.o0,Y:9977.o0,input cluster:9971.v" outputs="output cluster:9978.o0" uid="9978" uid_parent="9960"/>
       <Constant type="int32" value="7" outputs="value:9979.v" uid="9979" uid_parent="9960"/>
       <Node _name="Add" inputs="x:9970.o1,y:9979.v" outputs="x+y:9980.o0" uid="9980" uid_parent="9960"/>
-      <Constant type="int32" value="48" outputs="value:9981.v" uid="9981" uid_parent="9960"/>
+      <Constant type="int32" value="32" outputs="value:9981.v" uid="9981" uid_parent="9960"/>
       <Node _name="Multiply" inputs="x:9970.o0,y:9981.v" outputs="x*y:9982.o0" uid="9982" uid_parent="9960"/>
-      <Constant type="int32" value="48" outputs="value:9983.v" uid="9983" uid_parent="9960"/>
+      <Constant type="int32" value="32" outputs="value:9983.v" uid="9983" uid_parent="9960"/>
       <Node _name="Multiply" inputs="x:9980.o0,y:9983.v" outputs="x*y:9984.o0" uid="9984" uid_parent="9960"/>
       <Constant type="cluster{int16.left,int16.top,int16.right,int16.bottom}" value="[0,0,0,0]" outputs="value:9985.v" uid="9985" uid_parent="9960"/>
       <Node _name="To Word Integer" inputs="number:9982.o0" outputs="16bit integer:9986.o0" uid="9986" uid_parent="9960"/>
       <Node _name="To Word Integer" inputs="number:9984.o0" outputs="16bit integer:9987.o0" uid="9987" uid_parent="9960"/>
-      <Constant type="int32" value="48" outputs="value:9988.v" uid="9988" uid_parent="9960"/>
+      <Constant type="int32" value="32" outputs="value:9988.v" uid="9988" uid_parent="9960"/>
       <Node _name="Add" inputs="x:9982.o0,y:9988.v" outputs="x+y:9989.o0" uid="9989" uid_parent="9960"/>
       <Node _name="To Word Integer" inputs="number:9989.o0" outputs="16bit integer:9990.o0" uid="9990" uid_parent="9960"/>
-      <Constant type="int32" value="48" outputs="value:9991.v" uid="9991" uid_parent="9960"/>
+      <Constant type="int32" value="32" outputs="value:9991.v" uid="9991" uid_parent="9960"/>
       <Node _name="Add" inputs="x:9984.o0,y:9991.v" outputs="x+y:9992.o0" uid="9992" uid_parent="9960"/>
       <Node _name="To Word Integer" inputs="number:9992.o0" outputs="16bit integer:9993.o0" uid="9993" uid_parent="9960"/>
       <Node _name="Bundle By Name" fields="left,top,right,bottom" inputs="left:9986.o0,top:9987.o0,right:9990.o0,bottom:9993.o0,input cluster:9985.v" outputs="output cluster:9994.o0" uid="9994" uid_parent="9960"/>
@@ -118,17 +118,17 @@
     <Tunnel _id="In2" inputs="value:9913.o0" outputs="value:10010.v" uid="10010" uid_parent="10008"/>
     <Constant type="int32" value="40" outputs="value:10011.v" uid="10011" uid_parent="10008"/>
     <Node _name="Quotient &amp; Remainder" inputs="x:10008i.v,y:10011.v" outputs="x-y*floor(x/y):10012.o0,floor(x/y):10012.o1" uid="10012" uid_parent="10008"/>
-    <Constant type="int32" value="48" outputs="value:10013.v" uid="10013" uid_parent="10008"/>
+    <Constant type="int32" value="32" outputs="value:10013.v" uid="10013" uid_parent="10008"/>
     <Node _name="Multiply" inputs="x:10012.o0,y:10013.v" outputs="x*y:10014.o0" uid="10014" uid_parent="10008"/>
-    <Constant type="int32" value="48" outputs="value:10015.v" uid="10015" uid_parent="10008"/>
+    <Constant type="int32" value="32" outputs="value:10015.v" uid="10015" uid_parent="10008"/>
     <Node _name="Multiply" inputs="x:10012.o1,y:10015.v" outputs="x*y:10016.o0" uid="10016" uid_parent="10008"/>
     <Constant type="cluster{int16.left,int16.top,int16.right,int16.bottom}" value="[0,0,0,0]" outputs="value:10017.v" uid="10017" uid_parent="10008"/>
     <Node _name="To Word Integer" inputs="number:10014.o0" outputs="16bit integer:10018.o0" uid="10018" uid_parent="10008"/>
     <Node _name="To Word Integer" inputs="number:10016.o0" outputs="16bit integer:10019.o0" uid="10019" uid_parent="10008"/>
-    <Constant type="int32" value="48" outputs="value:10020.v" uid="10020" uid_parent="10008"/>
+    <Constant type="int32" value="32" outputs="value:10020.v" uid="10020" uid_parent="10008"/>
     <Node _name="Add" inputs="x:10014.o0,y:10020.v" outputs="x+y:10021.o0" uid="10021" uid_parent="10008"/>
     <Node _name="To Word Integer" inputs="number:10021.o0" outputs="16bit integer:10022.o0" uid="10022" uid_parent="10008"/>
-    <Constant type="int32" value="48" outputs="value:10023.v" uid="10023" uid_parent="10008"/>
+    <Constant type="int32" value="32" outputs="value:10023.v" uid="10023" uid_parent="10008"/>
     <Node _name="Add" inputs="x:10016.o0,y:10023.v" outputs="x+y:10024.o0" uid="10024" uid_parent="10008"/>
     <Node _name="To Word Integer" inputs="number:10024.o0" outputs="16bit integer:10025.o0" uid="10025" uid_parent="10008"/>
     <Node _name="Bundle By Name" fields="left,top,right,bottom" inputs="left:10018.o0,top:10019.o0,right:10022.o0,bottom:10025.o0,input cluster:10017.v" outputs="output cluster:10026.o0" uid="10026" uid_parent="10008"/>

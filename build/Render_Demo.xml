@@ -1,0 +1,196 @@
+<VI _name="Render_Demo.vi" description="Demo of the new picture build-up in a real window: the picture control never erases. The first frame draws the whole room, every later frame only renews one block of 5 x 4 tiles around Claude (Block_Cut) with all objects and Claude, composed invisibly into one pixmap and drawn in one go, who walks to and fro on the lowest floor. Stops after Frames frames (0 = until Stop). ms per frame = average time of one frame including the wait; set Wait ms to 0 to see how fast it can go.">
+  <Control _name="Room ID" type="string" value="405" outputs="value:12001.v" uid="12001" uid_parent="root"/>
+  <Control _name="Theme" type="int32" value="0" outputs="value:12002.v" uid="12002" uid_parent="root"/>
+  <Control _name="Frames" type="int32" value="600" outputs="value:12003.v" uid="12003" uid_parent="root"/>
+  <Control _name="Wait ms" type="int32" value="16" outputs="value:12004.v" uid="12004" uid_parent="root"/>
+  <Control _name="error in" type="cluster{bool.status,int32.code,string.source}" value="[false,0,]" conIdx="11" connection="required" outputs="value:12005.v" uid="12005" uid_parent="root"/>
+  <Call target="SpriteAtlas_Load.vi" inputs="error in:12005.v" outputs="Sprites:12006.o0,error out:12006.o1" uid="12006" uid_parent="root"/>
+  <Call target="Room_Load.vi" inputs="Room ID:12001.v,error in:12006.o1" outputs="Tiles:12007.o0,error out:12007.o1" uid="12007" uid_parent="root"/>
+  <Node _name="Number To Decimal String" inputs="number:12002.v,width (-):" outputs="decimal integer string:12008.o0" uid="12008" uid_parent="root"/>
+  <Constant type="string" value="room_" outputs="value:12009.v" uid="12009" uid_parent="root"/>
+  <Constant type="string" value="_" outputs="value:12010.v" uid="12010" uid_parent="root"/>
+  <Constant type="string" value=".png" outputs="value:12011.v" uid="12011" uid_parent="root"/>
+  <Node _name="Concatenate Strings" inputs="string:12009.v,string:12008.o0,string:12010.v,string:12001.v,string:12011.v" outputs="concatenated string:12012.o0" uid="12012" uid_parent="root"/>
+  <Call target="Image_Load.vi" inputs="File name:12012.o0,error in:12007.o1" outputs="Image:12013.o0,error out:12013.o1" uid="12013" uid_parent="root"/>
+  <Constant type="string" value="hud.png" outputs="value:12014.v" uid="12014" uid_parent="root"/>
+  <Call target="Image_Load.vi" inputs="File name:12014.v,error in:12013.o1" outputs="Image:12015.o0,error out:12015.o1" uid="12015" uid_parent="root"/>
+  <Node _name="VI Server Reference" type="{LV.VI}" inputs="" outputs="This VI:12016.o0" uid="12016" uid_parent="root"/>
+  <Node _name="Property Node" fields="read+Front Panel" type="{LV.VI}" inputs="reference:12016.o0,error in (no error):12015.o1" outputs="Front Panel:12017.o0,reference out:,error out:12017.o1" uid="12017" uid_parent="root"/>
+  <Node _name="Property Node" fields="read+Controls[]" type="{LV.Panel}" inputs="reference:12017.o0,error in (no error):12017.o1" outputs="Controls[]:12018.o0,reference out:,error out:12018.o1" uid="12018" uid_parent="root"/>
+  <Structure _name="For Loop" count="12019i.v" maxin="" maxout="" uid="12019" uid_parent="root">
+    <Tunnel _id="In1" inputs="value:12018.o0" mode="index" outputs="value:12020.v" uid="12020" uid_parent="12019"/>
+    <ShiftReg uid="12021" uid_parent="12019">
+      <Left inputs="value:12018.o1" outputs="value:12022.v" uid="12022" uid_parent="12021"/>
+      <Right inputs="value:12053.v" outputs="value:12023.v" uid="12023" uid_parent="12021"/>
+    </ShiftReg>
+    <Node _name="Property Node" fields="read+Label" type="{LV.Control}" inputs="reference:12020.v,error in (no error):12022.v" outputs="Label:12024.o0,reference out:,error out:12024.o1" uid="12024" uid_parent="12019"/>
+    <Node _name="Property Node" fields="read+Text" type="{LV.Text}" inputs="reference:12024.o0,error in (no error):12024.o1" outputs="Text:12025.o0,reference out:,error out:12025.o1" uid="12025" uid_parent="12019"/>
+    <Structure _name="Case Structure" selectin="12025.o0" uid="12026" uid_parent="12019">
+      <Tunnel _id="In1" inputs="value:12020.v" uid="12027" uid_parent="12026"/>
+      <Tunnel _id="In2" inputs="value:12025.o1" uid="12028" uid_parent="12026"/>
+      <Tunnel _id="In3" inputs="value:12019i.v" uid="12029" uid_parent="12026"/>
+      <CaseFrame selector="&quot;Screen&quot;" selectout="" uid="12030" uid_parent="12026">
+        <Tunnel _id="In1" outputs="value:12031.v" uid="12031" uid_parent="12030"/>
+        <Tunnel _id="In2" outputs="value:12032.v" uid="12032" uid_parent="12030"/>
+        <Tunnel _id="In3" outputs="value:12033.v" uid="12033" uid_parent="12030"/>
+        <Constant _name="Picture class" type="ref{LV.Picture}" value="" outputs="value:12034.v" uid="12034" uid_parent="12030"/>
+        <Node _name="To More Specific Class" inputs="reference:12031.v,error in:12032.v,target class:12034.v" outputs="specific class reference:12035.o0,error out:12035.o1" uid="12035" uid_parent="12030"/>
+        <Constant _name="Top left" type="cluster{int32.Left,int32.Top}" value="[0,0]" outputs="value:12036.v" uid="12036" uid_parent="12030"/>
+        <Constant _name="Screen size" type="cluster{int32.Width,int32.Height}" value="[1280,720]" outputs="value:12037.v" uid="12037" uid_parent="12030"/>
+        <Constant _name="never erase" type="uint8" value="0" outputs="value:12038.v" uid="12038" uid_parent="12030"/>
+        <Node _name="Property Node" fields="write+Position,write+Draw Area Size,write+Erase First" type="{LV.Picture}" inputs="reference:12035.o0,error in (no error):12035.o1,Position:12036.v,Draw Area Size:12037.v,Erase First:12038.v" outputs="reference out:,error out:12039.o0" uid="12039" uid_parent="12030"/>
+        <Tunnel _id="Out1" inputs="value:12039.o0" uid="12040" uid_parent="12030"/>
+      </CaseFrame>
+      <CaseFrame selector="Default" selectout="" uid="12041" uid_parent="12026">
+        <Tunnel _id="In1" outputs="value:12042.v" uid="12042" uid_parent="12041"/>
+        <Tunnel _id="In2" outputs="value:12043.v" uid="12043" uid_parent="12041"/>
+        <Tunnel _id="In3" outputs="value:12044.v" uid="12044" uid_parent="12041"/>
+        <Constant _name="right of the screen" type="cluster{int32.Left,int32.Top}" value="[1310,40]" outputs="value:12045.v" uid="12045" uid_parent="12041"/>
+        <Constant type="int32" value="40" outputs="value:12046.v" uid="12046" uid_parent="12041"/>
+        <Constant type="int32" value="50" outputs="value:12047.v" uid="12047" uid_parent="12041"/>
+        <Node _name="Multiply" inputs="x:12044.v,y:12047.v" outputs="x*y:12048.o0" uid="12048" uid_parent="12041"/>
+        <Node _name="Add" inputs="x:12046.v,y:12048.o0" outputs="x+y:12049.o0" uid="12049" uid_parent="12041"/>
+        <Node _name="Bundle By Name" fields="Top" inputs="Top:12049.o0,input cluster:12045.v" outputs="output cluster:12050.o0" uid="12050" uid_parent="12041"/>
+        <Node _name="Property Node" fields="write+Position" type="{LV.Control}" inputs="reference:12042.v,error in (no error):12043.v,Position:12050.o0" outputs="reference out:,error out:12051.o0" uid="12051" uid_parent="12041"/>
+        <Tunnel _id="Out1" inputs="value:12051.o0" uid="12052" uid_parent="12041"/>
+      </CaseFrame>
+      <Tunnel _id="Out1" outputs="value:12053.v" uid="12053" uid_parent="12026"/>
+    </Structure>
+  </Structure>
+  <Constant type="int32" value="0" outputs="value:12054.v" uid="12054" uid_parent="root"/>
+  <Constant type="int32" value="96" outputs="value:12055.v" uid="12055" uid_parent="root"/>
+  <Constant type="int32" value="6" outputs="value:12056.v" uid="12056" uid_parent="root"/>
+  <Node _name="Tick Count (ms)" inputs="" outputs="millisecond timer value:12057.o0" uid="12057" uid_parent="root"/>
+  <Structure _name="While Loop" count="" uid="12058" uid_parent="root" label="Frames">
+    <Tunnel _id="In1" inputs="value:12006.o0" outputs="value:12059.v" uid="12059" uid_parent="12058"/>
+    <Tunnel _id="In2" inputs="value:12007.o0" outputs="value:12060.v" uid="12060" uid_parent="12058"/>
+    <Tunnel _id="In3" inputs="value:12013.o0" outputs="value:12061.v" uid="12061" uid_parent="12058"/>
+    <Tunnel _id="In4" inputs="value:12015.o0" outputs="value:12062.v" uid="12062" uid_parent="12058"/>
+    <Tunnel _id="In5" inputs="value:12003.v" outputs="value:12063.v" uid="12063" uid_parent="12058"/>
+    <Tunnel _id="In6" inputs="value:12004.v" outputs="value:12064.v" uid="12064" uid_parent="12058"/>
+    <Tunnel _id="In7" inputs="value:12057.o0" outputs="value:12065.v" uid="12065" uid_parent="12058"/>
+    <ShiftReg uid="12066" uid_parent="12058">
+      <Left inputs="value:12054.v" outputs="value:12067.v" uid="12067" uid_parent="12066"/>
+      <Right inputs="value:12168.o0" outputs="value:12068.v" uid="12068" uid_parent="12066"/>
+    </ShiftReg>
+    <ShiftReg uid="12069" uid_parent="12058">
+      <Left inputs="value:12055.v" outputs="value:12070.v" uid="12070" uid_parent="12069"/>
+      <Right inputs="value:12090.o0" outputs="value:12071.v" uid="12071" uid_parent="12069"/>
+    </ShiftReg>
+    <ShiftReg uid="12072" uid_parent="12058">
+      <Left inputs="value:12055.v" outputs="value:12073.v" uid="12073" uid_parent="12072"/>
+      <Right inputs="value:12070.v" outputs="value:12074.v" uid="12074" uid_parent="12072"/>
+    </ShiftReg>
+    <ShiftReg uid="12075" uid_parent="12058">
+      <Left inputs="value:12056.v" outputs="value:12076.v" uid="12076" uid_parent="12075"/>
+      <Right inputs="value:12089.o0" outputs="value:12077.v" uid="12077" uid_parent="12075"/>
+    </ShiftReg>
+    <ShiftReg uid="12078" uid_parent="12058">
+      <Left inputs="value:12023.v" outputs="value:12079.v" uid="12079" uid_parent="12078"/>
+      <Right inputs="value:12160.o1" outputs="value:12080.v" uid="12080" uid_parent="12078"/>
+    </ShiftReg>
+    <Node _name="Add" inputs="x:12070.v,y:12076.v" outputs="x+y:12081.o0" uid="12081" uid_parent="12058"/>
+    <Constant type="int32" value="96" outputs="value:12082.v" uid="12082" uid_parent="12058"/>
+    <Node _name="Less?" inputs="x:12081.o0,y:12082.v" outputs="x &lt; y?:12083.o0" uid="12083" uid_parent="12058"/>
+    <Constant type="int32" value="1080" outputs="value:12084.v" uid="12084" uid_parent="12058"/>
+    <Node _name="Greater?" inputs="x:12081.o0,y:12084.v" outputs="x &gt; y?:12085.o0" uid="12085" uid_parent="12058"/>
+    <Node _name="Or" inputs="x:12083.o0,y:12085.o0" outputs="x .or. y?:12086.o0" uid="12086" uid_parent="12058"/>
+    <Constant type="int32" value="0" outputs="value:12087.v" uid="12087" uid_parent="12058"/>
+    <Node _name="Subtract" inputs="x:12087.v,y:12076.v" outputs="x-y:12088.o0" uid="12088" uid_parent="12058"/>
+    <Node _name="Select" inputs="s:12086.o0,t:12088.o0,f:12076.v" outputs="s? t\3Af:12089.o0" uid="12089" uid_parent="12058"/>
+    <Node _name="Add" inputs="x:12070.v,y:12089.o0" outputs="x+y:12090.o0" uid="12090" uid_parent="12058"/>
+    <Constant type="int32" value="0" outputs="value:12091.v" uid="12091" uid_parent="12058"/>
+    <Node _name="Equal?" inputs="x:12067.v,y:12091.v" outputs="x = y?:12092.o0" uid="12092" uid_parent="12058"/>
+    <Structure _name="Case Structure" selectin="12092.o0" uid="12093" uid_parent="12058">
+      <Tunnel _id="In1" inputs="value:12059.v" uid="12094" uid_parent="12093"/>
+      <Tunnel _id="In2" inputs="value:12060.v" uid="12095" uid_parent="12093"/>
+      <Tunnel _id="In3" inputs="value:12061.v" uid="12096" uid_parent="12093"/>
+      <Tunnel _id="In4" inputs="value:12062.v" uid="12097" uid_parent="12093"/>
+      <Tunnel _id="In5" inputs="value:12079.v" uid="12098" uid_parent="12093"/>
+      <Tunnel _id="In6" inputs="value:12090.o0" uid="12099" uid_parent="12093"/>
+      <Tunnel _id="In7" inputs="value:12070.v" uid="12100" uid_parent="12093"/>
+      <Tunnel _id="In8" inputs="value:12073.v" uid="12101" uid_parent="12093"/>
+      <CaseFrame selector="True" selectout="" uid="12102" uid_parent="12093">
+        <Tunnel _id="In1" outputs="value:12103.v" uid="12103" uid_parent="12102"/>
+        <Tunnel _id="In2" outputs="value:12104.v" uid="12104" uid_parent="12102"/>
+        <Tunnel _id="In3" outputs="value:12105.v" uid="12105" uid_parent="12102"/>
+        <Tunnel _id="In4" outputs="value:12106.v" uid="12106" uid_parent="12102"/>
+        <Tunnel _id="In5" outputs="value:12107.v" uid="12107" uid_parent="12102"/>
+        <Tunnel _id="In6" outputs="value:12108.v" uid="12108" uid_parent="12102"/>
+        <Tunnel _id="In7" outputs="value:12109.v" uid="12109" uid_parent="12102"/>
+        <Tunnel _id="In8" outputs="value:12110.v" uid="12110" uid_parent="12102"/>
+        <Call target="Draw Flattened Pixmap.vi" inputs="image data:12106.v,picture:" outputs="new picture:12111.o0" uid="12111" uid_parent="12102"/>
+        <Constant type="cluster{int32.X,int32.Y}" value="[0,80]" outputs="value:12112.v" uid="12112" uid_parent="12102"/>
+        <Call target="Image_Draw.vi" inputs="Picture:12111.o0,Image:12105.v,Position:12112.v,error in:12107.v" outputs="Picture out:12113.o0,error out:12113.o1" uid="12113" uid_parent="12102"/>
+        <Constant _name="Whole screen" type="cluster{int16.left,int16.top,int16.right,int16.bottom}" value="[0,0,1280,720]" outputs="value:12114.v" uid="12114" uid_parent="12102"/>
+        <Tunnel _id="Out1" inputs="value:12113.o0" uid="12115" uid_parent="12102"/>
+        <Tunnel _id="Out2" inputs="value:12113.o1" uid="12116" uid_parent="12102"/>
+        <Tunnel _id="Out3" inputs="value:12114.v" uid="12117" uid_parent="12102"/>
+      </CaseFrame>
+      <CaseFrame selector="False" selectout="" uid="12118" uid_parent="12093">
+        <Tunnel _id="In1" outputs="value:12119.v" uid="12119" uid_parent="12118"/>
+        <Tunnel _id="In2" outputs="value:12120.v" uid="12120" uid_parent="12118"/>
+        <Tunnel _id="In3" outputs="value:12121.v" uid="12121" uid_parent="12118"/>
+        <Tunnel _id="In4" outputs="value:12122.v" uid="12122" uid_parent="12118"/>
+        <Tunnel _id="In5" outputs="value:12123.v" uid="12123" uid_parent="12118"/>
+        <Tunnel _id="In6" outputs="value:12124.v" uid="12124" uid_parent="12118"/>
+        <Tunnel _id="In7" outputs="value:12125.v" uid="12125" uid_parent="12118"/>
+        <Tunnel _id="In8" outputs="value:12126.v" uid="12126" uid_parent="12118"/>
+        <Node _name="Less?" inputs="x:12124.v,y:12125.v" outputs="x &lt; y?:12127.o0" uid="12127" uid_parent="12118"/>
+        <Node _name="Select" inputs="s:12127.o0,t:12124.v,f:12125.v" outputs="s? t\3Af:12128.o0" uid="12128" uid_parent="12118"/>
+        <Node _name="Less?" inputs="x:12126.v,y:12128.o0" outputs="x &lt; y?:12129.o0" uid="12129" uid_parent="12118"/>
+        <Node _name="Select" inputs="s:12129.o0,t:12126.v,f:12128.o0" outputs="s? t\3Af:12130.o0" uid="12130" uid_parent="12118"/>
+        <Constant type="int32" value="32" outputs="value:12131.v" uid="12131" uid_parent="12118"/>
+        <Node _name="Quotient &amp; Remainder" inputs="x:12130.o0,y:12131.v" outputs="x-y*floor(x/y):12132.o0,floor(x/y):12132.o1" uid="12132" uid_parent="12118"/>
+        <Node _name="Decrement" inputs="x:12132.o1" outputs="x-1:12133.o0" uid="12133" uid_parent="12118"/>
+        <Constant type="int32" value="16" outputs="value:12134.v" uid="12134" uid_parent="12118"/>
+        <Constant type="int32" value="80" outputs="value:12135.v" uid="12135" uid_parent="12118"/>
+        <Constant type="int32" value="5" outputs="value:12136.v" uid="12136" uid_parent="12118"/>
+        <Constant type="int32" value="4" outputs="value:12137.v" uid="12137" uid_parent="12118"/>
+        <Call target="Block_Cut.vi" inputs="Image:12121.v,Column:12133.o0,Row:12134.v,Offset Y:12135.v,Columns:12136.v,Rows:12137.v,error in:12123.v" outputs="Block:12138.o0,error out:12138.o1" uid="12138" uid_parent="12118"/>
+        <Call target="Draw Flattened Pixmap.vi" inputs="image data:12138.o0,picture:" outputs="new picture:12139.o0" uid="12139" uid_parent="12118"/>
+        <Node _name="Unbundle By Name" fields="Rectangle" inputs="input cluster:12138.o0" outputs="Rectangle:12140.o0" uid="12140" uid_parent="12118"/>
+        <Tunnel _id="Out1" inputs="value:12139.o0" uid="12141" uid_parent="12118"/>
+        <Tunnel _id="Out2" inputs="value:12138.o1" uid="12142" uid_parent="12118"/>
+        <Tunnel _id="Out3" inputs="value:12140.o0" uid="12143" uid_parent="12118"/>
+      </CaseFrame>
+      <Tunnel _id="Out1" outputs="value:12144.v" uid="12144" uid_parent="12093"/>
+      <Tunnel _id="Out2" outputs="value:12145.v" uid="12145" uid_parent="12093"/>
+      <Tunnel _id="Out3" outputs="value:12146.v" uid="12146" uid_parent="12093"/>
+    </Structure>
+    <Call target="Room_Draw.vi" inputs="Picture:12144.v,Sprites:12059.v,Tiles:12060.v,error in:12145.v" outputs="Picture out:12147.o0,Count:,error out:12147.o1" uid="12147" uid_parent="12058"/>
+    <Constant type="int32" value="6" outputs="value:12148.v" uid="12148" uid_parent="12058"/>
+    <Node _name="Quotient &amp; Remainder" inputs="x:12067.v,y:12148.v" outputs="x-y*floor(x/y):12149.o0,floor(x/y):12149.o1" uid="12149" uid_parent="12058"/>
+    <Constant type="int32" value="4" outputs="value:12150.v" uid="12150" uid_parent="12058"/>
+    <Node _name="Quotient &amp; Remainder" inputs="x:12149.o1,y:12150.v" outputs="x-y*floor(x/y):12151.o0,floor(x/y):12151.o1" uid="12151" uid_parent="12058"/>
+    <Constant type="int32" value="0" outputs="value:12152.v" uid="12152" uid_parent="12058"/>
+    <Node _name="Less?" inputs="x:12089.o0,y:12152.v" outputs="x &lt; y?:12153.o0" uid="12153" uid_parent="12058"/>
+    <Constant type="int32" value="8" outputs="value:12154.v" uid="12154" uid_parent="12058"/>
+    <Constant type="int32" value="1" outputs="value:12155.v" uid="12155" uid_parent="12058"/>
+    <Node _name="Select" inputs="s:12153.o0,t:12154.v,f:12155.v" outputs="s? t\3Af:12156.o0" uid="12156" uid_parent="12058"/>
+    <Constant type="cluster{int32.X,int32.Y}" value="[0,640]" outputs="value:12157.v" uid="12157" uid_parent="12058"/>
+    <Node _name="Bundle By Name" fields="X" inputs="X:12090.o0,input cluster:12157.v" outputs="output cluster:12158.o0" uid="12158" uid_parent="12058"/>
+    <Node _name="Add" inputs="x:12156.o0,y:12151.o0" outputs="x+y:12159.o0" uid="12159" uid_parent="12058"/>
+    <Call target="Sprite_Draw.vi" inputs="Picture:12147.o0,Sprites:12059.v,Index:12159.o0,Position:12158.o0,error in:12147.o1" outputs="Picture out:12160.o0,error out:12160.o1" uid="12160" uid_parent="12058"/>
+    <Constant type="int32" value="24" outputs="value:12161.v" uid="12161" uid_parent="12058"/>
+    <Call target="Picture to Pixmap.vi" inputs="Background Color:,depth:12161.v,rect:12146.v,picture:12160.o0" outputs="image data:12162.o0,new picture:" uid="12162" uid_parent="12058"/>
+    <Node _name="Bundle By Name" fields="Rectangle" inputs="Rectangle:12146.v,input cluster:12162.o0" outputs="output cluster:12163.o0" uid="12163" uid_parent="12058"/>
+    <Call target="Draw Flattened Pixmap.vi" inputs="image data:12163.o0,picture:" outputs="new picture:12164.o0" uid="12164" uid_parent="12058"/>
+    <Indicator _name="Screen" type="picture" value="" inputs="value:12164.o0" uid="12165" uid_parent="12058"/>
+    <Node _name="Wait Until Next ms Multiple" inputs="millisecond multiple:12064.v" outputs="millisecond timer value:" uid="12166" uid_parent="12058"/>
+    <Node _name="Tick Count (ms)" inputs="" outputs="millisecond timer value:12167.o0" uid="12167" uid_parent="12058"/>
+    <Node _name="Increment" inputs="x:12067.v" outputs="x+1:12168.o0" uid="12168" uid_parent="12058"/>
+    <Indicator _name="Frame" type="int32" value="0" inputs="value:12168.o0" uid="12169" uid_parent="12058"/>
+    <Node _name="Subtract" inputs="x:12167.o0,y:12065.v" outputs="x-y:12170.o0" uid="12170" uid_parent="12058"/>
+    <Node _name="Divide" inputs="x:12170.o0,y:12168.o0" outputs="x/y:12171.o0" uid="12171" uid_parent="12058"/>
+    <Indicator _name="ms per frame" type="double" value="0" inputs="value:12171.o0" uid="12172" uid_parent="12058"/>
+    <Control _name="Stop" type="bool" value="false" outputs="value:12173.v" uid="12173" uid_parent="12058"/>
+    <Constant type="int32" value="0" outputs="value:12174.v" uid="12174" uid_parent="12058"/>
+    <Node _name="Greater?" inputs="x:12063.v,y:12174.v" outputs="x &gt; y?:12175.o0" uid="12175" uid_parent="12058"/>
+    <Node _name="Greater Or Equal?" inputs="x:12168.o0,y:12063.v" outputs="x &gt;= y?:12176.o0" uid="12176" uid_parent="12058"/>
+    <Node _name="And" inputs="x:12175.o0,y:12176.o0" outputs="x .and. y?:12177.o0" uid="12177" uid_parent="12058"/>
+    <Node _name="Or" inputs="x:12173.v,y:12177.o0" outputs="x .or. y?:12178.o0" uid="12178" uid_parent="12058"/>
+    <Condition inputs="value:12178.o0" value="stop" uid="12179" uid_parent="12058"/>
+  </Structure>
+  <Indicator _name="error out" type="cluster{bool.status,int32.code,string.source}" value="[false,0,]" inputs="value:12080.v" uid="12180" uid_parent="root"/>
+</VI>

@@ -17,11 +17,18 @@
 		<Item Name="GH_Level.lvlib" Type="Library" URL="../Source/Level/GH_Level.lvlib"/>
 		<Item Name="GH_Render.lvlib" Type="Library" URL="../Source/Render/GH_Render.lvlib"/>
 		<Item Name="Tests" Type="Folder">
+			<Item Name="Test_Run.vi" Type="VI" URL="../Tests/Test_Run.vi"/>
+			<Item Name="Snapshot_Dirty.vi" Type="VI" URL="../Tests/Snapshot_Dirty.vi"/>
+			<Item Name="Test_Bench3.vi" Type="VI" URL="../Tests/Test_Bench3.vi"/>
+			<Item Name="Render_Demo.vi" Type="VI" URL="../Tests/Render_Demo.vi"/>
 			<Item Name="Snapshot_Room.vi" Type="VI" URL="../Tests/Snapshot_Room.vi"/>
 			<Item Name="Test_World.vi" Type="VI" URL="../Tests/Test_World.vi"/>
 			<Item Name="Test_Bench.vi" Type="VI" URL="../Tests/Test_Bench.vi"/>
 			<Item Name="Test_Bench2.vi" Type="VI" URL="../Tests/Test_Bench2.vi"/>
 		</Item>
+		<Item Name="GH_Engine.lvlib" Type="Library" URL="../Source/Engine/GH_Engine.lvlib"/>
+		<Item Name="GH_App.lvlib" Type="Library" URL="../Source/App/GH_App.lvlib"/>
+		<Item Name="Main.vi" Type="VI" URL="../Main.vi"/>
 		<Item Name="Dependencies" Type="Dependencies"/>
 		<Item Name="Build Specifications" Type="Build"/>
 	</Item>

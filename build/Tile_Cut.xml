@@ -1,0 +1,51 @@
+<VI _name="GH_Render.lvlib:Tile_Cut.vi" description="Cuts one tile (32 x 32 px) out of a room image (24 bit) directly from its pixel bytes and returns it as image data that is already placed on the screen: Rectangle = tile position plus Offset Y (height of the HUD). Much faster than Get Image Subset, which copies the whole image on every call.">
+  <Control _name="Image" type="cluster{int32.image type,int32.image depth,array{uint8}.image,array{uint8}.mask,array{uint32}.colors,cluster{int16.left,int16.top,int16.right,int16.bottom}.Rectangle}" value="[0,0,[],[],[],[0,0,0,0]]" conIdx="0" connection="required" outputs="value:1001.v" uid="1001" uid_parent="root"/>
+  <Control _name="Column" type="int32" value="0" conIdx="5" connection="required" outputs="value:1002.v" uid="1002" uid_parent="root"/>
+  <Control _name="Row" type="int32" value="0" conIdx="7" connection="required" outputs="value:1003.v" uid="1003" uid_parent="root"/>
+  <Control _name="Offset Y" type="int32" value="80" conIdx="9" connection="required" outputs="value:1004.v" uid="1004" uid_parent="root"/>
+  <Control _name="error in" type="cluster{bool.status,int32.code,string.source}" value="[false,0,]" conIdx="11" connection="required" outputs="value:1005.v" uid="1005" uid_parent="root"/>
+  <Node _name="Unbundle By Name" fields="image type,image depth,image,Rectangle" inputs="input cluster:1001.v" outputs="image type:1006.o0,image depth:1006.o1,image:1006.o2,Rectangle:1006.o3" uid="1006" uid_parent="root"/>
+  <Node _name="Unbundle By Name" fields="top,bottom" inputs="input cluster:1006.o3" outputs="top:1007.o0,bottom:1007.o1" uid="1007" uid_parent="root"/>
+  <Node _name="Subtract" inputs="x:1007.o1,y:1007.o0" outputs="x-y:1008.o0" uid="1008" uid_parent="root"/>
+  <Node _name="To Long Integer" inputs="number:1008.o0" outputs="32bit integer:1009.o0" uid="1009" uid_parent="root"/>
+  <Node _name="Array Size" inputs="array:1006.o2" outputs="size(s):1010.o0" uid="1010" uid_parent="root"/>
+  <Node _name="Quotient &amp; Remainder" inputs="x:1010.o0,y:1009.o0" outputs="x-y*floor(x/y):1011.o0,floor(x/y):1011.o1" uid="1011" uid_parent="root"/>
+  <Constant type="int32" value="32" outputs="value:1012.v" uid="1012" uid_parent="root"/>
+  <Node _name="Multiply" inputs="x:1003.v,y:1012.v" outputs="x*y:1013.o0" uid="1013" uid_parent="root"/>
+  <Node _name="Multiply" inputs="x:1013.o0,y:1011.o1" outputs="x*y:1014.o0" uid="1014" uid_parent="root"/>
+  <Constant type="int32" value="96" outputs="value:1015.v" uid="1015" uid_parent="root"/>
+  <Node _name="Multiply" inputs="x:1002.v,y:1015.v" outputs="x*y:1016.o0" uid="1016" uid_parent="root"/>
+  <Node _name="Add" inputs="x:1014.o0,y:1016.o0" outputs="x+y:1017.o0" uid="1017" uid_parent="root"/>
+  <Constant type="int32" value="0" outputs="value:1018.v" uid="1018" uid_parent="root"/>
+  <Constant type="int32" value="32" outputs="value:1019.v" uid="1019" uid_parent="root"/>
+  <Node _name="Initialize Array" inputs="element:1018.v,dimension size:1019.v" outputs="initialized array:1020.o0" uid="1020" uid_parent="root"/>
+  <Structure _name="For Loop" count="1021i.v" maxin="" maxout="" uid="1021" uid_parent="root">
+    <Tunnel _id="In1" inputs="value:1020.o0" mode="index" outputs="value:1022.v" uid="1022" uid_parent="1021"/>
+    <Tunnel _id="In2" inputs="value:1006.o2" outputs="value:1023.v" uid="1023" uid_parent="1021"/>
+    <Tunnel _id="In3" inputs="value:1017.o0" outputs="value:1024.v" uid="1024" uid_parent="1021"/>
+    <Tunnel _id="In4" inputs="value:1011.o1" outputs="value:1025.v" uid="1025" uid_parent="1021"/>
+    <Node _name="Multiply" inputs="x:1021i.v,y:1025.v" outputs="x*y:1026.o0" uid="1026" uid_parent="1021"/>
+    <Node _name="Add" inputs="x:1024.v,y:1026.o0" outputs="x+y:1027.o0" uid="1027" uid_parent="1021"/>
+    <Constant type="int32" value="96" outputs="value:1028.v" uid="1028" uid_parent="1021"/>
+    <Node _name="Array Subset" inputs="array:1023.v,index:1027.o0,length:1028.v" outputs="subarray:1029.o0" uid="1029" uid_parent="1021"/>
+    <Tunnel _id="Out1" inputs="value:1029.o0" mode="concat" outputs="value:1030.v" uid="1030" uid_parent="1021"/>
+  </Structure>
+  <Constant type="int32" value="32" outputs="value:1031.v" uid="1031" uid_parent="root"/>
+  <Node _name="Multiply" inputs="x:1002.v,y:1031.v" outputs="x*y:1032.o0" uid="1032" uid_parent="root"/>
+  <Constant type="int32" value="32" outputs="value:1033.v" uid="1033" uid_parent="root"/>
+  <Node _name="Multiply" inputs="x:1003.v,y:1033.v" outputs="x*y:1034.o0" uid="1034" uid_parent="root"/>
+  <Node _name="Add" inputs="x:1034.o0,y:1004.v" outputs="x+y:1035.o0" uid="1035" uid_parent="root"/>
+  <Node _name="To Word Integer" inputs="number:1032.o0" outputs="16bit integer:1036.o0" uid="1036" uid_parent="root"/>
+  <Node _name="To Word Integer" inputs="number:1035.o0" outputs="16bit integer:1037.o0" uid="1037" uid_parent="root"/>
+  <Constant type="int32" value="32" outputs="value:1038.v" uid="1038" uid_parent="root"/>
+  <Node _name="Add" inputs="x:1032.o0,y:1038.v" outputs="x+y:1039.o0" uid="1039" uid_parent="root"/>
+  <Node _name="To Word Integer" inputs="number:1039.o0" outputs="16bit integer:1040.o0" uid="1040" uid_parent="root"/>
+  <Constant type="int32" value="32" outputs="value:1041.v" uid="1041" uid_parent="root"/>
+  <Node _name="Add" inputs="x:1035.o0,y:1041.v" outputs="x+y:1042.o0" uid="1042" uid_parent="root"/>
+  <Node _name="To Word Integer" inputs="number:1042.o0" outputs="16bit integer:1043.o0" uid="1043" uid_parent="root"/>
+  <Node _name="Bundle By Name" fields="left,top,right,bottom" inputs="left:1036.o0,top:1037.o0,right:1040.o0,bottom:1043.o0,input cluster:1006.o3" outputs="output cluster:1044.o0" uid="1044" uid_parent="root"/>
+  <Constant type="cluster{int32.image type,int32.image depth,array{uint8}.image,array{uint8}.mask,array{uint32}.colors,cluster{int16.left,int16.top,int16.right,int16.bottom}.Rectangle}" value="[0,0,[],[],[],[0,0,0,0]]" outputs="value:1045.v" uid="1045" uid_parent="root"/>
+  <Node _name="Bundle By Name" fields="image type,image depth,image,Rectangle" inputs="image type:1006.o0,image depth:1006.o1,image:1030.v,Rectangle:1044.o0,input cluster:1045.v" outputs="output cluster:1046.o0" uid="1046" uid_parent="root"/>
+  <Indicator _name="Tile" type="cluster{int32.image type,int32.image depth,array{uint8}.image,array{uint8}.mask,array{uint32}.colors,cluster{int16.left,int16.top,int16.right,int16.bottom}.Rectangle}" value="[0,0,[],[],[],[0,0,0,0]]" conIdx="4" connection="recommended" inputs="value:1046.o0" uid="1047" uid_parent="root"/>
+  <Indicator _name="error out" type="cluster{bool.status,int32.code,string.source}" value="[false,0,]" conIdx="15" connection="recommended" inputs="value:1005.v" uid="1048" uid_parent="root"/>
+</VI>

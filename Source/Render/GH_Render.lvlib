@@ -5,9 +5,12 @@
 	<Property Name="NI.Lib.SourceVersion" Type="Int">637566976</Property>
 	<Property Name="NI.Lib.Version" Type="Str">1.0.0.0</Property>
 	<Property Name="NI.LV.All.SourceOnly" Type="Bool">true</Property>
+	<Item Name="Block_Cut.vi" Type="VI" URL="../Block_Cut.vi"/>
+	<Item Name="Frame_Draw.vi" Type="VI" URL="../Frame_Draw.vi"/>
 	<Item Name="Image_Draw.vi" Type="VI" URL="../Image_Draw.vi"/>
 	<Item Name="Image_Load.vi" Type="VI" URL="../Image_Load.vi"/>
 	<Item Name="Room_Draw.vi" Type="VI" URL="../Room_Draw.vi"/>
 	<Item Name="Sprite_Draw.vi" Type="VI" URL="../Sprite_Draw.vi"/>
 	<Item Name="SpriteAtlas_Load.vi" Type="VI" URL="../SpriteAtlas_Load.vi"/>
+	<Item Name="Tile_Cut.vi" Type="VI" URL="../Tile_Cut.vi"/>
 </Library>

@@ -1,9 +1,9 @@
-<VI _name="GH_Render.lvlib:Room_Draw.vi" description="Draws all objects of a room at their start places from the tile array: vanishing floors, conveyors, doors, keys, gold, torch, enemies and the start figure. Playfield starts 120 px below the top (HUD). Floors, conveyors and doors are aligned to the top of their tile (a door only at its top tile), everything else stands on the floor of its tile. Count = number of sprites drawn.">
+<VI _name="GH_Render.lvlib:Room_Draw.vi" description="Draws all objects of a room at their start places from the tile array: vanishing floors, conveyors, doors, keys, gold, torch and enemies (not the start figure). Playfield starts 80 px below the top (HUD). Floors, conveyors and doors are aligned to the top of their tile (a door only at its top tile), everything else stands on the floor of its tile. Count = number of sprites drawn.">
   <Control _name="Picture" type="picture" value="" conIdx="0" connection="required" outputs="value:1001.v" uid="1001" uid_parent="root"/>
   <Control _name="Sprites" type="array{cluster{int32.image type,int32.image depth,array{uint8}.image,array{uint8}.mask,array{uint32}.colors,cluster{int16.left,int16.top,int16.right,int16.bottom}.Rectangle}}" value="[]" conIdx="5" connection="required" outputs="value:1002.v" uid="1002" uid_parent="root"/>
   <Control _name="Tiles" type="array.2{uint8}" value="[]" conIdx="7" connection="required" outputs="value:1003.v" uid="1003" uid_parent="root"/>
   <Control _name="error in" type="cluster{bool.status,int32.code,string.source}" value="[false,0,]" conIdx="11" connection="required" outputs="value:1004.v" uid="1004" uid_parent="root"/>
-  <Constant _name="Sprite per tile value" type="array{int32}" value="[-1,-1,-1,42,-1,-1,-1,48,44,-1,37,38,39,34,35,36,28,32,40,19,22,24,0]" outputs="value:1005.v" uid="1005" uid_parent="root"/>
+  <Constant _name="Sprite per tile value" type="array{int32}" value="[-1,-1,-1,42,-1,-1,-1,48,44,-1,37,38,39,34,35,36,28,32,40,19,22,24,-1]" outputs="value:1005.v" uid="1005" uid_parent="root"/>
   <Constant _name="Top aligned" type="array{int32}" value="[-1,-1,-1,1,-1,-1,-1,1,1,-1,1,1,1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1]" outputs="value:1006.v" uid="1006" uid_parent="root"/>
   <Constant type="int32" value="0" outputs="value:1007.v" uid="1007" uid_parent="root"/>
   <Structure _name="For Loop" count="1008i.v" maxin="" maxout="" uid="1008" uid_parent="root">
@@ -81,18 +81,18 @@
           <Node _name="Unbundle By Name" fields="top,bottom" inputs="input cluster:1073.o0" outputs="top:1074.o0,bottom:1074.o1" uid="1074" uid_parent="1063"/>
           <Node _name="Subtract" inputs="x:1074.o1,y:1074.o0" outputs="x-y:1075.o0" uid="1075" uid_parent="1063"/>
           <Node _name="To Long Integer" inputs="number:1075.o0" outputs="32bit integer:1076.o0" uid="1076" uid_parent="1063"/>
-          <Constant type="int32" value="48" outputs="value:1077.v" uid="1077" uid_parent="1063"/>
+          <Constant type="int32" value="32" outputs="value:1077.v" uid="1077" uid_parent="1063"/>
           <Node _name="Multiply" inputs="x:1069.v,y:1077.v" outputs="x*y:1078.o0" uid="1078" uid_parent="1063"/>
-          <Constant type="int32" value="120" outputs="value:1079.v" uid="1079" uid_parent="1063"/>
+          <Constant type="int32" value="80" outputs="value:1079.v" uid="1079" uid_parent="1063"/>
           <Node _name="Add" inputs="x:1078.o0,y:1079.v" outputs="x+y:1080.o0" uid="1080" uid_parent="1063"/>
           <Constant type="int32" value="1" outputs="value:1081.v" uid="1081" uid_parent="1063"/>
           <Node _name="Equal?" inputs="x:1071.v,y:1081.v" outputs="x = y?:1082.o0" uid="1082" uid_parent="1063"/>
-          <Constant type="int32" value="48" outputs="value:1083.v" uid="1083" uid_parent="1063"/>
+          <Constant type="int32" value="32" outputs="value:1083.v" uid="1083" uid_parent="1063"/>
           <Node _name="Add" inputs="x:1080.o0,y:1083.v" outputs="x+y:1084.o0" uid="1084" uid_parent="1063"/>
           <Node _name="Subtract" inputs="x:1084.o0,y:1076.o0" outputs="x-y:1085.o0" uid="1085" uid_parent="1063"/>
           <Node _name="Select" inputs="s:1082.o0,t:1080.o0,f:1085.o0" outputs="s? t\3Af:1086.o0" uid="1086" uid_parent="1063"/>
           <Constant type="cluster{int32.X,int32.Y}" value="[0,0]" outputs="value:1087.v" uid="1087" uid_parent="1063"/>
-          <Constant type="int32" value="48" outputs="value:1088.v" uid="1088" uid_parent="1063"/>
+          <Constant type="int32" value="32" outputs="value:1088.v" uid="1088" uid_parent="1063"/>
           <Node _name="Multiply" inputs="x:1070.v,y:1088.v" outputs="x*y:1089.o0" uid="1089" uid_parent="1063"/>
           <Node _name="Bundle By Name" fields="X,Y" inputs="X:1089.o0,Y:1086.o0,input cluster:1087.v" outputs="output cluster:1090.o0" uid="1090" uid_parent="1063"/>
           <Call target="Sprite_Draw.vi" inputs="Picture:1064.v,Sprites:1065.v,Index:1066.v,Position:1090.o0,error in:1067.v" outputs="Picture out:1091.o0,error out:1091.o1" uid="1091" uid_parent="1063"/>

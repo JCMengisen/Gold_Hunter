@@ -1,0 +1,52 @@
+<VI _name="Game_Step.vi" description="One game tick: applies the key (Left/Right/Release set Run, Up/Down/ReleaseV set Vert, Jump, Quit), moves Claude (Player_Move), handles a deadly fall (one life less, back to the arrival point of the room) and changes the room (Room_Change). Key values: 0 None, 1 Up, 2 Down, 3 Left, 4 Right, 5 Quit, 6 Pause, 7 Start, 8 Jump, 9 Release, 10 ReleaseV.">
+  <Control _name="State" type="cluster{uint32.Tick,int32.Room,int32.X10,int32.Y10,int32.VY10,int32.Mode,int32.Facing,int32.Run,int32.Vert,int32.StandY,int32.EntryX10,int32.EntryY10,int32.EntryMode,int32.Lives,bool.Dead,bool.Quit,array.2{uint8}.Tiles}" value="[0,0,0,0,0,0,0,0,0,0,0,0,0,4,false,false,[]]" conIdx="0" connection="required" outputs="value:1001.v" uid="1001" uid_parent="root"/>
+  <Control _name="Key" type="uint16" value="0" conIdx="5" connection="recommended" outputs="value:1002.v" uid="1002" uid_parent="root"/>
+  <Control _name="Rooms" type="array{cluster{string.ID,int32.Depth,int32.Column,array.2{uint8}.Tiles}}" value="[]" conIdx="7" connection="required" outputs="value:1003.v" uid="1003" uid_parent="root"/>
+  <Control _name="error in" type="cluster{bool.status,int32.code,string.source}" value="[false,0,]" conIdx="11" connection="required" outputs="value:1004.v" uid="1004" uid_parent="root"/>
+  <Node _name="To Long Integer" inputs="number:1002.v" outputs="32bit integer:1005.o0" uid="1005" uid_parent="root"/>
+  <Node _name="Unbundle By Name" fields="Run,Vert,Quit,Tick" inputs="input cluster:1001.v" outputs="Run:1006.o0,Vert:1006.o1,Quit:1006.o2,Tick:1006.o3" uid="1006" uid_parent="root"/>
+  <Constant type="int32" value="3" outputs="value:1007.v" uid="1007" uid_parent="root"/>
+  <Node _name="Equal?" inputs="x:1005.o0,y:1007.v" outputs="x = y?:1008.o0" uid="1008" uid_parent="root"/>
+  <Constant type="int32" value="-1" outputs="value:1009.v" uid="1009" uid_parent="root"/>
+  <Constant type="int32" value="4" outputs="value:1010.v" uid="1010" uid_parent="root"/>
+  <Node _name="Equal?" inputs="x:1005.o0,y:1010.v" outputs="x = y?:1011.o0" uid="1011" uid_parent="root"/>
+  <Constant type="int32" value="1" outputs="value:1012.v" uid="1012" uid_parent="root"/>
+  <Constant type="int32" value="9" outputs="value:1013.v" uid="1013" uid_parent="root"/>
+  <Node _name="Equal?" inputs="x:1005.o0,y:1013.v" outputs="x = y?:1014.o0" uid="1014" uid_parent="root"/>
+  <Constant type="int32" value="0" outputs="value:1015.v" uid="1015" uid_parent="root"/>
+  <Node _name="Select" inputs="s:1014.o0,t:1015.v,f:1006.o0" outputs="s? t\3Af:1016.o0" uid="1016" uid_parent="root"/>
+  <Node _name="Select" inputs="s:1011.o0,t:1012.v,f:1016.o0" outputs="s? t\3Af:1017.o0" uid="1017" uid_parent="root"/>
+  <Node _name="Select" inputs="s:1008.o0,t:1009.v,f:1017.o0" outputs="s? t\3Af:1018.o0" uid="1018" uid_parent="root"/>
+  <Constant type="int32" value="1" outputs="value:1019.v" uid="1019" uid_parent="root"/>
+  <Node _name="Equal?" inputs="x:1005.o0,y:1019.v" outputs="x = y?:1020.o0" uid="1020" uid_parent="root"/>
+  <Constant type="int32" value="-1" outputs="value:1021.v" uid="1021" uid_parent="root"/>
+  <Constant type="int32" value="2" outputs="value:1022.v" uid="1022" uid_parent="root"/>
+  <Node _name="Equal?" inputs="x:1005.o0,y:1022.v" outputs="x = y?:1023.o0" uid="1023" uid_parent="root"/>
+  <Constant type="int32" value="1" outputs="value:1024.v" uid="1024" uid_parent="root"/>
+  <Constant type="int32" value="10" outputs="value:1025.v" uid="1025" uid_parent="root"/>
+  <Node _name="Equal?" inputs="x:1005.o0,y:1025.v" outputs="x = y?:1026.o0" uid="1026" uid_parent="root"/>
+  <Constant type="int32" value="0" outputs="value:1027.v" uid="1027" uid_parent="root"/>
+  <Node _name="Select" inputs="s:1026.o0,t:1027.v,f:1006.o1" outputs="s? t\3Af:1028.o0" uid="1028" uid_parent="root"/>
+  <Node _name="Select" inputs="s:1023.o0,t:1024.v,f:1028.o0" outputs="s? t\3Af:1029.o0" uid="1029" uid_parent="root"/>
+  <Node _name="Select" inputs="s:1020.o0,t:1021.v,f:1029.o0" outputs="s? t\3Af:1030.o0" uid="1030" uid_parent="root"/>
+  <Constant type="int32" value="5" outputs="value:1031.v" uid="1031" uid_parent="root"/>
+  <Node _name="Equal?" inputs="x:1005.o0,y:1031.v" outputs="x = y?:1032.o0" uid="1032" uid_parent="root"/>
+  <Node _name="Or" inputs="x:1006.o2,y:1032.o0" outputs="x .or. y?:1033.o0" uid="1033" uid_parent="root"/>
+  <Node _name="Increment" inputs="x:1006.o3" outputs="x+1:1034.o0" uid="1034" uid_parent="root"/>
+  <Node _name="Bundle By Name" fields="Run,Vert,Quit,Tick" inputs="Run:1018.o0,Vert:1030.o0,Quit:1033.o0,Tick:1034.o0,input cluster:1001.v" outputs="output cluster:1035.o0" uid="1035" uid_parent="root"/>
+  <Constant type="int32" value="8" outputs="value:1036.v" uid="1036" uid_parent="root"/>
+  <Node _name="Equal?" inputs="x:1005.o0,y:1036.v" outputs="x = y?:1037.o0" uid="1037" uid_parent="root"/>
+  <Call target="Player_Move.vi" inputs="State:1035.o0,Jump:1037.o0,error in:1004.v" outputs="State out:1038.o0,error out:1038.o1" uid="1038" uid_parent="root"/>
+  <Node _name="Unbundle By Name" fields="Dead,EntryX10,EntryY10,EntryMode,Lives" inputs="input cluster:1038.o0" outputs="Dead:1039.o0,EntryX10:1039.o1,EntryY10:1039.o2,EntryMode:1039.o3,Lives:1039.o4" uid="1039" uid_parent="root"/>
+  <Constant type="int32" value="0" outputs="value:1040.v" uid="1040" uid_parent="root"/>
+  <Constant type="int32" value="10" outputs="value:1041.v" uid="1041" uid_parent="root"/>
+  <Node _name="Quotient &amp; Remainder" inputs="x:1039.o2,y:1041.v" outputs="x-y*floor(x/y):1042.o0,floor(x/y):1042.o1" uid="1042" uid_parent="root"/>
+  <Constant type="int32" value="1" outputs="value:1043.v" uid="1043" uid_parent="root"/>
+  <Node _name="Subtract" inputs="x:1039.o4,y:1043.v" outputs="x-y:1044.o0" uid="1044" uid_parent="root"/>
+  <Constant type="bool" value="false" outputs="value:1045.v" uid="1045" uid_parent="root"/>
+  <Node _name="Bundle By Name" fields="X10,Y10,VY10,Mode,StandY,Lives,Dead" inputs="X10:1039.o1,Y10:1039.o2,VY10:1040.v,Mode:1039.o3,StandY:1042.o1,Lives:1044.o0,Dead:1045.v,input cluster:1038.o0" outputs="output cluster:1046.o0" uid="1046" uid_parent="root"/>
+  <Node _name="Select" inputs="s:1039.o0,t:1046.o0,f:1038.o0" outputs="s? t\3Af:1047.o0" uid="1047" uid_parent="root"/>
+  <Call target="Room_Change.vi" inputs="State:1047.o0,Rooms:1003.v,error in:1038.o1" outputs="State out:1048.o0,Changed:,error out:1048.o1" uid="1048" uid_parent="root"/>
+  <Indicator _name="State out" type="cluster{uint32.Tick,int32.Room,int32.X10,int32.Y10,int32.VY10,int32.Mode,int32.Facing,int32.Run,int32.Vert,int32.StandY,int32.EntryX10,int32.EntryY10,int32.EntryMode,int32.Lives,bool.Dead,bool.Quit,array.2{uint8}.Tiles}" value="[0,0,0,0,0,0,0,0,0,0,0,0,0,4,false,false,[]]" conIdx="4" connection="recommended" inputs="value:1048.o0" uid="1049" uid_parent="root"/>
+  <Indicator _name="error out" type="cluster{bool.status,int32.code,string.source}" value="[false,0,]" conIdx="15" connection="recommended" inputs="value:1048.o1" uid="1050" uid_parent="root"/>
+</VI>

@@ -34,7 +34,7 @@
       <Right inputs="value:9736.o1" outputs="value:9733.v" uid="9733" uid_parent="9731"/>
     </ShiftReg>
     <Call target="Draw Flattened Pixmap.vi" inputs="image data:9730.v,picture:" outputs="new picture:9734.o0" uid="9734" uid_parent="9725"/>
-    <Constant type="cluster{int32.X,int32.Y}" value="[0,120]" outputs="value:9735.v" uid="9735" uid_parent="9725"/>
+    <Constant type="cluster{int32.X,int32.Y}" value="[0,80]" outputs="value:9735.v" uid="9735" uid_parent="9725"/>
     <Call target="Image_Draw.vi" inputs="Picture:9734.o0,Image:9729.v,Position:9735.v,error in:9732.v" outputs="Picture out:9736.o0,error out:9736.o1" uid="9736" uid_parent="9725"/>
     <Tunnel _id="Out1" inputs="value:9725i.v" outputs="value:9737.v" uid="9737" uid_parent="9725"/>
   </Structure>
@@ -60,7 +60,7 @@
       <Right inputs="value:9761.o2" outputs="value:9757.v" uid="9757" uid_parent="9755"/>
     </ShiftReg>
     <Call target="Draw Flattened Pixmap.vi" inputs="image data:9754.v,picture:" outputs="new picture:9758.o0" uid="9758" uid_parent="9749"/>
-    <Constant type="cluster{int32.X,int32.Y}" value="[0,120]" outputs="value:9759.v" uid="9759" uid_parent="9749"/>
+    <Constant type="cluster{int32.X,int32.Y}" value="[0,80]" outputs="value:9759.v" uid="9759" uid_parent="9749"/>
     <Call target="Image_Draw.vi" inputs="Picture:9758.o0,Image:9753.v,Position:9759.v,error in:9756.v" outputs="Picture out:9760.o0,error out:9760.o1" uid="9760" uid_parent="9749"/>
     <Call target="Room_Draw.vi" inputs="Picture:9760.o0,Sprites:9751.v,Tiles:9752.v,error in:9760.o1" outputs="Picture out:9761.o0,Count:9761.o1,error out:9761.o2" uid="9761" uid_parent="9749"/>
     <Tunnel _id="Out1" inputs="value:9749i.v" outputs="value:9762.v" uid="9762" uid_parent="9749"/>
@@ -87,11 +87,11 @@
       <Right inputs="value:9786.o2" outputs="value:9782.v" uid="9782" uid_parent="9780"/>
     </ShiftReg>
     <Call target="Draw Flattened Pixmap.vi" inputs="image data:9779.v,picture:" outputs="new picture:9783.o0" uid="9783" uid_parent="9774"/>
-    <Constant type="cluster{int32.X,int32.Y}" value="[0,120]" outputs="value:9784.v" uid="9784" uid_parent="9774"/>
+    <Constant type="cluster{int32.X,int32.Y}" value="[0,80]" outputs="value:9784.v" uid="9784" uid_parent="9774"/>
     <Call target="Image_Draw.vi" inputs="Picture:9783.o0,Image:9778.v,Position:9784.v,error in:9781.v" outputs="Picture out:9785.o0,error out:9785.o1" uid="9785" uid_parent="9774"/>
     <Call target="Room_Draw.vi" inputs="Picture:9785.o0,Sprites:9776.v,Tiles:9777.v,error in:9785.o1" outputs="Picture out:9786.o0,Count:9786.o1,error out:9786.o2" uid="9786" uid_parent="9774"/>
     <Constant type="int32" value="24" outputs="value:9787.v" uid="9787" uid_parent="9774"/>
-    <Constant type="cluster{int16.left,int16.top,int16.right,int16.bottom}" value="[0,0,1920,1080]" outputs="value:9788.v" uid="9788" uid_parent="9774"/>
+    <Constant type="cluster{int16.left,int16.top,int16.right,int16.bottom}" value="[0,0,1280,720]" outputs="value:9788.v" uid="9788" uid_parent="9774"/>
     <Call target="Picture to Pixmap.vi" inputs="Background Color:,depth:9787.v,rect:9788.v,picture:9786.o0" outputs="image data:9789.o0,new picture:" uid="9789" uid_parent="9774"/>
     <Call target="Draw Flattened Pixmap.vi" inputs="image data:9789.o0,picture:" outputs="new picture:9790.o0" uid="9790" uid_parent="9774"/>
     <Tunnel _id="Out1" inputs="value:9774i.v" outputs="value:9791.v" uid="9791" uid_parent="9774"/>

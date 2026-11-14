@@ -18,9 +18,9 @@ ROOM_V = '[,0,0,[]]'
 ROOMS = f'array{{{ROOM}}}'
 
 # Bildschirm (Pixel): HUD oben, darunter das Spielfeld. Spielkoordinaten sind relativ zum Spielfeld.
-TILE = 48
+TILE = 32
 COLS, ROWS = 40, 20
-W, HUD_H = COLS * TILE, 120
+W, HUD_H = COLS * TILE, 80
 FIELD_H = ROWS * TILE
 H = HUD_H + FIELD_H
 
@@ -36,6 +36,41 @@ TILE_SPRITE = {T['~']: 'floor_0', T['<']: 'belt_l_0', T['>']: 'belt_r_0', T['R']
                T['S']: 'spider_0', T['Z']: 'snake_1', T['K']: 'skull_0', T['P']: 'claude_r_stand'}
 TOP_ALIGNED = [T['~'], T['<'], T['>'], T['R'], T['B'], T['Y']]     # oben an der Kachel ausgerichtet, sonst steht das Bild auf dem Boden
 DOOR_CODES = (T['R'], T['Y'])                                        # Tuer-Kachelwerte 10..12
+
+# Sprites zeichnen: der Startplatz P wird nicht als Objekt gezeichnet (Claude kommt aus dem Zustand)
+ROOM_SPRITE = {k: v for k, v in TILE_SPRITE.items() if k != T['P']}
+
+# Eingabe (Queue UI -> Engine), als uint16
+KEYS = ['None', 'Up', 'Down', 'Left', 'Right', 'Quit', 'Pause', 'Start', 'Jump', 'Release', 'ReleaseV']
+IN = {n: i for i, n in enumerate(KEYS)}
+KEY = 'uint16'
+# Spielzustand. X10/Y10 = linke obere Ecke von Claude (32 x 48) im Spielfeld in ZEHNTEL Pixeln, VY10 Zehntel px/Tick (+ = runter).
+# Mode 0 Boden, 1 Leiter/Seil, 2 Luft, 3 Rutschstange. Facing 0 rechts, 1 links. Run -1/0/1, Vert -1 hoch/0/1 runter.
+# StandY = Y (px) des letzten festen Stands (Sturzhoehe). Entry* = Ankunft im Raum (Neustart nach einem Tod).
+STATE = (f'cluster{{uint32.Tick,int32.Room,int32.X10,int32.Y10,int32.VY10,int32.Mode,int32.Facing,int32.Run,int32.Vert,int32.StandY,'
+         f'int32.EntryX10,int32.EntryY10,int32.EntryMode,int32.Lives,bool.Dead,bool.Quit,{TILES}.Tiles}}')
+STATE_V = '[0,0,0,0,0,0,0,0,0,0,0,0,0,4,false,false,[]]'
+CHANNELS = f'cluster{{ref{{Queue}}{{{KEY}}}.Keys,ref{{Notifier}}{{{STATE}}}.Frames}}'
+# Physik (60 Ticks/s, Zehntel Pixel)
+CLAUDE_W, CLAUDE_H = 32, 48
+BOX_L, BOX_R = 8, 23                 # Kollisionskasten in x (16 px breit, mittig)
+WALK10, CLIMB10, SLIDE10, BELT10 = 35, 30, 50, 15
+JUMP10, GRAVITY10, VY_MAX10 = -77, 4, 100
+MAX_FALL = 133                       # px unter dem letzten festen Stand = tot (gut 4 Kacheln)
+LIVES = 4
+SOLID = [T['#'], T['<'], T['>'], T['R'], T['B'], T['Y']]
+PLATFORM = [T['='], T['~']]
+CLIMBABLE = [T['H'], T[':']]
+
+# Gedaechtnis der Bild-Schleife: gezeichneter Raum, sein Hintergrundbild, Claudes Position in den letzten zwei Bildern
+RMEM = f'cluster{{int32.Room,{IMG}.Background,int32.X1,int32.Y1,int32.X2,int32.Y2}}'
+RMEM_V = f'[-1,{IMG_V},0,0,0,0]'
+# Tasten (ScanCode = physische Taste): gedrueckt / losgelassen. Esc beendet (bis es eine Pause gibt).
+KEYS_DOWN = [(72, 'Up'), (80, 'Down'), (75, 'Left'), (77, 'Right'), (57, 'Jump'), (28, 'Start'), (1, 'Quit')]
+KEYS_UP = [(75, 'Release'), (77, 'Release'), (72, 'ReleaseV'), (80, 'ReleaseV')]
+# Sprite-Bilder von Claude: Profil = Facing * 7 + (0 steht, 1..4 laeuft, 5 springt, 6 faellt)
+SPR_SIDE_STEP = SPR['claude_l_stand'] - SPR['claude_r_stand']
+BLOCK_COLS, BLOCK_ROWS = 5, 6        # erneuertes Stueck um Claude (deckt drei Positionen plus eine Kachel Rand)
 
 LIBS = {'Level': 'GH_Level.lvlib', 'Engine': 'GH_Engine.lvlib', 'Render': 'GH_Render.lvlib', 'Audio': 'GH_Audio.lvlib', 'App': 'GH_App.lvlib'}
 _SRC = os.path.join(ROOT, 'Source')

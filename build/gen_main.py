@@ -1,0 +1,104 @@
+# Gold Hunter - erzeugt Main.xml (AIXML) fuer das Top-Level-VI Main.vi.
+#   3 Schleifen: Tasten (Event-Struktur -> Key_Send), Spiel (Engine_Tick alle 16 ms), Bild (Render_Frame -> Screen)
+# Aufruf: python gen_main.py
+from gh_lib import *
+
+desc = ('Gold Hunter. Start: App_Init (queue, notifier), Game_Start (world), sprites and HUD, Window_Setup. Three loops: keys '
+        '(Key Down / Key Up by ScanCode and the Stop button -> Key_Send -> queue), game (Engine_Tick every 16 ms -> notifier) and '
+        'picture (Render_Frame -> Screen). End: Esc or Stop. Keys: arrows = walk and climb, Space = jump.')
+xml = f"""<VI _name="Main.vi" description="{esc(desc)}">
+  <Constant _name="no error" type="{ERR}" value="{ERR_V}" outputs="value:10.v" uid="10" uid_parent="root"/>
+  <Call target="App_Init.vi" inputs="error in:10.v" outputs="Channels:11.k,error out:11.e" uid="11" uid_parent="root"/>
+  <Call target="Game_Start.vi" inputs="error in:11.e" outputs="State:12.st,Rooms:12.rooms,error out:12.e" uid="12" uid_parent="root"/>
+  <Call target="SpriteAtlas_Load.vi" inputs="error in:12.e" outputs="Sprites:13.spr,error out:13.e" uid="13" uid_parent="root"/>
+  <Constant _name="HUD file" type="string" value="hud.png" outputs="value:14.v" uid="14" uid_parent="root"/>
+  <Call target="Image_Load.vi" inputs="File name:14.v,error in:13.e" outputs="Image:15.hud,error out:15.e" uid="15" uid_parent="root"/>
+  <Node _name="VI Server Reference" outputs="This VI:16.vi" type="{{LV.VI}}" uid="16" uid_parent="root"/>
+  <Call target="Window_Setup.vi" inputs="VI:16.vi,error in:15.e" outputs="error out:17.e" uid="17" uid_parent="root"/>
+  <Constant _name="Nothing drawn yet" type="{RMEM}" value="{RMEM_V}" outputs="value:18.v" uid="18" uid_parent="root"/>
+  <Constant _name="Start ms" type="uint32" value="0" outputs="value:19.v" uid="19" uid_parent="root"/>
+
+  <Structure _name="While Loop" count="" uid="100" uid_parent="root" label="Keys">
+    <Tunnel _id="In1" inputs="value:11.k" outputs="value:101.v" uid="101" uid_parent="100"/>
+    <Structure _name="Event Structure" uid="110" uid_parent="100">
+      <CaseFrame selector=" Key Down " uid="111" uid_parent="110">
+        <Node _name="Event Data Node" fields="ScanCode" outputs="ScanCode:112.sc" uid="112" uid_parent="111"/>
+        <Node _name="To Long Integer" inputs="number:112.sc" outputs="32bit integer:113.sc" uid="113" uid_parent="111"/>
+        <Constant type="bool" value="false" outputs="value:114.v" uid="114" uid_parent="111"/>
+        <Tunnel _id="Out1" inputs="value:113.sc" uid="115" uid_parent="111"/>
+        <Tunnel _id="Out2" inputs="value:114.v" uid="116" uid_parent="111"/>
+        <Tunnel _id="Out3" inputs="value:114.v" uid="117" uid_parent="111"/>
+      </CaseFrame>
+      <CaseFrame selector=" Key Up " uid="120" uid_parent="110">
+        <Node _name="Event Data Node" fields="ScanCode" outputs="ScanCode:121.sc" uid="121" uid_parent="120"/>
+        <Node _name="To Long Integer" inputs="number:121.sc" outputs="32bit integer:122.sc" uid="122" uid_parent="120"/>
+        <Constant type="bool" value="true" outputs="value:123.v" uid="123" uid_parent="120"/>
+        <Constant type="bool" value="false" outputs="value:124.v" uid="124" uid_parent="120"/>
+        <Tunnel _id="Out1" inputs="value:122.sc" uid="125" uid_parent="120"/>
+        <Tunnel _id="Out2" inputs="value:123.v" uid="126" uid_parent="120"/>
+        <Tunnel _id="Out3" inputs="value:124.v" uid="127" uid_parent="120"/>
+      </CaseFrame>
+      <CaseFrame selector=" &quot;Stop&quot;\\3A Value Change " uid="130" uid_parent="110">
+        <Control _name="Stop" type="bool" style="latched" value="false" outputs="value:131.v" uid="131" uid_parent="130"/>
+        <Constant type="int32" value="-1" outputs="value:132.v" uid="132" uid_parent="130"/>
+        <Constant type="bool" value="false" outputs="value:133.v" uid="133" uid_parent="130"/>
+        <Tunnel _id="Out1" inputs="value:132.v" uid="134" uid_parent="130"/>
+        <Tunnel _id="Out2" inputs="value:133.v" uid="135" uid_parent="130"/>
+        <Tunnel _id="Out3" inputs="value:131.v" uid="136" uid_parent="130"/>
+      </CaseFrame>
+      <Tunnel _id="Out1" outputs="value:141.sc" uid="141" uid_parent="110"/>
+      <Tunnel _id="Out2" outputs="value:142.up" uid="142" uid_parent="110"/>
+      <Tunnel _id="Out3" outputs="value:143.quit" uid="143" uid_parent="110"/>
+    </Structure>
+    <Constant _name="no error" type="{ERR}" value="{ERR_V}" outputs="value:145.v" uid="145" uid_parent="100"/>
+    <Call target="Key_Send.vi" inputs="Channels:101.v,ScanCode:141.sc,Released:142.up,Quit:143.quit,error in:145.v" outputs="Quit out:150.q,error out:" uid="150" uid_parent="100"/>
+    <Condition inputs="value:150.q" value="stop" uid="151" uid_parent="100"/>
+  </Structure>
+
+  <Structure _name="While Loop" count="" uid="200" uid_parent="root" label="Game (16 ms)">
+    <Tunnel _id="In1" inputs="value:11.k" outputs="value:201.v" uid="201" uid_parent="200"/>
+    <Tunnel _id="In2" inputs="value:12.rooms" outputs="value:202.v" uid="202" uid_parent="200"/>
+    <ShiftReg uid="210" uid_parent="200">
+      <Left inputs="value:12.st" outputs="value:211.v" uid="211" uid_parent="210"/>
+      <Right inputs="value:220.st" outputs="value:" uid="212" uid_parent="210"/>
+    </ShiftReg>
+    <ShiftReg uid="213" uid_parent="200">
+      <Left inputs="value:17.e" outputs="value:214.v" uid="214" uid_parent="213"/>
+      <Right inputs="value:220.e" outputs="value:215.v" uid="215" uid_parent="213"/>
+    </ShiftReg>
+    <Call target="Engine_Tick.vi" inputs="Channels:201.v,State:211.v,Rooms:202.v,error in:214.v" outputs="State out:220.st,Stop:220.stop,error out:220.e" uid="220" uid_parent="200"/>
+    <Constant _name="Tick ms" type="uint32" value="16" outputs="value:221.v" uid="221" uid_parent="200"/>
+    <Node _name="Wait Until Next ms Multiple" inputs="millisecond multiple:221.v" outputs="millisecond timer value:" uid="222" uid_parent="200"/>
+    <Condition inputs="value:220.stop" value="stop" uid="223" uid_parent="200"/>
+  </Structure>
+
+  <Structure _name="While Loop" count="" uid="300" uid_parent="root" label="Picture">
+    <Tunnel _id="In1" inputs="value:11.k" outputs="value:301.v" uid="301" uid_parent="300"/>
+    <Tunnel _id="In2" inputs="value:13.spr" outputs="value:302.v" uid="302" uid_parent="300"/>
+    <Tunnel _id="In3" inputs="value:12.rooms" outputs="value:303.v" uid="303" uid_parent="300"/>
+    <Tunnel _id="In4" inputs="value:15.hud" outputs="value:304.v" uid="304" uid_parent="300"/>
+    <ShiftReg uid="310" uid_parent="300">
+      <Left inputs="value:19.v" outputs="value:311.v" uid="311" uid_parent="310"/>
+      <Right inputs="value:320.ms" outputs="value:" uid="312" uid_parent="310"/>
+    </ShiftReg>
+    <ShiftReg uid="313" uid_parent="300">
+      <Left inputs="value:17.e" outputs="value:314.v" uid="314" uid_parent="313"/>
+      <Right inputs="value:320.e" outputs="value:315.v" uid="315" uid_parent="313"/>
+    </ShiftReg>
+    <ShiftReg uid="316" uid_parent="300">
+      <Left inputs="value:18.v" outputs="value:317.v" uid="317" uid_parent="316"/>
+      <Right inputs="value:320.mem" outputs="value:" uid="318" uid_parent="316"/>
+    </ShiftReg>
+    <Call target="Render_Frame.vi" inputs="Channels:301.v,Sprites:302.v,Rooms:303.v,Hud:304.v,Memory:317.v,Last ms:311.v,error in:314.v" outputs="Picture:320.pic,Memory out:320.mem,FPS:320.fps,Now ms:320.ms,Stop:320.stop,error out:320.e" uid="320" uid_parent="300"/>
+    <Indicator _name="Screen" type="picture" value="" inputs="value:320.pic" uid="321" uid_parent="300"/>
+    <Indicator _name="FPS" type="double" value="0" inputs="value:320.fps" uid="322" uid_parent="300"/>
+    <Condition inputs="value:320.stop" value="stop" uid="328" uid_parent="300"/>
+  </Structure>
+
+  <Node _name="Merge Errors" inputs="error in:215.v,error in:315.v" outputs="error out:500.e" uid="500" uid_parent="root"/>
+  <Call target="App_Close.vi" inputs="Channels:11.k,error in:500.e" outputs="error out:501.e" uid="501" uid_parent="root"/>
+  <Indicator _name="error out" type="{ERR}" value="{ERR_V}" inputs="value:501.e" uid="510" uid_parent="root"/>
+</VI>
+"""
+open(os.path.join(HERE, 'Main.xml'), 'w', encoding='utf-8').write(xml)
+print('Main.xml', len(xml.splitlines()), 'lines')

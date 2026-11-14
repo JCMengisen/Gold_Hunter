@@ -1,5 +1,5 @@
 # Gold Hunter - Welt und Raeume. Einzige Quelle der Geometrie:
-#   Resources\Levels\room_<id>.txt   20 Zeilen x 40 Zeichen (Kacheln 48 px), id = Tiefe + Spalte (2 Stellen)
+#   Resources\Levels\room_<id>.txt   20 Zeilen x 40 Zeichen (Kacheln 32 px), id = Tiefe + Spalte (2 Stellen)
 #   Resources\Levels\world.txt       Raumgitter (Tiefe x Spalte)
 #   Resources\Levels\levels.txt      Schwierigkeit je Level
 # Aufruf: python gh_levels.py   (schreibt die Dateien)      Pruefung: python check_levels.py

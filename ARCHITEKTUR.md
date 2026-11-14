@@ -11,12 +11,16 @@ Zustandsfelder bekommen englische Namen. Diese Dokumentation und die Kommentare 
 
 | Bereich | Pixel | Inhalt |
 |---|---|---|
-| Fenster | 1920 × 1080, fest, ohne Rahmen, Titel-, Menü- und Scrollleisten | nicht skalierbar |
-| HUD | 0…119 (120 px) | LIVES, KEYS (Anzahl je Farbe), TORCH, LEVEL, GOLD, TIME |
-| Spielfeld | 120…1079 (960 px) | ein Raum = 40 × 20 Kacheln zu 48 px |
+| Fenster | 1280 × 720, fest, ohne Rahmen, Titel-, Menü- und Scrollleisten | nicht skalierbar |
+| HUD | 0…79 (80 px) | LIVES, KEYS (Anzahl je Farbe), TORCH, LEVEL, GOLD, TIME |
+| Spielfeld | 80…719 (640 px) | ein Raum = 40 × 20 Kacheln zu 32 px |
 
-Gezeichnet wird als Pixel-Art im Raster 640 × 360 (Kachel 16 px, Claude 16 × 24) und 3-fach vergrössert gespeichert.
+Gezeichnet wird als Pixel-Art im Raster 640 × 360 (Kachel 16 px, Claude 16 × 24) und 2-fach vergrössert gespeichert (Claude 32 × 48).
 Im Spiel wird nichts skaliert.
+
+Die Auflösung wurde am 14.11.2026 von 1920 × 1080 auf 1280 × 720 gesenkt: Der Laptop-Bildschirm (1920 × 1200) läuft mit
+125 % Windows-Skalierung, ein Fenster von 1920 × 1080 hätte dort nicht Platz. Die Umstellung ist eine Zeile in
+`make_assets.py` (`S = 2`) und zwei Konstanten in `gh_lib.py` (`TILE`, `HUD_H`).
 
 ## 2. Welt
 
@@ -97,14 +101,14 @@ von Hand gebaut. Die übrigen 35 Räume baut `gen_room` aus dem Plan: zwei Aufst
 Fangplattform, dünne Plattformen, Förderband, Gegner und Gold. 24 Räume haben ein Seil, 15 ein Förderband. Die Einzelheiten folgen fest aus der Raum-ID, jeder Lauf ergibt
 also dieselben Räume. Einzelne Räume lassen sich später von Hand ersetzen.
 
-## 3. Regeln und Physik (60 Ticks pro Sekunde, Werte in Pixeln)
+## 3. Regeln und Physik (60 Ticks pro Sekunde, Werte in Pixeln bei 32 px je Kachel)
 
 | Grösse | Wert | Folge |
 |---|---|---|
-| Laufen | 5 px/Tick | |
-| Sprung | Start −11.5 px/Tick, Schwerkraft 0.6 | gut 2 Kacheln hoch (110 px), 3 Kacheln weit |
-| Klettern / Rutschen | 4 / 7 px/Tick | |
-| Sturz | mehr als 4 Kacheln (200 px) unter dem letzten festen Stand = tot | eine ganze Etage (6 Kacheln) ist tödlich |
+| Laufen | 3.5 px/Tick | |
+| Sprung | Start −7.7 px/Tick, Schwerkraft 0.4 | gut 2 Kacheln hoch (74 px), 3 bis 4 Kacheln weit |
+| Klettern / Rutschen | 3 / 5 px/Tick | |
+| Sturz | mehr als 4 Kacheln (133 px) unter dem letzten festen Stand = tot | eine ganze Etage (6 Kacheln) ist tödlich |
 
 - **Dünne Böden `=` und Schwundböden `~`** tragen nur von oben. Von unten springt man hindurch.
 - **Schwundboden**: sichtbar – blinkt 30 Ticks – weg. Der Rhythmus steht in `levels.txt`. Unter jedem liegt eine
@@ -112,8 +116,8 @@ also dieselben Räume. Einzelne Räume lassen sich später von Hand ersetzen.
 - **Leiter**: hoch und runter, seitlich absteigen überall.
 - **Seil**: hängt von der Decke, oft durch ein Loch im Boden. Hoch und runter wie eine Leiter, wird auch im
   Fallen gegriffen. Im Startraum klettert Claude zu Beginn am Seil durch die Decke herein.
-- **Förderband**: fester Boden, der Claude und Totenköpfe mit 2 px/Tick in Pfeilrichtung schiebt.
-  Gegen das Band läuft man also langsamer (3 statt 5), mit dem Band schneller (7). In der Luft wirkt es nicht.
+- **Förderband**: fester Boden, der Claude und Totenköpfe mit 1.5 px/Tick in Pfeilrichtung schiebt.
+  Gegen das Band läuft man also langsamer (2 statt 3.5), mit dem Band schneller (5). In der Luft wirkt es nicht.
 - **Rutschstange**: wird im Fallen gegriffen, nur abwärts, kein Sturzschaden.
 - **Tür**: massiv, bis ein passender Schlüssel im Inventar ist und Claude sie berührt. Türen können hintereinander stehen.
 - **Spinne**: läuft auf Böden und Leitern ihres Raums, wechselt den Raum nicht, springt nicht. Sie wählt an
@@ -209,14 +213,25 @@ Lichtkreis: bis 3.3 Kacheln um Claude hell, bis 5.3 Kacheln halbdunkel, sonst du
 Je Raum und Farbschema gibt es drei Bilder (hell, `_dim`, `_dark`), zusammen 333 Dateien mit 13 MB.
 Geladen werden nur die drei Bilder des aktuellen Raums, beim Raumwechsel (gemessen 78 ms).
 
-**Offen bis M2:** Zeit von `Tile_Cut`, Anzeige im offenen Fenster und ob das Bild flimmert. Die Auflösung spielt bei
-diesem Verfahren kaum eine Rolle; 1280 × 720 (Grafik 2-fach statt 3-fach) bleibt als Ausweg, falls es doch nicht reicht.
+**Gemessen zu Beginn von M2** (Raum 405, noch bei 1920 × 1080):
+
+| Messung | Ergebnis |
+|---|---|
+| `Tile_Cut`: alle 800 Kacheln eines Raums | 4 ms (0.005 ms je Kachel) |
+| ein Bild mit 40 erneuerten Kacheln und 23 Sprites (`Test_Bench3`) | 5.5 ms |
+| `Render_Demo` im offenen Fenster, 600 Bilder ohne Wartezeit | 4.3 ms je Bild |
+
+Am Bildschirm blieben beim Erneuern einzelner Kacheln Reste der Figur stehen. Die Lösung, vom Benutzer am Bildschirm
+bestätigt (keine Reste, kein Flackern): **ein** Stück von 5 × 6 Kacheln um Claudes letzte drei Positionen (`Block_Cut`),
+alle Objekte und Claude hineinzeichnen, mit `Picture to Pixmap` unsichtbar zu einer Pixmap rastern und in einem Zug
+zeichnen (`Frame_Draw`). `Main.vi` erreicht so 62.5 Bilder pro Sekunde bei 1280 × 720.
+Für Gegner und Animationen (M3, M4) kommt je bewegtem Objekt ein weiteres solches Stück dazu.
 
 ### Übernommen aus `C:\Projects\Paul_Pensionierung`
 
 | Baustein | Verwendung |
 |---|---|
-| Main.vi mit 4 Schleifen, `PH_App.lvlib` | gleiche Struktur, Fenstergrösse 1920 × 1080, englische Namen |
+| Main.vi mit 4 Schleifen, `PH_App.lvlib` | gleiche Struktur, Fenstergrösse 1280 × 720, englische Namen |
 | Tasten per ScanCode, Queue zur Engine | unverändert |
 | Sprite-Atlas (`sprites.txt` + PNGs), Sprite_Draw, Glyphs_Draw | unverändert, neue Bilder |
 | Gestreamter Ton (Sound_Bank_Load, Sound_Mix), `make_sounds.py`, `make_music.py` | neue Töne, Sprungton zuerst |
@@ -246,7 +261,7 @@ Gold_Hunter\
 |---|---|---|
 | M0 | Architektur, Pyramide mit 36 Räumen, Lösbarkeitsprüfung, Sprites, Hintergründe | erledigt |
 | M1 | Projekt, Räume laden, Raum mit Sprites zeichnen, Bildrate messen | erledigt, Bildaufbau muss neu (siehe 5) |
-| M2 | Neuer Bildaufbau (nur geänderte Kacheln) mit Messung im Fenster; Claude: laufen, springen, Leiter, Seil, Stange, dünne Böden, Förderband, Sturz, Raumwechsel | offen |
+| M2 | Neuer Bildaufbau; Claude: laufen, springen, Leiter, Seil, Stange, dünne Böden, Förderband, Sturz, Raumwechsel; `Main.vi` | erledigt |
 | M3 | Gold, Schlüssel, Türen, Fackel, Dunkelheit mit Lichtkreis, Schwundböden; Test der Lösung per Tastenfolge | offen |
 | M4 | Spinne, Schlange, Totenkopf, Leben und Extraleben | offen |
 | M5 | Schatzkammer, Levelwechsel, Phasen, HUD, Highscore | offen |

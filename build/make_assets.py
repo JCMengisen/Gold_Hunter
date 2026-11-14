@@ -1,8 +1,8 @@
-# Gold Hunter - zeichnet alle Grafiken (Pixel-Art im Raster 640 x 360, 3-fach vergroessert gespeichert):
-#   Resources\Images\room_<schema>_<id>.png        Raum-Hintergrund 1920 x 960, hell
+# Gold Hunter - zeichnet alle Grafiken (Pixel-Art im Raster 640 x 360, 2-fach vergroessert gespeichert = 1280 x 720):
+#   Resources\Images\room_<schema>_<id>.png        Raum-Hintergrund 1280 x 640, hell
 #   Resources\Images\room_<schema>_<id>_dark.png   derselbe Raum ohne Fackel (fast schwarz)
 #   Resources\Images\room_<schema>_<id>_dim.png    halbdunkel: Rand des Lichtkreises um Claude
-#   Resources\Images\hud.png  title.png            HUD 1920 x 120, Titelbild 1920 x 1080
+#   Resources\Images\hud.png  title.png            HUD 1280 x 80, Titelbild 1280 x 720
 #   Resources\Sprites\<name>.png + sprites.txt     Sprites (Zeile in sprites.txt = Index)
 #   Resources\Preview\*.png                        Vorschauen
 # Die Geometrie kommt aus gh_levels.py. Aufruf: python make_assets.py
@@ -15,7 +15,7 @@ from gh_levels import ROOMS, WORLD, COLS, ROWS
 RES = os.path.join(gh_levels.ROOT, 'Resources')
 for _d in ('Images', 'Sprites', 'Preview'):
     os.makedirs(os.path.join(RES, _d), exist_ok=True)
-T, S = 16, 3                      # Kachel in Art-Pixeln, Vergroesserung
+T, S = 16, 2                      # Kachel in Art-Pixeln, Vergroesserung (2-fach = 1280 x 720)
 W, RH, HUD_H = COLS * T, ROWS * T, 40
 
 

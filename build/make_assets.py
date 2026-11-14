@@ -494,9 +494,9 @@ frames['parachute'] = outline(sprite(PARACHUTE, dict(PAL, R=rgb('#E83A30') + (25
 
 # ------------------------------------------------------------------ Raeume
 THEMES = [
-    dict(name='Tempel', brick='#C8642C', mortar='#3E7A3A', trim='#F0B060', back='#2A2230', back_mortar='#15101A'),
-    dict(name='Eisgruft', brick='#4A78B8', mortar='#1C2C58', trim='#A8D4F4', back='#1E2836', back_mortar='#0E141E'),
-    dict(name='Purpurhort', brick='#9A4A9E', mortar='#3A1848', trim='#F0C050', back='#2C2028', back_mortar='#160E16'),
+    dict(name='Tempel', brick='#C8642C', mortar='#3E7A3A', trim='#F0B060', back='#2E2620', back_mortar='#120E0A'),
+    dict(name='Eisgruft', brick='#4A78B8', mortar='#1C2C58', trim='#A8D4F4', back='#1C2630', back_mortar='#0A1016'),
+    dict(name='Purpurhort', brick='#9A4A9E', mortar='#3A1848', trim='#F0C050', back='#2A2028', back_mortar='#120A12'),
 ]
 STONE = rgb('#A8A49A')
 RAIL, RUNG = rgb('#B87A24'), rgb('#F0C868')
@@ -523,6 +523,218 @@ def geometry(lines):
     return [''.join('.' if ch in gh_levels.ENTITIES or ch in gh_levels.DOORS else ch for ch in line) for line in lines]
 
 
+# ------------------------------------------------------------------ Pyramide: verwitterter Stein, Wandmalereien, Wurzeln
+import math
+import random as _random
+_rn = _random.Random(7)
+NOISE = Image.frombytes('L', (W, RH), bytes(max(0, min(255, int(_rn.gauss(128, 26)))) for _ in range(W * RH))).convert('RGB')
+MURAL_COL = [rgb('#C0902E'), rgb('#B04A28'), rgb('#2E9C90'), rgb('#D0C098')]      # Ocker, Rot, Tuerkis, Knochen
+MURAL_SIZE = {0: (4, 3), 1: (4, 3), 2: (5, 2), 3: (3, 3), 4: (3, 2)}                # in Kacheln
+ROOT = [rgb('#4A3320'), rgb('#6E5030'), rgb('#2E2014')]
+VINE = [rgb('#35602A'), rgb('#4E8A38')]
+
+
+def weathered(img):
+    """Stein mit Koernung (immer dieselbe, damit die Bilder gleich bleiben)"""
+    return ImageChops.soft_light(img, NOISE)
+
+
+def mural(kind, seed):
+    """verblasste Wandmalerei im Stil der Maya und Azteken (eigene Motive): 0 Sonnenscheibe, 1 Stufenpyramide,
+    2 gefiederte Schlange, 3 Maske mit Federschmuck, 4 Zahlzeichen aus Balken und Punkten"""
+    w, h = MURAL_SIZE[kind][0] * T, MURAL_SIZE[kind][1] * T
+    im = Image.new('RGBA', (w, h), (0, 0, 0, 0))
+    d = ImageDraw.Draw(im)
+    O, R, Q, B = [c + (255,) for c in MURAL_COL]
+    if kind == 0:
+        cx, cy = w // 2, h // 2
+        for k in range(8):
+            a = k * math.pi / 4
+            p = [(cx + 23 * math.cos(a), cy + 23 * math.sin(a)), (cx + 17 * math.cos(a - 0.2), cy + 17 * math.sin(a - 0.2)),
+                 (cx + 17 * math.cos(a + 0.2), cy + 17 * math.sin(a + 0.2))]
+            d.polygon(p, fill=R if k % 2 else O)
+        d.ellipse([cx - 17, cy - 17, cx + 17, cy + 17], outline=O, width=2)
+        d.ellipse([cx - 12, cy - 12, cx + 12, cy + 12], outline=Q)
+        for k in range(12):
+            a = k * math.pi / 6
+            d.point([cx + 14.5 * math.cos(a), cy + 14.5 * math.sin(a)], fill=B)
+        d.ellipse([cx - 7, cy - 7, cx + 7, cy + 7], outline=R)
+        d.rectangle([cx - 4, cy - 3, cx - 2, cy - 2], fill=B)
+        d.rectangle([cx + 2, cy - 3, cx + 4, cy - 2], fill=B)
+        d.line([cx - 3, cy + 3, cx + 3, cy + 3], fill=B)
+        d.point([cx, cy + 4], fill=R)
+    elif kind == 1:
+        for k in range(5):
+            d.rectangle([4 + k * 5, 38 - k * 7, w - 5 - k * 5, 44 - k * 7], outline=O)
+        d.rectangle([w // 2 - 4, 10, w // 2 + 4, 44], fill=R)
+        for y in range(12, 44, 3):
+            d.line([w // 2 - 4, y, w // 2 + 4, y], fill=B)
+        d.rectangle([w // 2 - 8, 2, w // 2 + 8, 9], outline=Q)
+        d.rectangle([w // 2 - 2, 5, w // 2 + 2, 9], fill=O)
+        d.line([0, 46, w - 1, 46], fill=B)
+        d.ellipse([3, 2, 13, 12], outline=O)
+        d.point([8, 7], fill=R)
+    elif kind == 2:
+        for x in range(6, w - 18):
+            y = 16 + int(round(7 * math.sin(x / 7.0)))
+            d.line([x, y - 1, x, y + 2], fill=O)
+            if x % 4 == 0:
+                d.point([x, y + 1], fill=R)
+            if x % 6 == 0:
+                d.line([x, y - 2, x - 2, y - 6], fill=Q if (x // 6) % 2 else R)
+        hx, hy = w - 18, 16 + int(round(7 * math.sin((w - 18) / 7.0)))
+        d.polygon([(hx, hy - 4), (hx + 12, hy - 5), (hx + 16, hy - 1), (hx + 8, hy), (hx + 15, hy + 3), (hx + 4, hy + 4), (hx, hy + 3)], outline=O)
+        d.point([hx + 8, hy - 3], fill=B)
+        d.line([hx + 16, hy + 1, hx + 17, hy + 1], fill=R)
+        for k in range(4):
+            d.line([hx + 1 + k * 2, hy - 5, hx - 3 + k * 2, hy - 11], fill=Q if k % 2 else R)
+        d.line([4, 18, 6, 16], fill=O)
+        d.line([2, 15, 4, 18], fill=R)
+    elif kind == 3:
+        cx = w // 2
+        for k in range(7):
+            a = math.pi * (0.15 + 0.7 * k / 6)
+            d.line([cx - 14 * math.cos(a), 16 - 4 * math.sin(a), cx - 22 * math.cos(a), 16 - 15 * math.sin(a)], fill=(Q, R, O)[k % 3], width=2)
+        d.rounded_rectangle([cx - 13, 14, cx + 13, 44], radius=4, outline=O, width=2)
+        d.rectangle([cx - 9, 21, cx - 4, 24], outline=Q)
+        d.rectangle([cx + 4, 21, cx + 9, 24], outline=Q)
+        d.point([cx - 6, 23], fill=B)
+        d.point([cx + 7, 23], fill=B)
+        d.line([cx, 24, cx, 31], fill=O)
+        d.line([cx - 2, 31, cx + 2, 31], fill=O)
+        d.rectangle([cx - 7, 35, cx + 7, 39], outline=R)
+        for x in range(cx - 5, cx + 6, 3):
+            d.line([x, 36, x, 38], fill=B)
+        d.ellipse([cx - 19, 24, cx - 14, 31], outline=Q)
+        d.ellipse([cx + 14, 24, cx + 19, 31], outline=Q)
+    else:
+        for k in range(3):
+            x0 = 2 + k * 15
+            d.rounded_rectangle([x0, 2, x0 + 12, h - 3], radius=3, outline=O)
+            bars = int(rnd(k, seed, 3) * 4)
+            dots = 1 + int(rnd(k, seed, 4) * 4)
+            for b in range(bars):
+                d.rectangle([x0 + 3, h - 8 - b * 4, x0 + 9, h - 7 - b * 4], fill=R)
+            for q in range(dots):
+                d.point([x0 + 3 + q * 2, h - 9 - bars * 4], fill=B)
+                d.point([x0 + 3 + q * 2, h - 10 - bars * 4], fill=B)
+            d.arc([x0 + 3, 5, x0 + 9, 11], 0, 270, fill=Q)
+    # verwittert: Farbe ist stellenweise abgeblaettert, insgesamt verblasst
+    a = im.getchannel('A')
+    ap = a.load()
+    for y in range(h):
+        for x in range(w):
+            if ap[x, y]:
+                f = rnd(x + 31 * seed, y, 11)
+                g_ = rnd(x // 5, y // 4 + seed, 12)          # groessere abgeplatzte Flecken
+                ap[x, y] = 0 if f < 0.08 or g_ < 0.09 else int(215 * (0.7 + 0.3 * f))
+    im.putalpha(a)
+    return im
+
+
+def paint_back(back, g, th, seed):
+    """Rueckwand: Koernung, Risse, Wandmalereien an freien Stellen, Fries unter langen Decken"""
+    back = weathered(back).convert('RGBA')
+    d = ImageDraw.Draw(back)
+    free = lambda c, r: 0 <= c < COLS and 0 <= r < ROWS and g[r][c] != '#'
+    for k in range(14):                                       # Risse im Stein
+        x, y = int(rnd(k, seed, 21) * W), int(rnd(k, seed, 22) * RH)
+        for s in range(6 + int(rnd(k, seed, 23) * 14)):
+            d.point([x, y], fill=shade(th['back_mortar'], 0.7))
+            x += int(rnd(s, k + seed, 24) * 3) - 1
+            y += 1 if rnd(s, k + seed, 25) < 0.7 else 0
+    # Fries (Stufenmaeander) unter langen Decken
+    hi, lo = shade(th['back'], 1.9), shade(th['back'], 0.45)
+    for r in range(1, ROWS):
+        c = 0
+        while c < COLS:
+            c0 = c
+            while c < COLS and g[r][c] == '.' and g[r - 1][c] == '#':
+                c += 1
+            if c - c0 >= 6 and rnd(c0, r, seed + 30) < 0.65:
+                for cc in range(c0, c):
+                    x, y = cc * T, r * T + 5
+                    for pts in ([0, 5, 4, 5], [4, 5, 4, 1], [4, 1, 10, 1], [10, 1, 10, 3], [10, 3, 7, 3], [12, 5, 15, 5], [12, 5, 12, 0], [0, 7, 15, 7]):
+                        d.line([x + pts[0], y + pts[1], x + pts[2], y + pts[3]], fill=hi)
+                        d.line([x + pts[0], y + pts[1] + 1, x + pts[2], y + pts[3] + 1], fill=lo)
+            c += 1
+    # Wandmalereien: freie Felder suchen (mit einer freien Zeile darunter, damit sie ueber Kopfhoehe haengen)
+    used, count = [], 0
+    order = sorted(((rnd(c, r, seed + 40), c, r) for r in range(1, ROWS - 3) for c in range(1, COLS - 5)))
+    for _, c, r in order:
+        if count >= 4:
+            break
+        kind = int(rnd(c, r, seed + 41) * 5)
+        wt, ht = MURAL_SIZE[kind]
+        if not all(free(c + i, r + j) for i in range(wt) for j in range(ht + 1)):
+            continue
+        if any(c < uc + uw + 3 and uc < c + wt + 3 and r < ur + uh + 1 and ur < r + ht + 1 for uc, ur, uw, uh in used):
+            continue
+        back.alpha_composite(mural(kind, seed + count), (c * T, r * T))
+        used.append((c, r, wt, ht))
+        count += 1
+    return back.convert('RGB')
+
+
+def grow_roots(d, g, seed):
+    """Wurzeln und Ranken, die durch die Decken gedrungen sind; Moos an den Unterkanten"""
+    free = lambda c, r: 0 <= c < COLS and 0 <= r < ROWS and g[r][c] == '.'
+    for r in range(1, ROWS):
+        for c in range(COLS):
+            if not (free(c, r) and g[r - 1][c] == '#'):
+                continue
+            x0, y0 = c * T, r * T
+            for xx in range(16):                              # Moos
+                if rnd(x0 + xx, r, seed + 50) < 0.22:
+                    d.line([x0 + xx, y0, x0 + xx, y0 + int(rnd(x0 + xx, r, seed + 51) * 3)], fill=VINE[0])
+            room = 0
+            while free(c, r + room) and room < 3:
+                room += 1
+            p = rnd(c, r, seed + 52)
+            if p < 0.20:                                      # Wurzel
+                n = 1 + int(rnd(c, r, seed + 53) * 3)
+                for k in range(n):
+                    x = x0 + 2 + int(rnd(c + k, r, seed + 54) * 12)
+                    length = min(room * T - 4, 6 + int(rnd(c + k, r, seed + 55) * 30))
+                    for s in range(length):
+                        if rnd(s, x + seed, 56) < 0.32:
+                            x += -1 if rnd(s, x + seed, 57) < 0.5 else 1
+                        thick = s < length * 0.45
+                        d.point([x, y0 + s], fill=ROOT[1] if thick else ROOT[0])
+                        if thick:
+                            d.point([x + 1, y0 + s], fill=ROOT[0])
+                            d.point([x + 2, y0 + s], fill=ROOT[2])
+                        if 4 < s < length - 3 and rnd(s, x + seed, 58) < 0.07:
+                            sg = -1 if rnd(s, x, 59) < 0.5 else 1
+                            for b in range(3 + int(rnd(s, x, 60) * 4)):
+                                d.point([x + sg * (b + 1), y0 + s + b], fill=ROOT[0])
+            elif p < 0.30:                                    # Ranke mit Blaettern
+                x = x0 + 3 + int(rnd(c, r, seed + 61) * 10)
+                length = min(room * T - 4, 8 + int(rnd(c, r, seed + 62) * 22))
+                for s in range(length):
+                    if s % 3 == 0:
+                        x += int(rnd(s, x + seed, 63) * 3) - 1
+                    d.point([x, y0 + s], fill=VINE[0])
+                    if s % 4 == 2:
+                        sg = -1 if (s // 4) % 2 else 1
+                        d.point([x + sg, y0 + s], fill=VINE[1])
+                        d.point([x + 2 * sg, y0 + s - 1], fill=VINE[1])
+
+
+def carve_walls(wall, g, th, seed):
+    """eingemeisselte Zeichen im Inneren der Mauern"""
+    d = ImageDraw.Draw(wall)
+    solid = lambda c, r: not (0 <= c < COLS and 0 <= r < ROWS) or g[r][c] == '#'
+    lo, hi = shade(th['brick'], 0.38), shade(th['brick'], 0.95)
+    for r in range(ROWS):
+        for c in range(COLS):
+            if g[r][c] == '#' and all(solid(c + i, r + j) for i in (-1, 0, 1) for j in (-1, 0, 1)) and rnd(c, r, seed + 70) < 0.10:
+                x, y = c * T + 3, r * T + 3
+                for pts in ([0, 0, 9, 0], [9, 0, 9, 9], [9, 9, 0, 9], [0, 9, 0, 3], [0, 3, 6, 3], [6, 3, 6, 6], [6, 6, 3, 6]):
+                    d.line([x + pts[0], y + pts[1], x + pts[2], y + pts[3]], fill=lo)
+                    d.line([x + pts[0] + 1, y + pts[1] + 1, x + pts[2] + 1, y + pts[3] + 1], fill=hi)
+    return wall
+
 def draw_room(rid, theme):
     """liefert (hell, dunkel, halbdunkel) als Art-Bilder 640 x 320"""
     th = {k: (rgb(v) if k != 'name' else v) for k, v in THEMES[theme].items()}
@@ -533,8 +745,9 @@ def draw_room(rid, theme):
     def at(c, r):
         return g[r][c] if 0 <= c < COLS and 0 <= r < ROWS else '#'
 
-    back = brick_layer(W, RH, 16, 8, th['back'], th['back_mortar'], seed + 1, 0.2)
-    wall = brick_layer(W, RH, 8, 4, th['brick'], th['mortar'], seed + 2)
+    back = paint_back(brick_layer(W, RH, 32, 16, shade(th['back'], 0.85), th['back_mortar'], seed + 1, 0.22), g, th, seed)
+    wall = brick_layer(W, RH, 16, 8, shade(th['brick'], 0.62), shade(th['mortar'], 0.50), seed + 2, 0.18)
+    wall = carve_walls(weathered(wall), g, th, seed)
     mask = Image.new('L', (W, RH), 0)
     md = ImageDraw.Draw(mask)
     for r in range(ROWS):
@@ -617,6 +830,8 @@ def draw_room(rid, theme):
                 if at(c, r - 1) == '#' and at(c + 1, r) == '#' and rnd(c, r, seed + 6) < 0.7:
                     for pts in ([0, 0, 10, 0], [0, 0, 0, 10], [0, 0, 7, 7], [9, 0, 6, 6], [6, 6, 0, 9], [5, 0, 3, 3], [3, 3, 0, 5]):
                         d.line([x + 15 - pts[0], y + pts[1], x + 15 - pts[2], y + pts[3]], fill=web)
+    grow_roots(d, g, seed)
+
     def dimmed(f, add):
         t = im.convert('RGB').point(lambda v: int(v * f) + add)
         tr, tg, tb = t.split()

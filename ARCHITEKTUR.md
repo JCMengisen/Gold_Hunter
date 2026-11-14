@@ -105,7 +105,7 @@ also dieselben Räume. Einzelne Räume lassen sich später von Hand ersetzen.
 
 | Grösse | Wert | Folge |
 |---|---|---|
-| Laufen | 3 px/Tick | ganze Pixel: kein 3-4-3-4-Ruckeln |
+| Laufen | 4 px/Tick | ganze Pixel: kein 3-4-3-4-Ruckeln |
 | Sprung | Start −7.7 px/Tick, Schwerkraft 0.4 | gut 2 Kacheln hoch (74 px), 3 bis 4 Kacheln weit |
 | Klettern / Rutschen | 3 / 5 px/Tick | |
 | Sturz | mehr als 4 Kacheln (133 px) unter dem letzten festen Stand = tot | eine ganze Etage (6 Kacheln) ist tödlich |
@@ -117,7 +117,7 @@ also dieselben Räume. Einzelne Räume lassen sich später von Hand ersetzen.
 - **Seil**: hängt von der Decke, oft durch ein Loch im Boden. Hoch und runter wie eine Leiter, wird auch im
   Fallen gegriffen. Im Startraum klettert Claude zu Beginn am Seil durch die Decke herein.
 - **Förderband**: fester Boden, der Claude und Totenköpfe mit 2 px/Tick in Pfeilrichtung schiebt.
-  Gegen das Band läuft man also langsamer (1 statt 3), mit dem Band schneller (5). In der Luft wirkt es nicht.
+  Gegen das Band läuft man also langsamer (2 statt 4), mit dem Band schneller (6). In der Luft wirkt es nicht.
 - **Rutschstange**: wird im Fallen gegriffen, nur abwärts, kein Sturzschaden.
 - **Tür**: massiv, bis ein passender Schlüssel im Inventar ist und Claude sie berührt. Türen können hintereinander stehen.
 - **Spinne**: läuft auf Böden und Leitern ihres Raums, wechselt den Raum nicht, springt nicht. Sie wählt an

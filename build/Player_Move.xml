@@ -35,7 +35,7 @@
   <Node _name="Select" inputs="s:1031.o0,t:1032.v,f:1033.v" outputs="s? t\3Af:1034.o0" uid="1034" uid_parent="root"/>
   <Node _name="Select" inputs="s:1028.o0,t:1029.v,f:1034.o0" outputs="s? t\3Af:1035.o0" uid="1035" uid_parent="root"/>
   <Node _name="Or" inputs="x:1017.o0,y:1021.o0" outputs="x .or. y?:1036.o0" uid="1036" uid_parent="root"/>
-  <Constant type="int32" value="30" outputs="value:1037.v" uid="1037" uid_parent="root"/>
+  <Constant type="int32" value="40" outputs="value:1037.v" uid="1037" uid_parent="root"/>
   <Node _name="Multiply" inputs="x:1004.o6,y:1037.v" outputs="x*y:1038.o0" uid="1038" uid_parent="root"/>
   <Constant type="int32" value="0" outputs="value:1039.v" uid="1039" uid_parent="root"/>
   <Node _name="Select" inputs="s:1036.o0,t:1038.o0,f:1039.v" outputs="s? t\3Af:1040.o0" uid="1040" uid_parent="root"/>

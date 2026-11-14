@@ -78,7 +78,7 @@ CHANNELS = f'cluster{{ref{{Queue}}{{{KEY}}}.Keys,ref{{Notifier}}{{{STATE}}}.Fram
 # Physik (60 Ticks/s, Zehntel Pixel)
 CLAUDE_W, CLAUDE_H = 32, 48
 BOX_L, BOX_R = 8, 23                 # Kollisionskasten in x (16 px breit, mittig)
-WALK10, CLIMB10, SLIDE10, BELT10 = 30, 30, 50, 20      # ganze Pixel pro Tick: kein 3-4-3-4-Ruckeln
+WALK10, CLIMB10, SLIDE10, BELT10 = 40, 30, 50, 20      # ganze Pixel pro Tick: kein 3-4-3-4-Ruckeln
 JUMP10, GRAVITY10, VY_MAX10 = -77, 4, 100
 MAX_FALL = 133                       # px unter dem letzten festen Stand = tot (gut 4 Kacheln)
 LIVES, MAX_LIVES, EXTRA_LIFE = 4, 7, 10000

@@ -574,10 +574,10 @@ def game_play():
 
 
 # Demo: Tastenfolge im Startraum (mit sim_player.py abgestimmt)
-# Demo-Tastenfolge fuer WALK10 = 30 / BELT10 = 20 (umgerechnet mit retime_demo.py, gleicher Weg, Pausen fuer die Schwundboeden)
-DEMO_EVENTS = [(0, 'Right'), (236, 'ReleaseR'), (237, 'Down'), (301, 'ReleaseV'), (363, 'Left'), (615, 'ReleaseL'), (639, 'Right'),
-               (825, 'ReleaseR'), (826, 'Down'), (890, 'ReleaseV'), (891, 'Right'), (983, 'ReleaseR'), (984, 'Left'), (1120, 'ReleaseL'),
-               (1121, 'Down')]
+# Demo-Tastenfolge fuer WALK10 = 40 / BELT10 = 20 (umgerechnet mit retime_demo.py, gleicher Weg)
+DEMO_EVENTS = [(0, 'Right'), (177, 'ReleaseR'), (178, 'Down'), (242, 'ReleaseV'), (243, 'Left'), (432, 'ReleaseL'), (433, 'Right'),
+               (573, 'ReleaseR'), (574, 'Down'), (638, 'ReleaseV'), (639, 'Right'), (708, 'ReleaseR'), (709, 'Left'), (811, 'ReleaseL'),
+               (812, 'Down')]
 
 
 def demo_input():

@@ -282,3 +282,13 @@ Gold_Hunter\
 | M5 | Schatzkammer, Levelwechsel, Phasen, Highscore | gebaut |
 | M6 | Töne, Musik, Titel und Demo | gebaut, Ton nicht gehört |
 | M7 | Caraya-Tests, Feinschliff | offen |
+
+
+## Demo bis in die Schatzkammer (15.11.2026)
+
+`build\plan_demo.py` plant die Demo automatisch: Stufe 1 sucht auf Kachel-Ebene (Bewegungsmodell aus `check_levels.py`) die
+Reihenfolge der Tueren (je mit dem naechsten Schluessel ihrer Farbe) und holt die Fackel, sobald sie erreichbar ist; Stufe 2
+sucht fuer jeden Schritt im Python-Nachbau (`sim_player.py`) die Tasten Tick fuer Tick (Bestensuche, mit dem Rhythmus der
+Schwundboeden). Ergebnis `demo_events.py` (rund 250 s). In der Demo ist Claude unverwundbar, Raumwechsel sind erlaubt.
+In der Schatzkammer schwebt Claude am **Fallschirm** hinunter (Fallgeschwindigkeit hoechstens `CHUTE10`, Landung nie toedlich) -
+im Spiel wie in der Demo. Neu planen: `python plan_demo.py neu` (danach `gen_play.py demo_input game_step`).

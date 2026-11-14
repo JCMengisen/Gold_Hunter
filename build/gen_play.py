@@ -81,8 +81,9 @@ def player_move():
     st = d.ctrl('State', STATE, STATE_V, 0)
     jump = d.ctrl('Jump', 'bool', 'false', 5, 'recommended')
     e = d.err_in()
-    tiles, x10, y10, vy10, mode, facing, run, vert, stand, fphase = d.unb(
-        st, ['Tiles', 'X10', 'Y10', 'VY10', 'Mode', 'Facing', 'Run', 'Vert', 'StandY', 'FloorPhase'])
+    tiles, x10, y10, vy10, mode, facing, run, vert, stand, fphase, room = d.unb(
+        st, ['Tiles', 'X10', 'Y10', 'VY10', 'Mode', 'Facing', 'Run', 'Vert', 'StandY', 'FloorPhase', 'Room'])
+    chute = d.eq(room, d.i32c(TREASURE_IDX))        # Schatzkammer: Fallschirm
     n = max(TILE_CODE.values()) + 1
     L_SOL = d.const('array{int32}', lut({k: 1 for k in SOLID}, n), 'Solid')
     L_PLA = d.const('array{int32}', lut({k: 1 for k in PLATFORM}, n), 'Thin floor')
@@ -126,7 +127,8 @@ def player_move():
     g_vy = d.sel(jump, c(JUMP10), c(0))
     # ---- Luft
     v1 = d.add2(vy10, c(GRAVITY10))
-    vy = d.sel(d.gt(v1, c(VY_MAX10)), c(VY_MAX10), v1)
+    vmax = d.sel(chute, c(CHUTE10), c(VY_MAX10))
+    vy = d.sel(d.gt(v1, vmax), vmax, v1)
     ay10 = d.add2(y10, vy)
     ay = px(d, ay10)
     afeet = d.add2(ay, c(CLAUDE_H))
@@ -147,7 +149,7 @@ def player_move():
     a_y10 = d.sel(land, d.mul(land_y, c(10)), d.sel(bump, y10, ay10))
     a_vy = d.sel(anyb(d, land, bump, grab), c(0), vy)
     a_x10 = d.sel(grab, snap10, xa10)
-    dead = allb(d, m2, land, d.gt(d.sub(land_y, stand), c(MAX_FALL)))
+    dead = allb(d, m2, land, d.gt(d.sub(land_y, stand), c(MAX_FALL)), d.not_(chute))
     # ---- Leiter / Seil
     ly10 = d.add2(y10, d.mul(vert, c(CLIMB10)))
     ly = px(d, ly10)
@@ -580,6 +582,11 @@ def game_play():
 DEMO_EVENTS = [(0, 'Right'), (177, 'ReleaseR'), (178, 'Down'), (242, 'ReleaseV'), (243, 'Left'), (432, 'ReleaseL'), (433, 'Right'),
                (573, 'ReleaseR'), (574, 'Down'), (638, 'ReleaseV'), (639, 'Right'), (708, 'ReleaseR'), (709, 'Left'), (811, 'ReleaseL'),
                (812, 'Down')]
+# Demo vom Start ueber die Fackel bis in die Schatzkammer (plan_demo.py); ohne Plan die kurze Demo im Startraum
+try:
+    from demo_events import DEMO_EVENTS, DEMO_LEN as DEMO_LEN_PLAN
+except ImportError:
+    DEMO_LEN_PLAN = DEMO_LEN
 
 
 def demo_input():
@@ -736,7 +743,9 @@ def game_step():
                     ['State out', 'Hit', 'Died', 'error out'])
         room, = d.unb(gp['State out'], ['Room'])
         played = d.bun(gp['State out'], [('DemoStep', d.inc(step)), ('Sound', c(0))])
-        over = anyb(d, gp['Hit'], gp['Died'], ge(d, step, c(DEMO_LEN)), d.ne(room, c(START_IDX)))
+        # Demo bis in die Schatzkammer: Gegner treffen nicht (Claude ist unverwundbar), Raumwechsel erlaubt;
+        # Ende bei Enter, am Ende der Tastenfolge oder (sollte nie geschehen) bei einem toedlichen Sturz
+        over = d.or_(d.and_(gp['Died'], d.ne(room, c(TREASURE_IDX))), ge(d, step, c(DEMO_LEN_PLAN)))
         back = d.bun(s, [('Phase', c(PH['Title'])), ('PhaseTicks', c(0)), ('Sound', c(0))])
         return [d.sel(start, gn['State out'], d.sel(over, back, played)), gp['error out']]
 

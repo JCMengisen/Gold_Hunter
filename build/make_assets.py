@@ -466,6 +466,31 @@ for pts in ('100', '500', '1000'):
 for i, ch in enumerate(CHARSET):
     frames['glyph_%02d' % i] = label(ch, rgb('#FFE860'), 2)
 
+# --- Fallschirm fuer den Sprung in die Schatzkammer (ueber Claude, 24 x 18): rot-weiss gestreifte Kappe, Leinen zu den Schultern.
+# Steht als letztes Sprite, damit kein anderer Index sich verschiebt.
+PARACHUTE = [
+    '........RRWWRRWW........',
+    '.....WWRRWWRRWWRRWW.....',
+    '...RRWWRRWWRRWWRRWWRR...',
+    '..WRRWWRRWWRRWWRRWWRRW..',
+    '.RRWWRRWWRRWWRRWWRRWWRR.',
+    'RRWWRRWWRRWWRRWWRRWWRRWW',
+    'RRWWRRWWRRWWRRWWRRWWRRWW',
+    'r.r...r....rr....r...r.r',
+    '.b.b...b...bb...b...b.b.',
+    '..b.b...b..bb..b...b.b..',
+    '...b.b...b.bb.b...b.b...',
+    '....b.b...bbbb...b.b....',
+    '.....b.b..bbbb..b.b.....',
+    '......b.b.bbbb.b.b......',
+    '.......b.bbbbbb.b.......',
+    '........bbbbbbbb........',
+    '........bb....bb........',
+    '........b......b........',
+]
+frames['parachute'] = outline(sprite(PARACHUTE, dict(PAL, R=rgb('#E83A30') + (255,), r=rgb('#9A2018') + (255,),
+                                                    W=rgb('#F8F4E8') + (255,), b=rgb('#C8C0A8') + (255,)), 24))
+
 
 # ------------------------------------------------------------------ Raeume
 THEMES = [

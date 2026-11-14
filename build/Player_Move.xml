@@ -2,450 +2,455 @@
   <Control _name="State" type="cluster{uint32.Tick,int32.Phase,int32.PhaseTicks,int32.Level,int32.Room,int32.X10,int32.Y10,int32.VY10,int32.Mode,int32.Facing,int32.Run,int32.Vert,int32.StandY,int32.EntryX10,int32.EntryY10,int32.EntryMode,int32.Lives,int32.Score,int32.NextLife,int32.KeyR,int32.KeyB,int32.KeyY,bool.Torch,int32.FloorPhase,bool.Dead,bool.LevelStart,bool.Quit,int32.Sound,uint32.Seed,int32.DemoStep,array.2{uint8}.Tiles,array{cluster{string.ID,int32.Depth,int32.Column,array.2{uint8}.Tiles}}.World,array{cluster{int32.Kind,int32.X10,int32.Y10,int32.Dir,int32.Mode}}.Enemies,array{cluster{int32.Score,string.Name}}.Highscores,array{int32}.Name,int32.Cursor}" value="[0,0,0,1,0,0,0,0,0,0,0,0,0,0,0,0,4,0,10000,0,0,0,false,0,false,false,false,0,12345,0,[],[],[],[],[0,0,0],0]" conIdx="0" connection="required" outputs="value:1001.v" uid="1001" uid_parent="root"/>
   <Control _name="Jump" type="bool" value="false" conIdx="5" connection="recommended" outputs="value:1002.v" uid="1002" uid_parent="root"/>
   <Control _name="error in" type="cluster{bool.status,int32.code,string.source}" value="[false,0,]" conIdx="11" connection="required" outputs="value:1003.v" uid="1003" uid_parent="root"/>
-  <Node _name="Unbundle By Name" fields="Tiles,X10,Y10,VY10,Mode,Facing,Run,Vert,StandY,FloorPhase" inputs="input cluster:1001.v" outputs="Tiles:1004.o0,X10:1004.o1,Y10:1004.o2,VY10:1004.o3,Mode:1004.o4,Facing:1004.o5,Run:1004.o6,Vert:1004.o7,StandY:1004.o8,FloorPhase:1004.o9" uid="1004" uid_parent="root"/>
-  <Constant _name="Solid" type="array{int32}" value="[-1,1,-1,-1,-1,-1,-1,1,1,-1,1,1,1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1]" outputs="value:1005.v" uid="1005" uid_parent="root"/>
-  <Constant _name="Thin floor" type="array{int32}" value="[-1,-1,1,1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1]" outputs="value:1006.v" uid="1006" uid_parent="root"/>
-  <Constant _name="Ladder or rope" type="array{int32}" value="[-1,-1,-1,-1,1,-1,1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1]" outputs="value:1007.v" uid="1007" uid_parent="root"/>
-  <Constant type="int32" value="2" outputs="value:1008.v" uid="1008" uid_parent="root"/>
-  <Node _name="Equal?" inputs="x:1004.o9,y:1008.v" outputs="x = y?:1009.o0" uid="1009" uid_parent="root"/>
-  <Constant type="int32" value="10" outputs="value:1010.v" uid="1010" uid_parent="root"/>
-  <Node _name="Quotient &amp; Remainder" inputs="x:1004.o1,y:1010.v" outputs="x-y*floor(x/y):1011.o0,floor(x/y):1011.o1" uid="1011" uid_parent="root"/>
+  <Node _name="Unbundle By Name" fields="Tiles,X10,Y10,VY10,Mode,Facing,Run,Vert,StandY,FloorPhase,Room" inputs="input cluster:1001.v" outputs="Tiles:1004.o0,X10:1004.o1,Y10:1004.o2,VY10:1004.o3,Mode:1004.o4,Facing:1004.o5,Run:1004.o6,Vert:1004.o7,StandY:1004.o8,FloorPhase:1004.o9,Room:1004.o10" uid="1004" uid_parent="root"/>
+  <Constant type="int32" value="36" outputs="value:1005.v" uid="1005" uid_parent="root"/>
+  <Node _name="Equal?" inputs="x:1004.o10,y:1005.v" outputs="x = y?:1006.o0" uid="1006" uid_parent="root"/>
+  <Constant _name="Solid" type="array{int32}" value="[-1,1,-1,-1,-1,-1,-1,1,1,-1,1,1,1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1]" outputs="value:1007.v" uid="1007" uid_parent="root"/>
+  <Constant _name="Thin floor" type="array{int32}" value="[-1,-1,1,1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1]" outputs="value:1008.v" uid="1008" uid_parent="root"/>
+  <Constant _name="Ladder or rope" type="array{int32}" value="[-1,-1,-1,-1,1,-1,1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1]" outputs="value:1009.v" uid="1009" uid_parent="root"/>
+  <Constant type="int32" value="2" outputs="value:1010.v" uid="1010" uid_parent="root"/>
+  <Node _name="Equal?" inputs="x:1004.o9,y:1010.v" outputs="x = y?:1011.o0" uid="1011" uid_parent="root"/>
   <Constant type="int32" value="10" outputs="value:1012.v" uid="1012" uid_parent="root"/>
-  <Node _name="Quotient &amp; Remainder" inputs="x:1004.o2,y:1012.v" outputs="x-y*floor(x/y):1013.o0,floor(x/y):1013.o1" uid="1013" uid_parent="root"/>
-  <Constant type="int32" value="48" outputs="value:1014.v" uid="1014" uid_parent="root"/>
-  <Node _name="Add" inputs="x:1013.o1,y:1014.v" outputs="x+y:1015.o0" uid="1015" uid_parent="root"/>
-  <Constant type="int32" value="0" outputs="value:1016.v" uid="1016" uid_parent="root"/>
-  <Node _name="Equal?" inputs="x:1004.o4,y:1016.v" outputs="x = y?:1017.o0" uid="1017" uid_parent="root"/>
-  <Constant type="int32" value="1" outputs="value:1018.v" uid="1018" uid_parent="root"/>
+  <Node _name="Quotient &amp; Remainder" inputs="x:1004.o1,y:1012.v" outputs="x-y*floor(x/y):1013.o0,floor(x/y):1013.o1" uid="1013" uid_parent="root"/>
+  <Constant type="int32" value="10" outputs="value:1014.v" uid="1014" uid_parent="root"/>
+  <Node _name="Quotient &amp; Remainder" inputs="x:1004.o2,y:1014.v" outputs="x-y*floor(x/y):1015.o0,floor(x/y):1015.o1" uid="1015" uid_parent="root"/>
+  <Constant type="int32" value="48" outputs="value:1016.v" uid="1016" uid_parent="root"/>
+  <Node _name="Add" inputs="x:1015.o1,y:1016.v" outputs="x+y:1017.o0" uid="1017" uid_parent="root"/>
+  <Constant type="int32" value="0" outputs="value:1018.v" uid="1018" uid_parent="root"/>
   <Node _name="Equal?" inputs="x:1004.o4,y:1018.v" outputs="x = y?:1019.o0" uid="1019" uid_parent="root"/>
-  <Constant type="int32" value="2" outputs="value:1020.v" uid="1020" uid_parent="root"/>
+  <Constant type="int32" value="1" outputs="value:1020.v" uid="1020" uid_parent="root"/>
   <Node _name="Equal?" inputs="x:1004.o4,y:1020.v" outputs="x = y?:1021.o0" uid="1021" uid_parent="root"/>
-  <Node _name="Not" inputs="x:1002.v" outputs=".not. x?:1022.o0" uid="1022" uid_parent="root"/>
-  <Constant type="int32" value="16" outputs="value:1023.v" uid="1023" uid_parent="root"/>
-  <Node _name="Add" inputs="x:1011.o1,y:1023.v" outputs="x+y:1024.o0" uid="1024" uid_parent="root"/>
-  <Call target="Tile_Read.vi" inputs="Tiles:1004.o0,X:1024.o0,Y:1015.o0,error in:1003.v" outputs="Tile:1025.o0,error out:1025.o1" uid="1025" uid_parent="root"/>
-  <Node _name="To Long Integer" inputs="number:1025.o0" outputs="32bit integer:1026.o0" uid="1026" uid_parent="root"/>
-  <Constant type="int32" value="7" outputs="value:1027.v" uid="1027" uid_parent="root"/>
-  <Node _name="Equal?" inputs="x:1026.o0,y:1027.v" outputs="x = y?:1028.o0" uid="1028" uid_parent="root"/>
-  <Constant type="int32" value="-20" outputs="value:1029.v" uid="1029" uid_parent="root"/>
-  <Constant type="int32" value="8" outputs="value:1030.v" uid="1030" uid_parent="root"/>
-  <Node _name="Equal?" inputs="x:1026.o0,y:1030.v" outputs="x = y?:1031.o0" uid="1031" uid_parent="root"/>
-  <Constant type="int32" value="20" outputs="value:1032.v" uid="1032" uid_parent="root"/>
-  <Constant type="int32" value="0" outputs="value:1033.v" uid="1033" uid_parent="root"/>
-  <Node _name="Select" inputs="s:1031.o0,t:1032.v,f:1033.v" outputs="s? t\3Af:1034.o0" uid="1034" uid_parent="root"/>
-  <Node _name="Select" inputs="s:1028.o0,t:1029.v,f:1034.o0" outputs="s? t\3Af:1035.o0" uid="1035" uid_parent="root"/>
-  <Node _name="Or" inputs="x:1017.o0,y:1021.o0" outputs="x .or. y?:1036.o0" uid="1036" uid_parent="root"/>
-  <Constant type="int32" value="40" outputs="value:1037.v" uid="1037" uid_parent="root"/>
-  <Node _name="Multiply" inputs="x:1004.o6,y:1037.v" outputs="x*y:1038.o0" uid="1038" uid_parent="root"/>
-  <Constant type="int32" value="0" outputs="value:1039.v" uid="1039" uid_parent="root"/>
-  <Node _name="Select" inputs="s:1036.o0,t:1038.o0,f:1039.v" outputs="s? t\3Af:1040.o0" uid="1040" uid_parent="root"/>
+  <Constant type="int32" value="2" outputs="value:1022.v" uid="1022" uid_parent="root"/>
+  <Node _name="Equal?" inputs="x:1004.o4,y:1022.v" outputs="x = y?:1023.o0" uid="1023" uid_parent="root"/>
+  <Node _name="Not" inputs="x:1002.v" outputs=".not. x?:1024.o0" uid="1024" uid_parent="root"/>
+  <Constant type="int32" value="16" outputs="value:1025.v" uid="1025" uid_parent="root"/>
+  <Node _name="Add" inputs="x:1013.o1,y:1025.v" outputs="x+y:1026.o0" uid="1026" uid_parent="root"/>
+  <Call target="Tile_Read.vi" inputs="Tiles:1004.o0,X:1026.o0,Y:1017.o0,error in:1003.v" outputs="Tile:1027.o0,error out:1027.o1" uid="1027" uid_parent="root"/>
+  <Node _name="To Long Integer" inputs="number:1027.o0" outputs="32bit integer:1028.o0" uid="1028" uid_parent="root"/>
+  <Constant type="int32" value="7" outputs="value:1029.v" uid="1029" uid_parent="root"/>
+  <Node _name="Equal?" inputs="x:1028.o0,y:1029.v" outputs="x = y?:1030.o0" uid="1030" uid_parent="root"/>
+  <Constant type="int32" value="-20" outputs="value:1031.v" uid="1031" uid_parent="root"/>
+  <Constant type="int32" value="8" outputs="value:1032.v" uid="1032" uid_parent="root"/>
+  <Node _name="Equal?" inputs="x:1028.o0,y:1032.v" outputs="x = y?:1033.o0" uid="1033" uid_parent="root"/>
+  <Constant type="int32" value="20" outputs="value:1034.v" uid="1034" uid_parent="root"/>
+  <Constant type="int32" value="0" outputs="value:1035.v" uid="1035" uid_parent="root"/>
+  <Node _name="Select" inputs="s:1033.o0,t:1034.v,f:1035.v" outputs="s? t\3Af:1036.o0" uid="1036" uid_parent="root"/>
+  <Node _name="Select" inputs="s:1030.o0,t:1031.v,f:1036.o0" outputs="s? t\3Af:1037.o0" uid="1037" uid_parent="root"/>
+  <Node _name="Or" inputs="x:1019.o0,y:1023.o0" outputs="x .or. y?:1038.o0" uid="1038" uid_parent="root"/>
+  <Constant type="int32" value="40" outputs="value:1039.v" uid="1039" uid_parent="root"/>
+  <Node _name="Multiply" inputs="x:1004.o6,y:1039.v" outputs="x*y:1040.o0" uid="1040" uid_parent="root"/>
   <Constant type="int32" value="0" outputs="value:1041.v" uid="1041" uid_parent="root"/>
-  <Node _name="Select" inputs="s:1017.o0,t:1035.o0,f:1041.v" outputs="s? t\3Af:1042.o0" uid="1042" uid_parent="root"/>
-  <Node _name="Add" inputs="x:1040.o0,y:1042.o0" outputs="x+y:1043.o0" uid="1043" uid_parent="root"/>
-  <Node _name="Add" inputs="x:1004.o1,y:1043.o0" outputs="x+y:1044.o0" uid="1044" uid_parent="root"/>
-  <Constant type="int32" value="10" outputs="value:1045.v" uid="1045" uid_parent="root"/>
-  <Node _name="Quotient &amp; Remainder" inputs="x:1044.o0,y:1045.v" outputs="x-y*floor(x/y):1046.o0,floor(x/y):1046.o1" uid="1046" uid_parent="root"/>
-  <Constant type="int32" value="0" outputs="value:1047.v" uid="1047" uid_parent="root"/>
-  <Node _name="Greater?" inputs="x:1043.o0,y:1047.v" outputs="x &gt; y?:1048.o0" uid="1048" uid_parent="root"/>
-  <Constant type="int32" value="23" outputs="value:1049.v" uid="1049" uid_parent="root"/>
-  <Node _name="Add" inputs="x:1046.o1,y:1049.v" outputs="x+y:1050.o0" uid="1050" uid_parent="root"/>
-  <Constant type="int32" value="8" outputs="value:1051.v" uid="1051" uid_parent="root"/>
-  <Node _name="Add" inputs="x:1046.o1,y:1051.v" outputs="x+y:1052.o0" uid="1052" uid_parent="root"/>
-  <Node _name="Select" inputs="s:1048.o0,t:1050.o0,f:1052.o0" outputs="s? t\3Af:1053.o0" uid="1053" uid_parent="root"/>
-  <Constant type="int32" value="2" outputs="value:1054.v" uid="1054" uid_parent="root"/>
-  <Node _name="Add" inputs="x:1013.o1,y:1054.v" outputs="x+y:1055.o0" uid="1055" uid_parent="root"/>
-  <Call target="Tile_Read.vi" inputs="Tiles:1004.o0,X:1053.o0,Y:1055.o0,error in:1025.o1" outputs="Tile:1056.o0,error out:1056.o1" uid="1056" uid_parent="root"/>
-  <Node _name="To Long Integer" inputs="number:1056.o0" outputs="32bit integer:1057.o0" uid="1057" uid_parent="root"/>
-  <Node _name="Index Array" inputs="array:1005.v,index:1057.o0" outputs="element:1058.o0" uid="1058" uid_parent="root"/>
-  <Constant type="int32" value="0" outputs="value:1059.v" uid="1059" uid_parent="root"/>
-  <Node _name="Greater?" inputs="x:1058.o0,y:1059.v" outputs="x &gt; y?:1060.o0" uid="1060" uid_parent="root"/>
-  <Constant type="int32" value="24" outputs="value:1061.v" uid="1061" uid_parent="root"/>
-  <Node _name="Add" inputs="x:1013.o1,y:1061.v" outputs="x+y:1062.o0" uid="1062" uid_parent="root"/>
-  <Call target="Tile_Read.vi" inputs="Tiles:1004.o0,X:1053.o0,Y:1062.o0,error in:1056.o1" outputs="Tile:1063.o0,error out:1063.o1" uid="1063" uid_parent="root"/>
-  <Node _name="To Long Integer" inputs="number:1063.o0" outputs="32bit integer:1064.o0" uid="1064" uid_parent="root"/>
-  <Node _name="Index Array" inputs="array:1005.v,index:1064.o0" outputs="element:1065.o0" uid="1065" uid_parent="root"/>
-  <Constant type="int32" value="0" outputs="value:1066.v" uid="1066" uid_parent="root"/>
-  <Node _name="Greater?" inputs="x:1065.o0,y:1066.v" outputs="x &gt; y?:1067.o0" uid="1067" uid_parent="root"/>
-  <Constant type="int32" value="2" outputs="value:1068.v" uid="1068" uid_parent="root"/>
-  <Node _name="Subtract" inputs="x:1015.o0,y:1068.v" outputs="x-y:1069.o0" uid="1069" uid_parent="root"/>
-  <Call target="Tile_Read.vi" inputs="Tiles:1004.o0,X:1053.o0,Y:1069.o0,error in:1063.o1" outputs="Tile:1070.o0,error out:1070.o1" uid="1070" uid_parent="root"/>
-  <Node _name="To Long Integer" inputs="number:1070.o0" outputs="32bit integer:1071.o0" uid="1071" uid_parent="root"/>
-  <Node _name="Index Array" inputs="array:1005.v,index:1071.o0" outputs="element:1072.o0" uid="1072" uid_parent="root"/>
-  <Constant type="int32" value="0" outputs="value:1073.v" uid="1073" uid_parent="root"/>
-  <Node _name="Greater?" inputs="x:1072.o0,y:1073.v" outputs="x &gt; y?:1074.o0" uid="1074" uid_parent="root"/>
-  <Node _name="Or" inputs="x:1060.o0,y:1067.o0" outputs="x .or. y?:1075.o0" uid="1075" uid_parent="root"/>
-  <Node _name="Or" inputs="x:1075.o0,y:1074.o0" outputs="x .or. y?:1076.o0" uid="1076" uid_parent="root"/>
-  <Constant type="int32" value="0" outputs="value:1077.v" uid="1077" uid_parent="root"/>
-  <Node _name="Not Equal?" inputs="x:1043.o0,y:1077.v" outputs="x != y?:1078.o0" uid="1078" uid_parent="root"/>
-  <Node _name="And" inputs="x:1078.o0,y:1076.o0" outputs="x .and. y?:1079.o0" uid="1079" uid_parent="root"/>
-  <Node _name="Select" inputs="s:1079.o0,t:1004.o1,f:1044.o0" outputs="s? t\3Af:1080.o0" uid="1080" uid_parent="root"/>
-  <Constant type="int32" value="10" outputs="value:1081.v" uid="1081" uid_parent="root"/>
-  <Node _name="Quotient &amp; Remainder" inputs="x:1080.o0,y:1081.v" outputs="x-y*floor(x/y):1082.o0,floor(x/y):1082.o1" uid="1082" uid_parent="root"/>
-  <Constant type="int32" value="16" outputs="value:1083.v" uid="1083" uid_parent="root"/>
-  <Node _name="Add" inputs="x:1082.o1,y:1083.v" outputs="x+y:1084.o0" uid="1084" uid_parent="root"/>
-  <Constant type="int32" value="8" outputs="value:1085.v" uid="1085" uid_parent="root"/>
-  <Node _name="Add" inputs="x:1082.o1,y:1085.v" outputs="x+y:1086.o0" uid="1086" uid_parent="root"/>
-  <Constant type="int32" value="23" outputs="value:1087.v" uid="1087" uid_parent="root"/>
-  <Node _name="Add" inputs="x:1082.o1,y:1087.v" outputs="x+y:1088.o0" uid="1088" uid_parent="root"/>
-  <Constant type="int32" value="32" outputs="value:1089.v" uid="1089" uid_parent="root"/>
-  <Node _name="Quotient &amp; Remainder" inputs="x:1084.o0,y:1089.v" outputs="x-y*floor(x/y):1090.o0,floor(x/y):1090.o1" uid="1090" uid_parent="root"/>
-  <Constant type="int32" value="320" outputs="value:1091.v" uid="1091" uid_parent="root"/>
-  <Node _name="Multiply" inputs="x:1090.o1,y:1091.v" outputs="x*y:1092.o0" uid="1092" uid_parent="root"/>
-  <Call target="Tile_Read.vi" inputs="Tiles:1004.o0,X:1086.o0,Y:1015.o0,error in:1070.o1" outputs="Tile:1093.o0,error out:1093.o1" uid="1093" uid_parent="root"/>
-  <Node _name="To Long Integer" inputs="number:1093.o0" outputs="32bit integer:1094.o0" uid="1094" uid_parent="root"/>
-  <Call target="Tile_Read.vi" inputs="Tiles:1004.o0,X:1088.o0,Y:1015.o0,error in:1093.o1" outputs="Tile:1095.o0,error out:1095.o1" uid="1095" uid_parent="root"/>
+  <Node _name="Select" inputs="s:1038.o0,t:1040.o0,f:1041.v" outputs="s? t\3Af:1042.o0" uid="1042" uid_parent="root"/>
+  <Constant type="int32" value="0" outputs="value:1043.v" uid="1043" uid_parent="root"/>
+  <Node _name="Select" inputs="s:1019.o0,t:1037.o0,f:1043.v" outputs="s? t\3Af:1044.o0" uid="1044" uid_parent="root"/>
+  <Node _name="Add" inputs="x:1042.o0,y:1044.o0" outputs="x+y:1045.o0" uid="1045" uid_parent="root"/>
+  <Node _name="Add" inputs="x:1004.o1,y:1045.o0" outputs="x+y:1046.o0" uid="1046" uid_parent="root"/>
+  <Constant type="int32" value="10" outputs="value:1047.v" uid="1047" uid_parent="root"/>
+  <Node _name="Quotient &amp; Remainder" inputs="x:1046.o0,y:1047.v" outputs="x-y*floor(x/y):1048.o0,floor(x/y):1048.o1" uid="1048" uid_parent="root"/>
+  <Constant type="int32" value="0" outputs="value:1049.v" uid="1049" uid_parent="root"/>
+  <Node _name="Greater?" inputs="x:1045.o0,y:1049.v" outputs="x &gt; y?:1050.o0" uid="1050" uid_parent="root"/>
+  <Constant type="int32" value="23" outputs="value:1051.v" uid="1051" uid_parent="root"/>
+  <Node _name="Add" inputs="x:1048.o1,y:1051.v" outputs="x+y:1052.o0" uid="1052" uid_parent="root"/>
+  <Constant type="int32" value="8" outputs="value:1053.v" uid="1053" uid_parent="root"/>
+  <Node _name="Add" inputs="x:1048.o1,y:1053.v" outputs="x+y:1054.o0" uid="1054" uid_parent="root"/>
+  <Node _name="Select" inputs="s:1050.o0,t:1052.o0,f:1054.o0" outputs="s? t\3Af:1055.o0" uid="1055" uid_parent="root"/>
+  <Constant type="int32" value="2" outputs="value:1056.v" uid="1056" uid_parent="root"/>
+  <Node _name="Add" inputs="x:1015.o1,y:1056.v" outputs="x+y:1057.o0" uid="1057" uid_parent="root"/>
+  <Call target="Tile_Read.vi" inputs="Tiles:1004.o0,X:1055.o0,Y:1057.o0,error in:1027.o1" outputs="Tile:1058.o0,error out:1058.o1" uid="1058" uid_parent="root"/>
+  <Node _name="To Long Integer" inputs="number:1058.o0" outputs="32bit integer:1059.o0" uid="1059" uid_parent="root"/>
+  <Node _name="Index Array" inputs="array:1007.v,index:1059.o0" outputs="element:1060.o0" uid="1060" uid_parent="root"/>
+  <Constant type="int32" value="0" outputs="value:1061.v" uid="1061" uid_parent="root"/>
+  <Node _name="Greater?" inputs="x:1060.o0,y:1061.v" outputs="x &gt; y?:1062.o0" uid="1062" uid_parent="root"/>
+  <Constant type="int32" value="24" outputs="value:1063.v" uid="1063" uid_parent="root"/>
+  <Node _name="Add" inputs="x:1015.o1,y:1063.v" outputs="x+y:1064.o0" uid="1064" uid_parent="root"/>
+  <Call target="Tile_Read.vi" inputs="Tiles:1004.o0,X:1055.o0,Y:1064.o0,error in:1058.o1" outputs="Tile:1065.o0,error out:1065.o1" uid="1065" uid_parent="root"/>
+  <Node _name="To Long Integer" inputs="number:1065.o0" outputs="32bit integer:1066.o0" uid="1066" uid_parent="root"/>
+  <Node _name="Index Array" inputs="array:1007.v,index:1066.o0" outputs="element:1067.o0" uid="1067" uid_parent="root"/>
+  <Constant type="int32" value="0" outputs="value:1068.v" uid="1068" uid_parent="root"/>
+  <Node _name="Greater?" inputs="x:1067.o0,y:1068.v" outputs="x &gt; y?:1069.o0" uid="1069" uid_parent="root"/>
+  <Constant type="int32" value="2" outputs="value:1070.v" uid="1070" uid_parent="root"/>
+  <Node _name="Subtract" inputs="x:1017.o0,y:1070.v" outputs="x-y:1071.o0" uid="1071" uid_parent="root"/>
+  <Call target="Tile_Read.vi" inputs="Tiles:1004.o0,X:1055.o0,Y:1071.o0,error in:1065.o1" outputs="Tile:1072.o0,error out:1072.o1" uid="1072" uid_parent="root"/>
+  <Node _name="To Long Integer" inputs="number:1072.o0" outputs="32bit integer:1073.o0" uid="1073" uid_parent="root"/>
+  <Node _name="Index Array" inputs="array:1007.v,index:1073.o0" outputs="element:1074.o0" uid="1074" uid_parent="root"/>
+  <Constant type="int32" value="0" outputs="value:1075.v" uid="1075" uid_parent="root"/>
+  <Node _name="Greater?" inputs="x:1074.o0,y:1075.v" outputs="x &gt; y?:1076.o0" uid="1076" uid_parent="root"/>
+  <Node _name="Or" inputs="x:1062.o0,y:1069.o0" outputs="x .or. y?:1077.o0" uid="1077" uid_parent="root"/>
+  <Node _name="Or" inputs="x:1077.o0,y:1076.o0" outputs="x .or. y?:1078.o0" uid="1078" uid_parent="root"/>
+  <Constant type="int32" value="0" outputs="value:1079.v" uid="1079" uid_parent="root"/>
+  <Node _name="Not Equal?" inputs="x:1045.o0,y:1079.v" outputs="x != y?:1080.o0" uid="1080" uid_parent="root"/>
+  <Node _name="And" inputs="x:1080.o0,y:1078.o0" outputs="x .and. y?:1081.o0" uid="1081" uid_parent="root"/>
+  <Node _name="Select" inputs="s:1081.o0,t:1004.o1,f:1046.o0" outputs="s? t\3Af:1082.o0" uid="1082" uid_parent="root"/>
+  <Constant type="int32" value="10" outputs="value:1083.v" uid="1083" uid_parent="root"/>
+  <Node _name="Quotient &amp; Remainder" inputs="x:1082.o0,y:1083.v" outputs="x-y*floor(x/y):1084.o0,floor(x/y):1084.o1" uid="1084" uid_parent="root"/>
+  <Constant type="int32" value="16" outputs="value:1085.v" uid="1085" uid_parent="root"/>
+  <Node _name="Add" inputs="x:1084.o1,y:1085.v" outputs="x+y:1086.o0" uid="1086" uid_parent="root"/>
+  <Constant type="int32" value="8" outputs="value:1087.v" uid="1087" uid_parent="root"/>
+  <Node _name="Add" inputs="x:1084.o1,y:1087.v" outputs="x+y:1088.o0" uid="1088" uid_parent="root"/>
+  <Constant type="int32" value="23" outputs="value:1089.v" uid="1089" uid_parent="root"/>
+  <Node _name="Add" inputs="x:1084.o1,y:1089.v" outputs="x+y:1090.o0" uid="1090" uid_parent="root"/>
+  <Constant type="int32" value="32" outputs="value:1091.v" uid="1091" uid_parent="root"/>
+  <Node _name="Quotient &amp; Remainder" inputs="x:1086.o0,y:1091.v" outputs="x-y*floor(x/y):1092.o0,floor(x/y):1092.o1" uid="1092" uid_parent="root"/>
+  <Constant type="int32" value="320" outputs="value:1093.v" uid="1093" uid_parent="root"/>
+  <Node _name="Multiply" inputs="x:1092.o1,y:1093.v" outputs="x*y:1094.o0" uid="1094" uid_parent="root"/>
+  <Call target="Tile_Read.vi" inputs="Tiles:1004.o0,X:1088.o0,Y:1017.o0,error in:1072.o1" outputs="Tile:1095.o0,error out:1095.o1" uid="1095" uid_parent="root"/>
   <Node _name="To Long Integer" inputs="number:1095.o0" outputs="32bit integer:1096.o0" uid="1096" uid_parent="root"/>
-  <Call target="Tile_Read.vi" inputs="Tiles:1004.o0,X:1084.o0,Y:1015.o0,error in:1095.o1" outputs="Tile:1097.o0,error out:1097.o1" uid="1097" uid_parent="root"/>
+  <Call target="Tile_Read.vi" inputs="Tiles:1004.o0,X:1090.o0,Y:1017.o0,error in:1095.o1" outputs="Tile:1097.o0,error out:1097.o1" uid="1097" uid_parent="root"/>
   <Node _name="To Long Integer" inputs="number:1097.o0" outputs="32bit integer:1098.o0" uid="1098" uid_parent="root"/>
-  <Node _name="Index Array" inputs="array:1005.v,index:1094.o0" outputs="element:1099.o0" uid="1099" uid_parent="root"/>
-  <Constant type="int32" value="0" outputs="value:1100.v" uid="1100" uid_parent="root"/>
-  <Node _name="Greater?" inputs="x:1099.o0,y:1100.v" outputs="x &gt; y?:1101.o0" uid="1101" uid_parent="root"/>
-  <Node _name="Index Array" inputs="array:1005.v,index:1096.o0" outputs="element:1102.o0" uid="1102" uid_parent="root"/>
-  <Constant type="int32" value="0" outputs="value:1103.v" uid="1103" uid_parent="root"/>
-  <Node _name="Greater?" inputs="x:1102.o0,y:1103.v" outputs="x &gt; y?:1104.o0" uid="1104" uid_parent="root"/>
-  <Node _name="Index Array" inputs="array:1006.v,index:1094.o0" outputs="element:1105.o0" uid="1105" uid_parent="root"/>
-  <Constant type="int32" value="0" outputs="value:1106.v" uid="1106" uid_parent="root"/>
-  <Node _name="Greater?" inputs="x:1105.o0,y:1106.v" outputs="x &gt; y?:1107.o0" uid="1107" uid_parent="root"/>
-  <Constant type="int32" value="3" outputs="value:1108.v" uid="1108" uid_parent="root"/>
-  <Node _name="Equal?" inputs="x:1094.o0,y:1108.v" outputs="x = y?:1109.o0" uid="1109" uid_parent="root"/>
-  <Node _name="And" inputs="x:1109.o0,y:1009.o0" outputs="x .and. y?:1110.o0" uid="1110" uid_parent="root"/>
-  <Node _name="Not" inputs="x:1110.o0" outputs=".not. x?:1111.o0" uid="1111" uid_parent="root"/>
-  <Node _name="And" inputs="x:1107.o0,y:1111.o0" outputs="x .and. y?:1112.o0" uid="1112" uid_parent="root"/>
-  <Node _name="Index Array" inputs="array:1006.v,index:1096.o0" outputs="element:1113.o0" uid="1113" uid_parent="root"/>
-  <Constant type="int32" value="0" outputs="value:1114.v" uid="1114" uid_parent="root"/>
-  <Node _name="Greater?" inputs="x:1113.o0,y:1114.v" outputs="x &gt; y?:1115.o0" uid="1115" uid_parent="root"/>
-  <Constant type="int32" value="3" outputs="value:1116.v" uid="1116" uid_parent="root"/>
-  <Node _name="Equal?" inputs="x:1096.o0,y:1116.v" outputs="x = y?:1117.o0" uid="1117" uid_parent="root"/>
-  <Node _name="And" inputs="x:1117.o0,y:1009.o0" outputs="x .and. y?:1118.o0" uid="1118" uid_parent="root"/>
-  <Node _name="Not" inputs="x:1118.o0" outputs=".not. x?:1119.o0" uid="1119" uid_parent="root"/>
-  <Node _name="And" inputs="x:1115.o0,y:1119.o0" outputs="x .and. y?:1120.o0" uid="1120" uid_parent="root"/>
-  <Node _name="Index Array" inputs="array:1007.v,index:1098.o0" outputs="element:1121.o0" uid="1121" uid_parent="root"/>
-  <Constant type="int32" value="0" outputs="value:1122.v" uid="1122" uid_parent="root"/>
-  <Node _name="Greater?" inputs="x:1121.o0,y:1122.v" outputs="x &gt; y?:1123.o0" uid="1123" uid_parent="root"/>
-  <Node _name="Or" inputs="x:1101.o0,y:1104.o0" outputs="x .or. y?:1124.o0" uid="1124" uid_parent="root"/>
-  <Node _name="Or" inputs="x:1124.o0,y:1112.o0" outputs="x .or. y?:1125.o0" uid="1125" uid_parent="root"/>
-  <Node _name="Or" inputs="x:1125.o0,y:1120.o0" outputs="x .or. y?:1126.o0" uid="1126" uid_parent="root"/>
-  <Node _name="Or" inputs="x:1126.o0,y:1123.o0" outputs="x .or. y?:1127.o0" uid="1127" uid_parent="root"/>
-  <Constant type="int32" value="-1" outputs="value:1128.v" uid="1128" uid_parent="root"/>
-  <Node _name="Equal?" inputs="x:1004.o7,y:1128.v" outputs="x = y?:1129.o0" uid="1129" uid_parent="root"/>
-  <Constant type="int32" value="2" outputs="value:1130.v" uid="1130" uid_parent="root"/>
-  <Node _name="Subtract" inputs="x:1015.o0,y:1130.v" outputs="x-y:1131.o0" uid="1131" uid_parent="root"/>
-  <Call target="Tile_Read.vi" inputs="Tiles:1004.o0,X:1084.o0,Y:1131.o0,error in:1097.o1" outputs="Tile:1132.o0,error out:1132.o1" uid="1132" uid_parent="root"/>
-  <Node _name="To Long Integer" inputs="number:1132.o0" outputs="32bit integer:1133.o0" uid="1133" uid_parent="root"/>
-  <Node _name="Index Array" inputs="array:1007.v,index:1133.o0" outputs="element:1134.o0" uid="1134" uid_parent="root"/>
-  <Constant type="int32" value="0" outputs="value:1135.v" uid="1135" uid_parent="root"/>
-  <Node _name="Greater?" inputs="x:1134.o0,y:1135.v" outputs="x &gt; y?:1136.o0" uid="1136" uid_parent="root"/>
-  <Node _name="And" inputs="x:1129.o0,y:1136.o0" outputs="x .and. y?:1137.o0" uid="1137" uid_parent="root"/>
-  <Constant type="int32" value="1" outputs="value:1138.v" uid="1138" uid_parent="root"/>
-  <Node _name="Equal?" inputs="x:1004.o7,y:1138.v" outputs="x = y?:1139.o0" uid="1139" uid_parent="root"/>
-  <Node _name="Index Array" inputs="array:1007.v,index:1098.o0" outputs="element:1140.o0" uid="1140" uid_parent="root"/>
-  <Constant type="int32" value="0" outputs="value:1141.v" uid="1141" uid_parent="root"/>
-  <Node _name="Greater?" inputs="x:1140.o0,y:1141.v" outputs="x &gt; y?:1142.o0" uid="1142" uid_parent="root"/>
-  <Node _name="And" inputs="x:1139.o0,y:1142.o0" outputs="x .and. y?:1143.o0" uid="1143" uid_parent="root"/>
-  <Node _name="Or" inputs="x:1137.o0,y:1143.o0" outputs="x .or. y?:1144.o0" uid="1144" uid_parent="root"/>
-  <Node _name="Not" inputs="x:1127.o0" outputs=".not. x?:1145.o0" uid="1145" uid_parent="root"/>
-  <Constant type="int32" value="24" outputs="value:1146.v" uid="1146" uid_parent="root"/>
-  <Node _name="Add" inputs="x:1013.o1,y:1146.v" outputs="x+y:1147.o0" uid="1147" uid_parent="root"/>
-  <Call target="Tile_Read.vi" inputs="Tiles:1004.o0,X:1084.o0,Y:1147.o0,error in:1132.o1" outputs="Tile:1148.o0,error out:1148.o1" uid="1148" uid_parent="root"/>
-  <Node _name="To Long Integer" inputs="number:1148.o0" outputs="32bit integer:1149.o0" uid="1149" uid_parent="root"/>
-  <Constant type="int32" value="5" outputs="value:1150.v" uid="1150" uid_parent="root"/>
-  <Node _name="Equal?" inputs="x:1149.o0,y:1150.v" outputs="x = y?:1151.o0" uid="1151" uid_parent="root"/>
-  <Node _name="And" inputs="x:1145.o0,y:1151.o0" outputs="x .and. y?:1152.o0" uid="1152" uid_parent="root"/>
-  <Constant type="int32" value="2" outputs="value:1153.v" uid="1153" uid_parent="root"/>
-  <Constant type="int32" value="1" outputs="value:1154.v" uid="1154" uid_parent="root"/>
-  <Constant type="int32" value="0" outputs="value:1155.v" uid="1155" uid_parent="root"/>
-  <Constant type="int32" value="3" outputs="value:1156.v" uid="1156" uid_parent="root"/>
-  <Constant type="int32" value="2" outputs="value:1157.v" uid="1157" uid_parent="root"/>
-  <Node _name="Select" inputs="s:1152.o0,t:1156.v,f:1157.v" outputs="s? t\3Af:1158.o0" uid="1158" uid_parent="root"/>
-  <Node _name="Select" inputs="s:1127.o0,t:1155.v,f:1158.o0" outputs="s? t\3Af:1159.o0" uid="1159" uid_parent="root"/>
-  <Node _name="Select" inputs="s:1144.o0,t:1154.v,f:1159.o0" outputs="s? t\3Af:1160.o0" uid="1160" uid_parent="root"/>
-  <Node _name="Select" inputs="s:1002.v,t:1153.v,f:1160.o0" outputs="s? t\3Af:1161.o0" uid="1161" uid_parent="root"/>
-  <Node _name="Or" inputs="x:1144.o0,y:1152.o0" outputs="x .or. y?:1162.o0" uid="1162" uid_parent="root"/>
-  <Node _name="And" inputs="x:1022.o0,y:1162.o0" outputs="x .and. y?:1163.o0" uid="1163" uid_parent="root"/>
-  <Node _name="Select" inputs="s:1163.o0,t:1092.o0,f:1080.o0" outputs="s? t\3Af:1164.o0" uid="1164" uid_parent="root"/>
-  <Node _name="And" inputs="x:1022.o0,y:1144.o0" outputs="x .and. y?:1165.o0" uid="1165" uid_parent="root"/>
-  <Constant type="int32" value="30" outputs="value:1166.v" uid="1166" uid_parent="root"/>
-  <Node _name="Multiply" inputs="x:1004.o7,y:1166.v" outputs="x*y:1167.o0" uid="1167" uid_parent="root"/>
-  <Node _name="Add" inputs="x:1004.o2,y:1167.o0" outputs="x+y:1168.o0" uid="1168" uid_parent="root"/>
-  <Node _name="Select" inputs="s:1165.o0,t:1168.o0,f:1004.o2" outputs="s? t\3Af:1169.o0" uid="1169" uid_parent="root"/>
-  <Constant type="int32" value="-77" outputs="value:1170.v" uid="1170" uid_parent="root"/>
-  <Constant type="int32" value="0" outputs="value:1171.v" uid="1171" uid_parent="root"/>
-  <Node _name="Select" inputs="s:1002.v,t:1170.v,f:1171.v" outputs="s? t\3Af:1172.o0" uid="1172" uid_parent="root"/>
-  <Constant type="int32" value="4" outputs="value:1173.v" uid="1173" uid_parent="root"/>
-  <Node _name="Add" inputs="x:1004.o3,y:1173.v" outputs="x+y:1174.o0" uid="1174" uid_parent="root"/>
-  <Constant type="int32" value="100" outputs="value:1175.v" uid="1175" uid_parent="root"/>
-  <Node _name="Greater?" inputs="x:1174.o0,y:1175.v" outputs="x &gt; y?:1176.o0" uid="1176" uid_parent="root"/>
-  <Constant type="int32" value="100" outputs="value:1177.v" uid="1177" uid_parent="root"/>
-  <Node _name="Select" inputs="s:1176.o0,t:1177.v,f:1174.o0" outputs="s? t\3Af:1178.o0" uid="1178" uid_parent="root"/>
-  <Node _name="Add" inputs="x:1004.o2,y:1178.o0" outputs="x+y:1179.o0" uid="1179" uid_parent="root"/>
-  <Constant type="int32" value="10" outputs="value:1180.v" uid="1180" uid_parent="root"/>
-  <Node _name="Quotient &amp; Remainder" inputs="x:1179.o0,y:1180.v" outputs="x-y*floor(x/y):1181.o0,floor(x/y):1181.o1" uid="1181" uid_parent="root"/>
-  <Constant type="int32" value="48" outputs="value:1182.v" uid="1182" uid_parent="root"/>
-  <Node _name="Add" inputs="x:1181.o1,y:1182.v" outputs="x+y:1183.o0" uid="1183" uid_parent="root"/>
-  <Constant type="int32" value="0" outputs="value:1184.v" uid="1184" uid_parent="root"/>
-  <Node _name="Less?" inputs="x:1178.o0,y:1184.v" outputs="x &lt; y?:1185.o0" uid="1185" uid_parent="root"/>
-  <Call target="Tile_Read.vi" inputs="Tiles:1004.o0,X:1086.o0,Y:1181.o1,error in:1148.o1" outputs="Tile:1186.o0,error out:1186.o1" uid="1186" uid_parent="root"/>
-  <Node _name="To Long Integer" inputs="number:1186.o0" outputs="32bit integer:1187.o0" uid="1187" uid_parent="root"/>
-  <Node _name="Index Array" inputs="array:1005.v,index:1187.o0" outputs="element:1188.o0" uid="1188" uid_parent="root"/>
-  <Constant type="int32" value="0" outputs="value:1189.v" uid="1189" uid_parent="root"/>
-  <Node _name="Greater?" inputs="x:1188.o0,y:1189.v" outputs="x &gt; y?:1190.o0" uid="1190" uid_parent="root"/>
-  <Call target="Tile_Read.vi" inputs="Tiles:1004.o0,X:1088.o0,Y:1181.o1,error in:1186.o1" outputs="Tile:1191.o0,error out:1191.o1" uid="1191" uid_parent="root"/>
-  <Node _name="To Long Integer" inputs="number:1191.o0" outputs="32bit integer:1192.o0" uid="1192" uid_parent="root"/>
-  <Node _name="Index Array" inputs="array:1005.v,index:1192.o0" outputs="element:1193.o0" uid="1193" uid_parent="root"/>
-  <Constant type="int32" value="0" outputs="value:1194.v" uid="1194" uid_parent="root"/>
-  <Node _name="Greater?" inputs="x:1193.o0,y:1194.v" outputs="x &gt; y?:1195.o0" uid="1195" uid_parent="root"/>
-  <Node _name="Or" inputs="x:1190.o0,y:1195.o0" outputs="x .or. y?:1196.o0" uid="1196" uid_parent="root"/>
-  <Node _name="And" inputs="x:1185.o0,y:1196.o0" outputs="x .and. y?:1197.o0" uid="1197" uid_parent="root"/>
-  <Constant type="int32" value="32" outputs="value:1198.v" uid="1198" uid_parent="root"/>
-  <Node _name="Quotient &amp; Remainder" inputs="x:1183.o0,y:1198.v" outputs="x-y*floor(x/y):1199.o0,floor(x/y):1199.o1" uid="1199" uid_parent="root"/>
-  <Constant type="int32" value="32" outputs="value:1200.v" uid="1200" uid_parent="root"/>
-  <Node _name="Multiply" inputs="x:1199.o1,y:1200.v" outputs="x*y:1201.o0" uid="1201" uid_parent="root"/>
-  <Node _name="Less Or Equal?" inputs="x:1015.o0,y:1201.o0" outputs="x &lt;= y?:1202.o0" uid="1202" uid_parent="root"/>
-  <Node _name="Greater Or Equal?" inputs="x:1183.o0,y:1201.o0" outputs="x &gt;= y?:1203.o0" uid="1203" uid_parent="root"/>
-  <Node _name="And" inputs="x:1202.o0,y:1203.o0" outputs="x .and. y?:1204.o0" uid="1204" uid_parent="root"/>
-  <Call target="Tile_Read.vi" inputs="Tiles:1004.o0,X:1086.o0,Y:1183.o0,error in:1191.o1" outputs="Tile:1205.o0,error out:1205.o1" uid="1205" uid_parent="root"/>
-  <Node _name="To Long Integer" inputs="number:1205.o0" outputs="32bit integer:1206.o0" uid="1206" uid_parent="root"/>
-  <Call target="Tile_Read.vi" inputs="Tiles:1004.o0,X:1088.o0,Y:1183.o0,error in:1205.o1" outputs="Tile:1207.o0,error out:1207.o1" uid="1207" uid_parent="root"/>
-  <Node _name="To Long Integer" inputs="number:1207.o0" outputs="32bit integer:1208.o0" uid="1208" uid_parent="root"/>
-  <Call target="Tile_Read.vi" inputs="Tiles:1004.o0,X:1084.o0,Y:1183.o0,error in:1207.o1" outputs="Tile:1209.o0,error out:1209.o1" uid="1209" uid_parent="root"/>
-  <Node _name="To Long Integer" inputs="number:1209.o0" outputs="32bit integer:1210.o0" uid="1210" uid_parent="root"/>
-  <Node _name="Index Array" inputs="array:1007.v,index:1210.o0" outputs="element:1211.o0" uid="1211" uid_parent="root"/>
-  <Constant type="int32" value="0" outputs="value:1212.v" uid="1212" uid_parent="root"/>
-  <Node _name="Greater?" inputs="x:1211.o0,y:1212.v" outputs="x &gt; y?:1213.o0" uid="1213" uid_parent="root"/>
-  <Constant type="int32" value="32" outputs="value:1214.v" uid="1214" uid_parent="root"/>
-  <Node _name="Subtract" inputs="x:1183.o0,y:1214.v" outputs="x-y:1215.o0" uid="1215" uid_parent="root"/>
-  <Call target="Tile_Read.vi" inputs="Tiles:1004.o0,X:1084.o0,Y:1215.o0,error in:1209.o1" outputs="Tile:1216.o0,error out:1216.o1" uid="1216" uid_parent="root"/>
-  <Node _name="To Long Integer" inputs="number:1216.o0" outputs="32bit integer:1217.o0" uid="1217" uid_parent="root"/>
-  <Node _name="Index Array" inputs="array:1007.v,index:1217.o0" outputs="element:1218.o0" uid="1218" uid_parent="root"/>
-  <Constant type="int32" value="0" outputs="value:1219.v" uid="1219" uid_parent="root"/>
-  <Node _name="Greater?" inputs="x:1218.o0,y:1219.v" outputs="x &gt; y?:1220.o0" uid="1220" uid_parent="root"/>
-  <Node _name="Not" inputs="x:1220.o0" outputs=".not. x?:1221.o0" uid="1221" uid_parent="root"/>
-  <Node _name="And" inputs="x:1213.o0,y:1221.o0" outputs="x .and. y?:1222.o0" uid="1222" uid_parent="root"/>
-  <Node _name="Not" inputs="x:1185.o0" outputs=".not. x?:1223.o0" uid="1223" uid_parent="root"/>
-  <Node _name="Index Array" inputs="array:1005.v,index:1206.o0" outputs="element:1224.o0" uid="1224" uid_parent="root"/>
-  <Constant type="int32" value="0" outputs="value:1225.v" uid="1225" uid_parent="root"/>
-  <Node _name="Greater?" inputs="x:1224.o0,y:1225.v" outputs="x &gt; y?:1226.o0" uid="1226" uid_parent="root"/>
-  <Node _name="Index Array" inputs="array:1005.v,index:1208.o0" outputs="element:1227.o0" uid="1227" uid_parent="root"/>
+  <Call target="Tile_Read.vi" inputs="Tiles:1004.o0,X:1086.o0,Y:1017.o0,error in:1097.o1" outputs="Tile:1099.o0,error out:1099.o1" uid="1099" uid_parent="root"/>
+  <Node _name="To Long Integer" inputs="number:1099.o0" outputs="32bit integer:1100.o0" uid="1100" uid_parent="root"/>
+  <Node _name="Index Array" inputs="array:1007.v,index:1096.o0" outputs="element:1101.o0" uid="1101" uid_parent="root"/>
+  <Constant type="int32" value="0" outputs="value:1102.v" uid="1102" uid_parent="root"/>
+  <Node _name="Greater?" inputs="x:1101.o0,y:1102.v" outputs="x &gt; y?:1103.o0" uid="1103" uid_parent="root"/>
+  <Node _name="Index Array" inputs="array:1007.v,index:1098.o0" outputs="element:1104.o0" uid="1104" uid_parent="root"/>
+  <Constant type="int32" value="0" outputs="value:1105.v" uid="1105" uid_parent="root"/>
+  <Node _name="Greater?" inputs="x:1104.o0,y:1105.v" outputs="x &gt; y?:1106.o0" uid="1106" uid_parent="root"/>
+  <Node _name="Index Array" inputs="array:1008.v,index:1096.o0" outputs="element:1107.o0" uid="1107" uid_parent="root"/>
+  <Constant type="int32" value="0" outputs="value:1108.v" uid="1108" uid_parent="root"/>
+  <Node _name="Greater?" inputs="x:1107.o0,y:1108.v" outputs="x &gt; y?:1109.o0" uid="1109" uid_parent="root"/>
+  <Constant type="int32" value="3" outputs="value:1110.v" uid="1110" uid_parent="root"/>
+  <Node _name="Equal?" inputs="x:1096.o0,y:1110.v" outputs="x = y?:1111.o0" uid="1111" uid_parent="root"/>
+  <Node _name="And" inputs="x:1111.o0,y:1011.o0" outputs="x .and. y?:1112.o0" uid="1112" uid_parent="root"/>
+  <Node _name="Not" inputs="x:1112.o0" outputs=".not. x?:1113.o0" uid="1113" uid_parent="root"/>
+  <Node _name="And" inputs="x:1109.o0,y:1113.o0" outputs="x .and. y?:1114.o0" uid="1114" uid_parent="root"/>
+  <Node _name="Index Array" inputs="array:1008.v,index:1098.o0" outputs="element:1115.o0" uid="1115" uid_parent="root"/>
+  <Constant type="int32" value="0" outputs="value:1116.v" uid="1116" uid_parent="root"/>
+  <Node _name="Greater?" inputs="x:1115.o0,y:1116.v" outputs="x &gt; y?:1117.o0" uid="1117" uid_parent="root"/>
+  <Constant type="int32" value="3" outputs="value:1118.v" uid="1118" uid_parent="root"/>
+  <Node _name="Equal?" inputs="x:1098.o0,y:1118.v" outputs="x = y?:1119.o0" uid="1119" uid_parent="root"/>
+  <Node _name="And" inputs="x:1119.o0,y:1011.o0" outputs="x .and. y?:1120.o0" uid="1120" uid_parent="root"/>
+  <Node _name="Not" inputs="x:1120.o0" outputs=".not. x?:1121.o0" uid="1121" uid_parent="root"/>
+  <Node _name="And" inputs="x:1117.o0,y:1121.o0" outputs="x .and. y?:1122.o0" uid="1122" uid_parent="root"/>
+  <Node _name="Index Array" inputs="array:1009.v,index:1100.o0" outputs="element:1123.o0" uid="1123" uid_parent="root"/>
+  <Constant type="int32" value="0" outputs="value:1124.v" uid="1124" uid_parent="root"/>
+  <Node _name="Greater?" inputs="x:1123.o0,y:1124.v" outputs="x &gt; y?:1125.o0" uid="1125" uid_parent="root"/>
+  <Node _name="Or" inputs="x:1103.o0,y:1106.o0" outputs="x .or. y?:1126.o0" uid="1126" uid_parent="root"/>
+  <Node _name="Or" inputs="x:1126.o0,y:1114.o0" outputs="x .or. y?:1127.o0" uid="1127" uid_parent="root"/>
+  <Node _name="Or" inputs="x:1127.o0,y:1122.o0" outputs="x .or. y?:1128.o0" uid="1128" uid_parent="root"/>
+  <Node _name="Or" inputs="x:1128.o0,y:1125.o0" outputs="x .or. y?:1129.o0" uid="1129" uid_parent="root"/>
+  <Constant type="int32" value="-1" outputs="value:1130.v" uid="1130" uid_parent="root"/>
+  <Node _name="Equal?" inputs="x:1004.o7,y:1130.v" outputs="x = y?:1131.o0" uid="1131" uid_parent="root"/>
+  <Constant type="int32" value="2" outputs="value:1132.v" uid="1132" uid_parent="root"/>
+  <Node _name="Subtract" inputs="x:1017.o0,y:1132.v" outputs="x-y:1133.o0" uid="1133" uid_parent="root"/>
+  <Call target="Tile_Read.vi" inputs="Tiles:1004.o0,X:1086.o0,Y:1133.o0,error in:1099.o1" outputs="Tile:1134.o0,error out:1134.o1" uid="1134" uid_parent="root"/>
+  <Node _name="To Long Integer" inputs="number:1134.o0" outputs="32bit integer:1135.o0" uid="1135" uid_parent="root"/>
+  <Node _name="Index Array" inputs="array:1009.v,index:1135.o0" outputs="element:1136.o0" uid="1136" uid_parent="root"/>
+  <Constant type="int32" value="0" outputs="value:1137.v" uid="1137" uid_parent="root"/>
+  <Node _name="Greater?" inputs="x:1136.o0,y:1137.v" outputs="x &gt; y?:1138.o0" uid="1138" uid_parent="root"/>
+  <Node _name="And" inputs="x:1131.o0,y:1138.o0" outputs="x .and. y?:1139.o0" uid="1139" uid_parent="root"/>
+  <Constant type="int32" value="1" outputs="value:1140.v" uid="1140" uid_parent="root"/>
+  <Node _name="Equal?" inputs="x:1004.o7,y:1140.v" outputs="x = y?:1141.o0" uid="1141" uid_parent="root"/>
+  <Node _name="Index Array" inputs="array:1009.v,index:1100.o0" outputs="element:1142.o0" uid="1142" uid_parent="root"/>
+  <Constant type="int32" value="0" outputs="value:1143.v" uid="1143" uid_parent="root"/>
+  <Node _name="Greater?" inputs="x:1142.o0,y:1143.v" outputs="x &gt; y?:1144.o0" uid="1144" uid_parent="root"/>
+  <Node _name="And" inputs="x:1141.o0,y:1144.o0" outputs="x .and. y?:1145.o0" uid="1145" uid_parent="root"/>
+  <Node _name="Or" inputs="x:1139.o0,y:1145.o0" outputs="x .or. y?:1146.o0" uid="1146" uid_parent="root"/>
+  <Node _name="Not" inputs="x:1129.o0" outputs=".not. x?:1147.o0" uid="1147" uid_parent="root"/>
+  <Constant type="int32" value="24" outputs="value:1148.v" uid="1148" uid_parent="root"/>
+  <Node _name="Add" inputs="x:1015.o1,y:1148.v" outputs="x+y:1149.o0" uid="1149" uid_parent="root"/>
+  <Call target="Tile_Read.vi" inputs="Tiles:1004.o0,X:1086.o0,Y:1149.o0,error in:1134.o1" outputs="Tile:1150.o0,error out:1150.o1" uid="1150" uid_parent="root"/>
+  <Node _name="To Long Integer" inputs="number:1150.o0" outputs="32bit integer:1151.o0" uid="1151" uid_parent="root"/>
+  <Constant type="int32" value="5" outputs="value:1152.v" uid="1152" uid_parent="root"/>
+  <Node _name="Equal?" inputs="x:1151.o0,y:1152.v" outputs="x = y?:1153.o0" uid="1153" uid_parent="root"/>
+  <Node _name="And" inputs="x:1147.o0,y:1153.o0" outputs="x .and. y?:1154.o0" uid="1154" uid_parent="root"/>
+  <Constant type="int32" value="2" outputs="value:1155.v" uid="1155" uid_parent="root"/>
+  <Constant type="int32" value="1" outputs="value:1156.v" uid="1156" uid_parent="root"/>
+  <Constant type="int32" value="0" outputs="value:1157.v" uid="1157" uid_parent="root"/>
+  <Constant type="int32" value="3" outputs="value:1158.v" uid="1158" uid_parent="root"/>
+  <Constant type="int32" value="2" outputs="value:1159.v" uid="1159" uid_parent="root"/>
+  <Node _name="Select" inputs="s:1154.o0,t:1158.v,f:1159.v" outputs="s? t\3Af:1160.o0" uid="1160" uid_parent="root"/>
+  <Node _name="Select" inputs="s:1129.o0,t:1157.v,f:1160.o0" outputs="s? t\3Af:1161.o0" uid="1161" uid_parent="root"/>
+  <Node _name="Select" inputs="s:1146.o0,t:1156.v,f:1161.o0" outputs="s? t\3Af:1162.o0" uid="1162" uid_parent="root"/>
+  <Node _name="Select" inputs="s:1002.v,t:1155.v,f:1162.o0" outputs="s? t\3Af:1163.o0" uid="1163" uid_parent="root"/>
+  <Node _name="Or" inputs="x:1146.o0,y:1154.o0" outputs="x .or. y?:1164.o0" uid="1164" uid_parent="root"/>
+  <Node _name="And" inputs="x:1024.o0,y:1164.o0" outputs="x .and. y?:1165.o0" uid="1165" uid_parent="root"/>
+  <Node _name="Select" inputs="s:1165.o0,t:1094.o0,f:1082.o0" outputs="s? t\3Af:1166.o0" uid="1166" uid_parent="root"/>
+  <Node _name="And" inputs="x:1024.o0,y:1146.o0" outputs="x .and. y?:1167.o0" uid="1167" uid_parent="root"/>
+  <Constant type="int32" value="30" outputs="value:1168.v" uid="1168" uid_parent="root"/>
+  <Node _name="Multiply" inputs="x:1004.o7,y:1168.v" outputs="x*y:1169.o0" uid="1169" uid_parent="root"/>
+  <Node _name="Add" inputs="x:1004.o2,y:1169.o0" outputs="x+y:1170.o0" uid="1170" uid_parent="root"/>
+  <Node _name="Select" inputs="s:1167.o0,t:1170.o0,f:1004.o2" outputs="s? t\3Af:1171.o0" uid="1171" uid_parent="root"/>
+  <Constant type="int32" value="-77" outputs="value:1172.v" uid="1172" uid_parent="root"/>
+  <Constant type="int32" value="0" outputs="value:1173.v" uid="1173" uid_parent="root"/>
+  <Node _name="Select" inputs="s:1002.v,t:1172.v,f:1173.v" outputs="s? t\3Af:1174.o0" uid="1174" uid_parent="root"/>
+  <Constant type="int32" value="4" outputs="value:1175.v" uid="1175" uid_parent="root"/>
+  <Node _name="Add" inputs="x:1004.o3,y:1175.v" outputs="x+y:1176.o0" uid="1176" uid_parent="root"/>
+  <Constant type="int32" value="12" outputs="value:1177.v" uid="1177" uid_parent="root"/>
+  <Constant type="int32" value="100" outputs="value:1178.v" uid="1178" uid_parent="root"/>
+  <Node _name="Select" inputs="s:1006.o0,t:1177.v,f:1178.v" outputs="s? t\3Af:1179.o0" uid="1179" uid_parent="root"/>
+  <Node _name="Greater?" inputs="x:1176.o0,y:1179.o0" outputs="x &gt; y?:1180.o0" uid="1180" uid_parent="root"/>
+  <Node _name="Select" inputs="s:1180.o0,t:1179.o0,f:1176.o0" outputs="s? t\3Af:1181.o0" uid="1181" uid_parent="root"/>
+  <Node _name="Add" inputs="x:1004.o2,y:1181.o0" outputs="x+y:1182.o0" uid="1182" uid_parent="root"/>
+  <Constant type="int32" value="10" outputs="value:1183.v" uid="1183" uid_parent="root"/>
+  <Node _name="Quotient &amp; Remainder" inputs="x:1182.o0,y:1183.v" outputs="x-y*floor(x/y):1184.o0,floor(x/y):1184.o1" uid="1184" uid_parent="root"/>
+  <Constant type="int32" value="48" outputs="value:1185.v" uid="1185" uid_parent="root"/>
+  <Node _name="Add" inputs="x:1184.o1,y:1185.v" outputs="x+y:1186.o0" uid="1186" uid_parent="root"/>
+  <Constant type="int32" value="0" outputs="value:1187.v" uid="1187" uid_parent="root"/>
+  <Node _name="Less?" inputs="x:1181.o0,y:1187.v" outputs="x &lt; y?:1188.o0" uid="1188" uid_parent="root"/>
+  <Call target="Tile_Read.vi" inputs="Tiles:1004.o0,X:1088.o0,Y:1184.o1,error in:1150.o1" outputs="Tile:1189.o0,error out:1189.o1" uid="1189" uid_parent="root"/>
+  <Node _name="To Long Integer" inputs="number:1189.o0" outputs="32bit integer:1190.o0" uid="1190" uid_parent="root"/>
+  <Node _name="Index Array" inputs="array:1007.v,index:1190.o0" outputs="element:1191.o0" uid="1191" uid_parent="root"/>
+  <Constant type="int32" value="0" outputs="value:1192.v" uid="1192" uid_parent="root"/>
+  <Node _name="Greater?" inputs="x:1191.o0,y:1192.v" outputs="x &gt; y?:1193.o0" uid="1193" uid_parent="root"/>
+  <Call target="Tile_Read.vi" inputs="Tiles:1004.o0,X:1090.o0,Y:1184.o1,error in:1189.o1" outputs="Tile:1194.o0,error out:1194.o1" uid="1194" uid_parent="root"/>
+  <Node _name="To Long Integer" inputs="number:1194.o0" outputs="32bit integer:1195.o0" uid="1195" uid_parent="root"/>
+  <Node _name="Index Array" inputs="array:1007.v,index:1195.o0" outputs="element:1196.o0" uid="1196" uid_parent="root"/>
+  <Constant type="int32" value="0" outputs="value:1197.v" uid="1197" uid_parent="root"/>
+  <Node _name="Greater?" inputs="x:1196.o0,y:1197.v" outputs="x &gt; y?:1198.o0" uid="1198" uid_parent="root"/>
+  <Node _name="Or" inputs="x:1193.o0,y:1198.o0" outputs="x .or. y?:1199.o0" uid="1199" uid_parent="root"/>
+  <Node _name="And" inputs="x:1188.o0,y:1199.o0" outputs="x .and. y?:1200.o0" uid="1200" uid_parent="root"/>
+  <Constant type="int32" value="32" outputs="value:1201.v" uid="1201" uid_parent="root"/>
+  <Node _name="Quotient &amp; Remainder" inputs="x:1186.o0,y:1201.v" outputs="x-y*floor(x/y):1202.o0,floor(x/y):1202.o1" uid="1202" uid_parent="root"/>
+  <Constant type="int32" value="32" outputs="value:1203.v" uid="1203" uid_parent="root"/>
+  <Node _name="Multiply" inputs="x:1202.o1,y:1203.v" outputs="x*y:1204.o0" uid="1204" uid_parent="root"/>
+  <Node _name="Less Or Equal?" inputs="x:1017.o0,y:1204.o0" outputs="x &lt;= y?:1205.o0" uid="1205" uid_parent="root"/>
+  <Node _name="Greater Or Equal?" inputs="x:1186.o0,y:1204.o0" outputs="x &gt;= y?:1206.o0" uid="1206" uid_parent="root"/>
+  <Node _name="And" inputs="x:1205.o0,y:1206.o0" outputs="x .and. y?:1207.o0" uid="1207" uid_parent="root"/>
+  <Call target="Tile_Read.vi" inputs="Tiles:1004.o0,X:1088.o0,Y:1186.o0,error in:1194.o1" outputs="Tile:1208.o0,error out:1208.o1" uid="1208" uid_parent="root"/>
+  <Node _name="To Long Integer" inputs="number:1208.o0" outputs="32bit integer:1209.o0" uid="1209" uid_parent="root"/>
+  <Call target="Tile_Read.vi" inputs="Tiles:1004.o0,X:1090.o0,Y:1186.o0,error in:1208.o1" outputs="Tile:1210.o0,error out:1210.o1" uid="1210" uid_parent="root"/>
+  <Node _name="To Long Integer" inputs="number:1210.o0" outputs="32bit integer:1211.o0" uid="1211" uid_parent="root"/>
+  <Call target="Tile_Read.vi" inputs="Tiles:1004.o0,X:1086.o0,Y:1186.o0,error in:1210.o1" outputs="Tile:1212.o0,error out:1212.o1" uid="1212" uid_parent="root"/>
+  <Node _name="To Long Integer" inputs="number:1212.o0" outputs="32bit integer:1213.o0" uid="1213" uid_parent="root"/>
+  <Node _name="Index Array" inputs="array:1009.v,index:1213.o0" outputs="element:1214.o0" uid="1214" uid_parent="root"/>
+  <Constant type="int32" value="0" outputs="value:1215.v" uid="1215" uid_parent="root"/>
+  <Node _name="Greater?" inputs="x:1214.o0,y:1215.v" outputs="x &gt; y?:1216.o0" uid="1216" uid_parent="root"/>
+  <Constant type="int32" value="32" outputs="value:1217.v" uid="1217" uid_parent="root"/>
+  <Node _name="Subtract" inputs="x:1186.o0,y:1217.v" outputs="x-y:1218.o0" uid="1218" uid_parent="root"/>
+  <Call target="Tile_Read.vi" inputs="Tiles:1004.o0,X:1086.o0,Y:1218.o0,error in:1212.o1" outputs="Tile:1219.o0,error out:1219.o1" uid="1219" uid_parent="root"/>
+  <Node _name="To Long Integer" inputs="number:1219.o0" outputs="32bit integer:1220.o0" uid="1220" uid_parent="root"/>
+  <Node _name="Index Array" inputs="array:1009.v,index:1220.o0" outputs="element:1221.o0" uid="1221" uid_parent="root"/>
+  <Constant type="int32" value="0" outputs="value:1222.v" uid="1222" uid_parent="root"/>
+  <Node _name="Greater?" inputs="x:1221.o0,y:1222.v" outputs="x &gt; y?:1223.o0" uid="1223" uid_parent="root"/>
+  <Node _name="Not" inputs="x:1223.o0" outputs=".not. x?:1224.o0" uid="1224" uid_parent="root"/>
+  <Node _name="And" inputs="x:1216.o0,y:1224.o0" outputs="x .and. y?:1225.o0" uid="1225" uid_parent="root"/>
+  <Node _name="Not" inputs="x:1188.o0" outputs=".not. x?:1226.o0" uid="1226" uid_parent="root"/>
+  <Node _name="Index Array" inputs="array:1007.v,index:1209.o0" outputs="element:1227.o0" uid="1227" uid_parent="root"/>
   <Constant type="int32" value="0" outputs="value:1228.v" uid="1228" uid_parent="root"/>
   <Node _name="Greater?" inputs="x:1227.o0,y:1228.v" outputs="x &gt; y?:1229.o0" uid="1229" uid_parent="root"/>
-  <Node _name="Index Array" inputs="array:1006.v,index:1206.o0" outputs="element:1230.o0" uid="1230" uid_parent="root"/>
+  <Node _name="Index Array" inputs="array:1007.v,index:1211.o0" outputs="element:1230.o0" uid="1230" uid_parent="root"/>
   <Constant type="int32" value="0" outputs="value:1231.v" uid="1231" uid_parent="root"/>
   <Node _name="Greater?" inputs="x:1230.o0,y:1231.v" outputs="x &gt; y?:1232.o0" uid="1232" uid_parent="root"/>
-  <Constant type="int32" value="3" outputs="value:1233.v" uid="1233" uid_parent="root"/>
-  <Node _name="Equal?" inputs="x:1206.o0,y:1233.v" outputs="x = y?:1234.o0" uid="1234" uid_parent="root"/>
-  <Node _name="And" inputs="x:1234.o0,y:1009.o0" outputs="x .and. y?:1235.o0" uid="1235" uid_parent="root"/>
-  <Node _name="Not" inputs="x:1235.o0" outputs=".not. x?:1236.o0" uid="1236" uid_parent="root"/>
-  <Node _name="And" inputs="x:1232.o0,y:1236.o0" outputs="x .and. y?:1237.o0" uid="1237" uid_parent="root"/>
-  <Node _name="Index Array" inputs="array:1006.v,index:1208.o0" outputs="element:1238.o0" uid="1238" uid_parent="root"/>
-  <Constant type="int32" value="0" outputs="value:1239.v" uid="1239" uid_parent="root"/>
-  <Node _name="Greater?" inputs="x:1238.o0,y:1239.v" outputs="x &gt; y?:1240.o0" uid="1240" uid_parent="root"/>
-  <Constant type="int32" value="3" outputs="value:1241.v" uid="1241" uid_parent="root"/>
-  <Node _name="Equal?" inputs="x:1208.o0,y:1241.v" outputs="x = y?:1242.o0" uid="1242" uid_parent="root"/>
-  <Node _name="And" inputs="x:1242.o0,y:1009.o0" outputs="x .and. y?:1243.o0" uid="1243" uid_parent="root"/>
-  <Node _name="Not" inputs="x:1243.o0" outputs=".not. x?:1244.o0" uid="1244" uid_parent="root"/>
-  <Node _name="And" inputs="x:1240.o0,y:1244.o0" outputs="x .and. y?:1245.o0" uid="1245" uid_parent="root"/>
-  <Node _name="Or" inputs="x:1226.o0,y:1229.o0" outputs="x .or. y?:1246.o0" uid="1246" uid_parent="root"/>
-  <Node _name="Or" inputs="x:1246.o0,y:1237.o0" outputs="x .or. y?:1247.o0" uid="1247" uid_parent="root"/>
-  <Node _name="Or" inputs="x:1247.o0,y:1245.o0" outputs="x .or. y?:1248.o0" uid="1248" uid_parent="root"/>
-  <Node _name="Or" inputs="x:1248.o0,y:1222.o0" outputs="x .or. y?:1249.o0" uid="1249" uid_parent="root"/>
-  <Node _name="And" inputs="x:1223.o0,y:1204.o0" outputs="x .and. y?:1250.o0" uid="1250" uid_parent="root"/>
-  <Node _name="And" inputs="x:1250.o0,y:1249.o0" outputs="x .and. y?:1251.o0" uid="1251" uid_parent="root"/>
-  <Constant type="int32" value="48" outputs="value:1252.v" uid="1252" uid_parent="root"/>
-  <Node _name="Subtract" inputs="x:1201.o0,y:1252.v" outputs="x-y:1253.o0" uid="1253" uid_parent="root"/>
-  <Constant type="int32" value="24" outputs="value:1254.v" uid="1254" uid_parent="root"/>
-  <Node _name="Add" inputs="x:1181.o1,y:1254.v" outputs="x+y:1255.o0" uid="1255" uid_parent="root"/>
-  <Call target="Tile_Read.vi" inputs="Tiles:1004.o0,X:1084.o0,Y:1255.o0,error in:1216.o1" outputs="Tile:1256.o0,error out:1256.o1" uid="1256" uid_parent="root"/>
-  <Node _name="To Long Integer" inputs="number:1256.o0" outputs="32bit integer:1257.o0" uid="1257" uid_parent="root"/>
-  <Constant type="int32" value="0" outputs="value:1258.v" uid="1258" uid_parent="root"/>
-  <Node _name="Greater?" inputs="x:1178.o0,y:1258.v" outputs="x &gt; y?:1259.o0" uid="1259" uid_parent="root"/>
-  <Node _name="Index Array" inputs="array:1007.v,index:1257.o0" outputs="element:1260.o0" uid="1260" uid_parent="root"/>
+  <Node _name="Index Array" inputs="array:1008.v,index:1209.o0" outputs="element:1233.o0" uid="1233" uid_parent="root"/>
+  <Constant type="int32" value="0" outputs="value:1234.v" uid="1234" uid_parent="root"/>
+  <Node _name="Greater?" inputs="x:1233.o0,y:1234.v" outputs="x &gt; y?:1235.o0" uid="1235" uid_parent="root"/>
+  <Constant type="int32" value="3" outputs="value:1236.v" uid="1236" uid_parent="root"/>
+  <Node _name="Equal?" inputs="x:1209.o0,y:1236.v" outputs="x = y?:1237.o0" uid="1237" uid_parent="root"/>
+  <Node _name="And" inputs="x:1237.o0,y:1011.o0" outputs="x .and. y?:1238.o0" uid="1238" uid_parent="root"/>
+  <Node _name="Not" inputs="x:1238.o0" outputs=".not. x?:1239.o0" uid="1239" uid_parent="root"/>
+  <Node _name="And" inputs="x:1235.o0,y:1239.o0" outputs="x .and. y?:1240.o0" uid="1240" uid_parent="root"/>
+  <Node _name="Index Array" inputs="array:1008.v,index:1211.o0" outputs="element:1241.o0" uid="1241" uid_parent="root"/>
+  <Constant type="int32" value="0" outputs="value:1242.v" uid="1242" uid_parent="root"/>
+  <Node _name="Greater?" inputs="x:1241.o0,y:1242.v" outputs="x &gt; y?:1243.o0" uid="1243" uid_parent="root"/>
+  <Constant type="int32" value="3" outputs="value:1244.v" uid="1244" uid_parent="root"/>
+  <Node _name="Equal?" inputs="x:1211.o0,y:1244.v" outputs="x = y?:1245.o0" uid="1245" uid_parent="root"/>
+  <Node _name="And" inputs="x:1245.o0,y:1011.o0" outputs="x .and. y?:1246.o0" uid="1246" uid_parent="root"/>
+  <Node _name="Not" inputs="x:1246.o0" outputs=".not. x?:1247.o0" uid="1247" uid_parent="root"/>
+  <Node _name="And" inputs="x:1243.o0,y:1247.o0" outputs="x .and. y?:1248.o0" uid="1248" uid_parent="root"/>
+  <Node _name="Or" inputs="x:1229.o0,y:1232.o0" outputs="x .or. y?:1249.o0" uid="1249" uid_parent="root"/>
+  <Node _name="Or" inputs="x:1249.o0,y:1240.o0" outputs="x .or. y?:1250.o0" uid="1250" uid_parent="root"/>
+  <Node _name="Or" inputs="x:1250.o0,y:1248.o0" outputs="x .or. y?:1251.o0" uid="1251" uid_parent="root"/>
+  <Node _name="Or" inputs="x:1251.o0,y:1225.o0" outputs="x .or. y?:1252.o0" uid="1252" uid_parent="root"/>
+  <Node _name="And" inputs="x:1226.o0,y:1207.o0" outputs="x .and. y?:1253.o0" uid="1253" uid_parent="root"/>
+  <Node _name="And" inputs="x:1253.o0,y:1252.o0" outputs="x .and. y?:1254.o0" uid="1254" uid_parent="root"/>
+  <Constant type="int32" value="48" outputs="value:1255.v" uid="1255" uid_parent="root"/>
+  <Node _name="Subtract" inputs="x:1204.o0,y:1255.v" outputs="x-y:1256.o0" uid="1256" uid_parent="root"/>
+  <Constant type="int32" value="24" outputs="value:1257.v" uid="1257" uid_parent="root"/>
+  <Node _name="Add" inputs="x:1184.o1,y:1257.v" outputs="x+y:1258.o0" uid="1258" uid_parent="root"/>
+  <Call target="Tile_Read.vi" inputs="Tiles:1004.o0,X:1086.o0,Y:1258.o0,error in:1219.o1" outputs="Tile:1259.o0,error out:1259.o1" uid="1259" uid_parent="root"/>
+  <Node _name="To Long Integer" inputs="number:1259.o0" outputs="32bit integer:1260.o0" uid="1260" uid_parent="root"/>
   <Constant type="int32" value="0" outputs="value:1261.v" uid="1261" uid_parent="root"/>
-  <Node _name="Greater?" inputs="x:1260.o0,y:1261.v" outputs="x &gt; y?:1262.o0" uid="1262" uid_parent="root"/>
-  <Constant type="int32" value="0" outputs="value:1263.v" uid="1263" uid_parent="root"/>
-  <Node _name="Not Equal?" inputs="x:1004.o7,y:1263.v" outputs="x != y?:1264.o0" uid="1264" uid_parent="root"/>
-  <Constant type="int32" value="6" outputs="value:1265.v" uid="1265" uid_parent="root"/>
-  <Node _name="Equal?" inputs="x:1257.o0,y:1265.v" outputs="x = y?:1266.o0" uid="1266" uid_parent="root"/>
-  <Node _name="And" inputs="x:1266.o0,y:1259.o0" outputs="x .and. y?:1267.o0" uid="1267" uid_parent="root"/>
-  <Node _name="Or" inputs="x:1264.o0,y:1267.o0" outputs="x .or. y?:1268.o0" uid="1268" uid_parent="root"/>
-  <Node _name="And" inputs="x:1262.o0,y:1268.o0" outputs="x .and. y?:1269.o0" uid="1269" uid_parent="root"/>
-  <Constant type="int32" value="5" outputs="value:1270.v" uid="1270" uid_parent="root"/>
-  <Node _name="Equal?" inputs="x:1257.o0,y:1270.v" outputs="x = y?:1271.o0" uid="1271" uid_parent="root"/>
-  <Node _name="And" inputs="x:1271.o0,y:1259.o0" outputs="x .and. y?:1272.o0" uid="1272" uid_parent="root"/>
-  <Node _name="Not" inputs="x:1251.o0" outputs=".not. x?:1273.o0" uid="1273" uid_parent="root"/>
-  <Node _name="Or" inputs="x:1269.o0,y:1272.o0" outputs="x .or. y?:1274.o0" uid="1274" uid_parent="root"/>
-  <Node _name="And" inputs="x:1273.o0,y:1274.o0" outputs="x .and. y?:1275.o0" uid="1275" uid_parent="root"/>
-  <Constant type="int32" value="0" outputs="value:1276.v" uid="1276" uid_parent="root"/>
-  <Constant type="int32" value="1" outputs="value:1277.v" uid="1277" uid_parent="root"/>
-  <Constant type="int32" value="3" outputs="value:1278.v" uid="1278" uid_parent="root"/>
-  <Constant type="int32" value="2" outputs="value:1279.v" uid="1279" uid_parent="root"/>
-  <Node _name="Select" inputs="s:1272.o0,t:1278.v,f:1279.v" outputs="s? t\3Af:1280.o0" uid="1280" uid_parent="root"/>
-  <Node _name="Select" inputs="s:1269.o0,t:1277.v,f:1280.o0" outputs="s? t\3Af:1281.o0" uid="1281" uid_parent="root"/>
-  <Node _name="Select" inputs="s:1251.o0,t:1276.v,f:1281.o0" outputs="s? t\3Af:1282.o0" uid="1282" uid_parent="root"/>
-  <Constant type="int32" value="10" outputs="value:1283.v" uid="1283" uid_parent="root"/>
-  <Node _name="Multiply" inputs="x:1253.o0,y:1283.v" outputs="x*y:1284.o0" uid="1284" uid_parent="root"/>
-  <Node _name="Select" inputs="s:1197.o0,t:1004.o2,f:1179.o0" outputs="s? t\3Af:1285.o0" uid="1285" uid_parent="root"/>
-  <Node _name="Select" inputs="s:1251.o0,t:1284.o0,f:1285.o0" outputs="s? t\3Af:1286.o0" uid="1286" uid_parent="root"/>
-  <Node _name="Or" inputs="x:1251.o0,y:1197.o0" outputs="x .or. y?:1287.o0" uid="1287" uid_parent="root"/>
-  <Node _name="Or" inputs="x:1287.o0,y:1275.o0" outputs="x .or. y?:1288.o0" uid="1288" uid_parent="root"/>
-  <Constant type="int32" value="0" outputs="value:1289.v" uid="1289" uid_parent="root"/>
-  <Node _name="Select" inputs="s:1288.o0,t:1289.v,f:1178.o0" outputs="s? t\3Af:1290.o0" uid="1290" uid_parent="root"/>
-  <Node _name="Select" inputs="s:1275.o0,t:1092.o0,f:1080.o0" outputs="s? t\3Af:1291.o0" uid="1291" uid_parent="root"/>
-  <Node _name="Subtract" inputs="x:1253.o0,y:1004.o8" outputs="x-y:1292.o0" uid="1292" uid_parent="root"/>
-  <Constant type="int32" value="133" outputs="value:1293.v" uid="1293" uid_parent="root"/>
-  <Node _name="Greater?" inputs="x:1292.o0,y:1293.v" outputs="x &gt; y?:1294.o0" uid="1294" uid_parent="root"/>
-  <Node _name="And" inputs="x:1021.o0,y:1251.o0" outputs="x .and. y?:1295.o0" uid="1295" uid_parent="root"/>
-  <Node _name="And" inputs="x:1295.o0,y:1294.o0" outputs="x .and. y?:1296.o0" uid="1296" uid_parent="root"/>
-  <Constant type="int32" value="30" outputs="value:1297.v" uid="1297" uid_parent="root"/>
-  <Node _name="Multiply" inputs="x:1004.o7,y:1297.v" outputs="x*y:1298.o0" uid="1298" uid_parent="root"/>
-  <Node _name="Add" inputs="x:1004.o2,y:1298.o0" outputs="x+y:1299.o0" uid="1299" uid_parent="root"/>
-  <Constant type="int32" value="10" outputs="value:1300.v" uid="1300" uid_parent="root"/>
-  <Node _name="Quotient &amp; Remainder" inputs="x:1299.o0,y:1300.v" outputs="x-y*floor(x/y):1301.o0,floor(x/y):1301.o1" uid="1301" uid_parent="root"/>
-  <Constant type="int32" value="48" outputs="value:1302.v" uid="1302" uid_parent="root"/>
-  <Node _name="Add" inputs="x:1301.o1,y:1302.v" outputs="x+y:1303.o0" uid="1303" uid_parent="root"/>
-  <Constant type="int32" value="-1" outputs="value:1304.v" uid="1304" uid_parent="root"/>
-  <Node _name="Equal?" inputs="x:1004.o7,y:1304.v" outputs="x = y?:1305.o0" uid="1305" uid_parent="root"/>
-  <Constant type="int32" value="1" outputs="value:1306.v" uid="1306" uid_parent="root"/>
-  <Node _name="Equal?" inputs="x:1004.o7,y:1306.v" outputs="x = y?:1307.o0" uid="1307" uid_parent="root"/>
-  <Call target="Tile_Read.vi" inputs="Tiles:1004.o0,X:1084.o0,Y:1301.o1,error in:1256.o1" outputs="Tile:1308.o0,error out:1308.o1" uid="1308" uid_parent="root"/>
-  <Node _name="To Long Integer" inputs="number:1308.o0" outputs="32bit integer:1309.o0" uid="1309" uid_parent="root"/>
-  <Node _name="Index Array" inputs="array:1005.v,index:1309.o0" outputs="element:1310.o0" uid="1310" uid_parent="root"/>
-  <Constant type="int32" value="0" outputs="value:1311.v" uid="1311" uid_parent="root"/>
-  <Node _name="Greater?" inputs="x:1310.o0,y:1311.v" outputs="x &gt; y?:1312.o0" uid="1312" uid_parent="root"/>
-  <Node _name="And" inputs="x:1305.o0,y:1312.o0" outputs="x .and. y?:1313.o0" uid="1313" uid_parent="root"/>
-  <Constant type="int32" value="2" outputs="value:1314.v" uid="1314" uid_parent="root"/>
-  <Node _name="Subtract" inputs="x:1303.o0,y:1314.v" outputs="x-y:1315.o0" uid="1315" uid_parent="root"/>
-  <Node _name="Not" inputs="x:1313.o0" outputs=".not. x?:1316.o0" uid="1316" uid_parent="root"/>
-  <Call target="Tile_Read.vi" inputs="Tiles:1004.o0,X:1084.o0,Y:1315.o0,error in:1308.o1" outputs="Tile:1317.o0,error out:1317.o1" uid="1317" uid_parent="root"/>
-  <Node _name="To Long Integer" inputs="number:1317.o0" outputs="32bit integer:1318.o0" uid="1318" uid_parent="root"/>
-  <Node _name="Index Array" inputs="array:1007.v,index:1318.o0" outputs="element:1319.o0" uid="1319" uid_parent="root"/>
-  <Constant type="int32" value="0" outputs="value:1320.v" uid="1320" uid_parent="root"/>
-  <Node _name="Greater?" inputs="x:1319.o0,y:1320.v" outputs="x &gt; y?:1321.o0" uid="1321" uid_parent="root"/>
-  <Node _name="Not" inputs="x:1321.o0" outputs=".not. x?:1322.o0" uid="1322" uid_parent="root"/>
-  <Node _name="And" inputs="x:1305.o0,y:1316.o0" outputs="x .and. y?:1323.o0" uid="1323" uid_parent="root"/>
-  <Node _name="And" inputs="x:1323.o0,y:1322.o0" outputs="x .and. y?:1324.o0" uid="1324" uid_parent="root"/>
-  <Constant type="int32" value="32" outputs="value:1325.v" uid="1325" uid_parent="root"/>
-  <Node _name="Quotient &amp; Remainder" inputs="x:1315.o0,y:1325.v" outputs="x-y*floor(x/y):1326.o0,floor(x/y):1326.o1" uid="1326" uid_parent="root"/>
-  <Constant type="int32" value="32" outputs="value:1327.v" uid="1327" uid_parent="root"/>
-  <Node _name="Multiply" inputs="x:1326.o1,y:1327.v" outputs="x*y:1328.o0" uid="1328" uid_parent="root"/>
-  <Constant type="int32" value="32" outputs="value:1329.v" uid="1329" uid_parent="root"/>
-  <Node _name="Add" inputs="x:1328.o0,y:1329.v" outputs="x+y:1330.o0" uid="1330" uid_parent="root"/>
-  <Constant type="int32" value="48" outputs="value:1331.v" uid="1331" uid_parent="root"/>
-  <Node _name="Subtract" inputs="x:1330.o0,y:1331.v" outputs="x-y:1332.o0" uid="1332" uid_parent="root"/>
-  <Call target="Tile_Read.vi" inputs="Tiles:1004.o0,X:1084.o0,Y:1303.o0,error in:1317.o1" outputs="Tile:1333.o0,error out:1333.o1" uid="1333" uid_parent="root"/>
-  <Node _name="To Long Integer" inputs="number:1333.o0" outputs="32bit integer:1334.o0" uid="1334" uid_parent="root"/>
-  <Node _name="Index Array" inputs="array:1005.v,index:1334.o0" outputs="element:1335.o0" uid="1335" uid_parent="root"/>
-  <Constant type="int32" value="0" outputs="value:1336.v" uid="1336" uid_parent="root"/>
-  <Node _name="Greater?" inputs="x:1335.o0,y:1336.v" outputs="x &gt; y?:1337.o0" uid="1337" uid_parent="root"/>
-  <Node _name="And" inputs="x:1307.o0,y:1337.o0" outputs="x .and. y?:1338.o0" uid="1338" uid_parent="root"/>
-  <Constant type="int32" value="32" outputs="value:1339.v" uid="1339" uid_parent="root"/>
-  <Node _name="Quotient &amp; Remainder" inputs="x:1303.o0,y:1339.v" outputs="x-y*floor(x/y):1340.o0,floor(x/y):1340.o1" uid="1340" uid_parent="root"/>
-  <Constant type="int32" value="32" outputs="value:1341.v" uid="1341" uid_parent="root"/>
-  <Node _name="Multiply" inputs="x:1340.o1,y:1341.v" outputs="x*y:1342.o0" uid="1342" uid_parent="root"/>
-  <Constant type="int32" value="48" outputs="value:1343.v" uid="1343" uid_parent="root"/>
-  <Node _name="Subtract" inputs="x:1342.o0,y:1343.v" outputs="x-y:1344.o0" uid="1344" uid_parent="root"/>
-  <Call target="Tile_Read.vi" inputs="Tiles:1004.o0,X:1084.o0,Y:1315.o0,error in:1333.o1" outputs="Tile:1345.o0,error out:1345.o1" uid="1345" uid_parent="root"/>
-  <Node _name="To Long Integer" inputs="number:1345.o0" outputs="32bit integer:1346.o0" uid="1346" uid_parent="root"/>
-  <Node _name="Index Array" inputs="array:1007.v,index:1346.o0" outputs="element:1347.o0" uid="1347" uid_parent="root"/>
-  <Constant type="int32" value="0" outputs="value:1348.v" uid="1348" uid_parent="root"/>
-  <Node _name="Greater?" inputs="x:1347.o0,y:1348.v" outputs="x &gt; y?:1349.o0" uid="1349" uid_parent="root"/>
-  <Node _name="Not" inputs="x:1349.o0" outputs=".not. x?:1350.o0" uid="1350" uid_parent="root"/>
-  <Call target="Tile_Read.vi" inputs="Tiles:1004.o0,X:1084.o0,Y:1303.o0,error in:1345.o1" outputs="Tile:1351.o0,error out:1351.o1" uid="1351" uid_parent="root"/>
-  <Node _name="To Long Integer" inputs="number:1351.o0" outputs="32bit integer:1352.o0" uid="1352" uid_parent="root"/>
-  <Node _name="Index Array" inputs="array:1007.v,index:1352.o0" outputs="element:1353.o0" uid="1353" uid_parent="root"/>
-  <Constant type="int32" value="0" outputs="value:1354.v" uid="1354" uid_parent="root"/>
-  <Node _name="Greater?" inputs="x:1353.o0,y:1354.v" outputs="x &gt; y?:1355.o0" uid="1355" uid_parent="root"/>
-  <Node _name="Not" inputs="x:1355.o0" outputs=".not. x?:1356.o0" uid="1356" uid_parent="root"/>
-  <Node _name="And" inputs="x:1307.o0,y:1350.o0" outputs="x .and. y?:1357.o0" uid="1357" uid_parent="root"/>
-  <Node _name="And" inputs="x:1357.o0,y:1356.o0" outputs="x .and. y?:1358.o0" uid="1358" uid_parent="root"/>
+  <Node _name="Greater?" inputs="x:1181.o0,y:1261.v" outputs="x &gt; y?:1262.o0" uid="1262" uid_parent="root"/>
+  <Node _name="Index Array" inputs="array:1009.v,index:1260.o0" outputs="element:1263.o0" uid="1263" uid_parent="root"/>
+  <Constant type="int32" value="0" outputs="value:1264.v" uid="1264" uid_parent="root"/>
+  <Node _name="Greater?" inputs="x:1263.o0,y:1264.v" outputs="x &gt; y?:1265.o0" uid="1265" uid_parent="root"/>
+  <Constant type="int32" value="0" outputs="value:1266.v" uid="1266" uid_parent="root"/>
+  <Node _name="Not Equal?" inputs="x:1004.o7,y:1266.v" outputs="x != y?:1267.o0" uid="1267" uid_parent="root"/>
+  <Constant type="int32" value="6" outputs="value:1268.v" uid="1268" uid_parent="root"/>
+  <Node _name="Equal?" inputs="x:1260.o0,y:1268.v" outputs="x = y?:1269.o0" uid="1269" uid_parent="root"/>
+  <Node _name="And" inputs="x:1269.o0,y:1262.o0" outputs="x .and. y?:1270.o0" uid="1270" uid_parent="root"/>
+  <Node _name="Or" inputs="x:1267.o0,y:1270.o0" outputs="x .or. y?:1271.o0" uid="1271" uid_parent="root"/>
+  <Node _name="And" inputs="x:1265.o0,y:1271.o0" outputs="x .and. y?:1272.o0" uid="1272" uid_parent="root"/>
+  <Constant type="int32" value="5" outputs="value:1273.v" uid="1273" uid_parent="root"/>
+  <Node _name="Equal?" inputs="x:1260.o0,y:1273.v" outputs="x = y?:1274.o0" uid="1274" uid_parent="root"/>
+  <Node _name="And" inputs="x:1274.o0,y:1262.o0" outputs="x .and. y?:1275.o0" uid="1275" uid_parent="root"/>
+  <Node _name="Not" inputs="x:1254.o0" outputs=".not. x?:1276.o0" uid="1276" uid_parent="root"/>
+  <Node _name="Or" inputs="x:1272.o0,y:1275.o0" outputs="x .or. y?:1277.o0" uid="1277" uid_parent="root"/>
+  <Node _name="And" inputs="x:1276.o0,y:1277.o0" outputs="x .and. y?:1278.o0" uid="1278" uid_parent="root"/>
+  <Constant type="int32" value="0" outputs="value:1279.v" uid="1279" uid_parent="root"/>
+  <Constant type="int32" value="1" outputs="value:1280.v" uid="1280" uid_parent="root"/>
+  <Constant type="int32" value="3" outputs="value:1281.v" uid="1281" uid_parent="root"/>
+  <Constant type="int32" value="2" outputs="value:1282.v" uid="1282" uid_parent="root"/>
+  <Node _name="Select" inputs="s:1275.o0,t:1281.v,f:1282.v" outputs="s? t\3Af:1283.o0" uid="1283" uid_parent="root"/>
+  <Node _name="Select" inputs="s:1272.o0,t:1280.v,f:1283.o0" outputs="s? t\3Af:1284.o0" uid="1284" uid_parent="root"/>
+  <Node _name="Select" inputs="s:1254.o0,t:1279.v,f:1284.o0" outputs="s? t\3Af:1285.o0" uid="1285" uid_parent="root"/>
+  <Constant type="int32" value="10" outputs="value:1286.v" uid="1286" uid_parent="root"/>
+  <Node _name="Multiply" inputs="x:1256.o0,y:1286.v" outputs="x*y:1287.o0" uid="1287" uid_parent="root"/>
+  <Node _name="Select" inputs="s:1200.o0,t:1004.o2,f:1182.o0" outputs="s? t\3Af:1288.o0" uid="1288" uid_parent="root"/>
+  <Node _name="Select" inputs="s:1254.o0,t:1287.o0,f:1288.o0" outputs="s? t\3Af:1289.o0" uid="1289" uid_parent="root"/>
+  <Node _name="Or" inputs="x:1254.o0,y:1200.o0" outputs="x .or. y?:1290.o0" uid="1290" uid_parent="root"/>
+  <Node _name="Or" inputs="x:1290.o0,y:1278.o0" outputs="x .or. y?:1291.o0" uid="1291" uid_parent="root"/>
+  <Constant type="int32" value="0" outputs="value:1292.v" uid="1292" uid_parent="root"/>
+  <Node _name="Select" inputs="s:1291.o0,t:1292.v,f:1181.o0" outputs="s? t\3Af:1293.o0" uid="1293" uid_parent="root"/>
+  <Node _name="Select" inputs="s:1278.o0,t:1094.o0,f:1082.o0" outputs="s? t\3Af:1294.o0" uid="1294" uid_parent="root"/>
+  <Node _name="Subtract" inputs="x:1256.o0,y:1004.o8" outputs="x-y:1295.o0" uid="1295" uid_parent="root"/>
+  <Constant type="int32" value="133" outputs="value:1296.v" uid="1296" uid_parent="root"/>
+  <Node _name="Greater?" inputs="x:1295.o0,y:1296.v" outputs="x &gt; y?:1297.o0" uid="1297" uid_parent="root"/>
+  <Node _name="Not" inputs="x:1006.o0" outputs=".not. x?:1298.o0" uid="1298" uid_parent="root"/>
+  <Node _name="And" inputs="x:1023.o0,y:1254.o0" outputs="x .and. y?:1299.o0" uid="1299" uid_parent="root"/>
+  <Node _name="And" inputs="x:1299.o0,y:1297.o0" outputs="x .and. y?:1300.o0" uid="1300" uid_parent="root"/>
+  <Node _name="And" inputs="x:1300.o0,y:1298.o0" outputs="x .and. y?:1301.o0" uid="1301" uid_parent="root"/>
+  <Constant type="int32" value="30" outputs="value:1302.v" uid="1302" uid_parent="root"/>
+  <Node _name="Multiply" inputs="x:1004.o7,y:1302.v" outputs="x*y:1303.o0" uid="1303" uid_parent="root"/>
+  <Node _name="Add" inputs="x:1004.o2,y:1303.o0" outputs="x+y:1304.o0" uid="1304" uid_parent="root"/>
+  <Constant type="int32" value="10" outputs="value:1305.v" uid="1305" uid_parent="root"/>
+  <Node _name="Quotient &amp; Remainder" inputs="x:1304.o0,y:1305.v" outputs="x-y*floor(x/y):1306.o0,floor(x/y):1306.o1" uid="1306" uid_parent="root"/>
+  <Constant type="int32" value="48" outputs="value:1307.v" uid="1307" uid_parent="root"/>
+  <Node _name="Add" inputs="x:1306.o1,y:1307.v" outputs="x+y:1308.o0" uid="1308" uid_parent="root"/>
+  <Constant type="int32" value="-1" outputs="value:1309.v" uid="1309" uid_parent="root"/>
+  <Node _name="Equal?" inputs="x:1004.o7,y:1309.v" outputs="x = y?:1310.o0" uid="1310" uid_parent="root"/>
+  <Constant type="int32" value="1" outputs="value:1311.v" uid="1311" uid_parent="root"/>
+  <Node _name="Equal?" inputs="x:1004.o7,y:1311.v" outputs="x = y?:1312.o0" uid="1312" uid_parent="root"/>
+  <Call target="Tile_Read.vi" inputs="Tiles:1004.o0,X:1086.o0,Y:1306.o1,error in:1259.o1" outputs="Tile:1313.o0,error out:1313.o1" uid="1313" uid_parent="root"/>
+  <Node _name="To Long Integer" inputs="number:1313.o0" outputs="32bit integer:1314.o0" uid="1314" uid_parent="root"/>
+  <Node _name="Index Array" inputs="array:1007.v,index:1314.o0" outputs="element:1315.o0" uid="1315" uid_parent="root"/>
+  <Constant type="int32" value="0" outputs="value:1316.v" uid="1316" uid_parent="root"/>
+  <Node _name="Greater?" inputs="x:1315.o0,y:1316.v" outputs="x &gt; y?:1317.o0" uid="1317" uid_parent="root"/>
+  <Node _name="And" inputs="x:1310.o0,y:1317.o0" outputs="x .and. y?:1318.o0" uid="1318" uid_parent="root"/>
+  <Constant type="int32" value="2" outputs="value:1319.v" uid="1319" uid_parent="root"/>
+  <Node _name="Subtract" inputs="x:1308.o0,y:1319.v" outputs="x-y:1320.o0" uid="1320" uid_parent="root"/>
+  <Node _name="Not" inputs="x:1318.o0" outputs=".not. x?:1321.o0" uid="1321" uid_parent="root"/>
+  <Call target="Tile_Read.vi" inputs="Tiles:1004.o0,X:1086.o0,Y:1320.o0,error in:1313.o1" outputs="Tile:1322.o0,error out:1322.o1" uid="1322" uid_parent="root"/>
+  <Node _name="To Long Integer" inputs="number:1322.o0" outputs="32bit integer:1323.o0" uid="1323" uid_parent="root"/>
+  <Node _name="Index Array" inputs="array:1009.v,index:1323.o0" outputs="element:1324.o0" uid="1324" uid_parent="root"/>
+  <Constant type="int32" value="0" outputs="value:1325.v" uid="1325" uid_parent="root"/>
+  <Node _name="Greater?" inputs="x:1324.o0,y:1325.v" outputs="x &gt; y?:1326.o0" uid="1326" uid_parent="root"/>
+  <Node _name="Not" inputs="x:1326.o0" outputs=".not. x?:1327.o0" uid="1327" uid_parent="root"/>
+  <Node _name="And" inputs="x:1310.o0,y:1321.o0" outputs="x .and. y?:1328.o0" uid="1328" uid_parent="root"/>
+  <Node _name="And" inputs="x:1328.o0,y:1327.o0" outputs="x .and. y?:1329.o0" uid="1329" uid_parent="root"/>
+  <Constant type="int32" value="32" outputs="value:1330.v" uid="1330" uid_parent="root"/>
+  <Node _name="Quotient &amp; Remainder" inputs="x:1320.o0,y:1330.v" outputs="x-y*floor(x/y):1331.o0,floor(x/y):1331.o1" uid="1331" uid_parent="root"/>
+  <Constant type="int32" value="32" outputs="value:1332.v" uid="1332" uid_parent="root"/>
+  <Node _name="Multiply" inputs="x:1331.o1,y:1332.v" outputs="x*y:1333.o0" uid="1333" uid_parent="root"/>
+  <Constant type="int32" value="32" outputs="value:1334.v" uid="1334" uid_parent="root"/>
+  <Node _name="Add" inputs="x:1333.o0,y:1334.v" outputs="x+y:1335.o0" uid="1335" uid_parent="root"/>
+  <Constant type="int32" value="48" outputs="value:1336.v" uid="1336" uid_parent="root"/>
+  <Node _name="Subtract" inputs="x:1335.o0,y:1336.v" outputs="x-y:1337.o0" uid="1337" uid_parent="root"/>
+  <Call target="Tile_Read.vi" inputs="Tiles:1004.o0,X:1086.o0,Y:1308.o0,error in:1322.o1" outputs="Tile:1338.o0,error out:1338.o1" uid="1338" uid_parent="root"/>
+  <Node _name="To Long Integer" inputs="number:1338.o0" outputs="32bit integer:1339.o0" uid="1339" uid_parent="root"/>
+  <Node _name="Index Array" inputs="array:1007.v,index:1339.o0" outputs="element:1340.o0" uid="1340" uid_parent="root"/>
+  <Constant type="int32" value="0" outputs="value:1341.v" uid="1341" uid_parent="root"/>
+  <Node _name="Greater?" inputs="x:1340.o0,y:1341.v" outputs="x &gt; y?:1342.o0" uid="1342" uid_parent="root"/>
+  <Node _name="And" inputs="x:1312.o0,y:1342.o0" outputs="x .and. y?:1343.o0" uid="1343" uid_parent="root"/>
+  <Constant type="int32" value="32" outputs="value:1344.v" uid="1344" uid_parent="root"/>
+  <Node _name="Quotient &amp; Remainder" inputs="x:1308.o0,y:1344.v" outputs="x-y*floor(x/y):1345.o0,floor(x/y):1345.o1" uid="1345" uid_parent="root"/>
+  <Constant type="int32" value="32" outputs="value:1346.v" uid="1346" uid_parent="root"/>
+  <Node _name="Multiply" inputs="x:1345.o1,y:1346.v" outputs="x*y:1347.o0" uid="1347" uid_parent="root"/>
+  <Constant type="int32" value="48" outputs="value:1348.v" uid="1348" uid_parent="root"/>
+  <Node _name="Subtract" inputs="x:1347.o0,y:1348.v" outputs="x-y:1349.o0" uid="1349" uid_parent="root"/>
+  <Call target="Tile_Read.vi" inputs="Tiles:1004.o0,X:1086.o0,Y:1320.o0,error in:1338.o1" outputs="Tile:1350.o0,error out:1350.o1" uid="1350" uid_parent="root"/>
+  <Node _name="To Long Integer" inputs="number:1350.o0" outputs="32bit integer:1351.o0" uid="1351" uid_parent="root"/>
+  <Node _name="Index Array" inputs="array:1009.v,index:1351.o0" outputs="element:1352.o0" uid="1352" uid_parent="root"/>
+  <Constant type="int32" value="0" outputs="value:1353.v" uid="1353" uid_parent="root"/>
+  <Node _name="Greater?" inputs="x:1352.o0,y:1353.v" outputs="x &gt; y?:1354.o0" uid="1354" uid_parent="root"/>
+  <Node _name="Not" inputs="x:1354.o0" outputs=".not. x?:1355.o0" uid="1355" uid_parent="root"/>
+  <Call target="Tile_Read.vi" inputs="Tiles:1004.o0,X:1086.o0,Y:1308.o0,error in:1350.o1" outputs="Tile:1356.o0,error out:1356.o1" uid="1356" uid_parent="root"/>
+  <Node _name="To Long Integer" inputs="number:1356.o0" outputs="32bit integer:1357.o0" uid="1357" uid_parent="root"/>
+  <Node _name="Index Array" inputs="array:1009.v,index:1357.o0" outputs="element:1358.o0" uid="1358" uid_parent="root"/>
   <Constant type="int32" value="0" outputs="value:1359.v" uid="1359" uid_parent="root"/>
-  <Node _name="Not Equal?" inputs="x:1004.o6,y:1359.v" outputs="x != y?:1360.o0" uid="1360" uid_parent="root"/>
-  <Constant type="int32" value="0" outputs="value:1361.v" uid="1361" uid_parent="root"/>
-  <Node _name="Equal?" inputs="x:1004.o7,y:1361.v" outputs="x = y?:1362.o0" uid="1362" uid_parent="root"/>
-  <Node _name="And" inputs="x:1360.o0,y:1362.o0" outputs="x .and. y?:1363.o0" uid="1363" uid_parent="root"/>
-  <Constant type="int32" value="2" outputs="value:1364.v" uid="1364" uid_parent="root"/>
-  <Node _name="Or" inputs="x:1324.o0,y:1338.o0" outputs="x .or. y?:1365.o0" uid="1365" uid_parent="root"/>
+  <Node _name="Greater?" inputs="x:1358.o0,y:1359.v" outputs="x &gt; y?:1360.o0" uid="1360" uid_parent="root"/>
+  <Node _name="Not" inputs="x:1360.o0" outputs=".not. x?:1361.o0" uid="1361" uid_parent="root"/>
+  <Node _name="And" inputs="x:1312.o0,y:1355.o0" outputs="x .and. y?:1362.o0" uid="1362" uid_parent="root"/>
+  <Node _name="And" inputs="x:1362.o0,y:1361.o0" outputs="x .and. y?:1363.o0" uid="1363" uid_parent="root"/>
+  <Constant type="int32" value="0" outputs="value:1364.v" uid="1364" uid_parent="root"/>
+  <Node _name="Not Equal?" inputs="x:1004.o6,y:1364.v" outputs="x != y?:1365.o0" uid="1365" uid_parent="root"/>
   <Constant type="int32" value="0" outputs="value:1366.v" uid="1366" uid_parent="root"/>
-  <Node _name="Or" inputs="x:1358.o0,y:1363.o0" outputs="x .or. y?:1367.o0" uid="1367" uid_parent="root"/>
-  <Constant type="int32" value="2" outputs="value:1368.v" uid="1368" uid_parent="root"/>
-  <Constant type="int32" value="1" outputs="value:1369.v" uid="1369" uid_parent="root"/>
-  <Node _name="Select" inputs="s:1367.o0,t:1368.v,f:1369.v" outputs="s? t\3Af:1370.o0" uid="1370" uid_parent="root"/>
-  <Node _name="Select" inputs="s:1365.o0,t:1366.v,f:1370.o0" outputs="s? t\3Af:1371.o0" uid="1371" uid_parent="root"/>
-  <Node _name="Select" inputs="s:1002.v,t:1364.v,f:1371.o0" outputs="s? t\3Af:1372.o0" uid="1372" uid_parent="root"/>
-  <Constant type="int32" value="10" outputs="value:1373.v" uid="1373" uid_parent="root"/>
-  <Node _name="Multiply" inputs="x:1332.o0,y:1373.v" outputs="x*y:1374.o0" uid="1374" uid_parent="root"/>
-  <Constant type="int32" value="10" outputs="value:1375.v" uid="1375" uid_parent="root"/>
-  <Node _name="Multiply" inputs="x:1344.o0,y:1375.v" outputs="x*y:1376.o0" uid="1376" uid_parent="root"/>
-  <Node _name="Select" inputs="s:1313.o0,t:1004.o2,f:1299.o0" outputs="s? t\3Af:1377.o0" uid="1377" uid_parent="root"/>
-  <Node _name="Select" inputs="s:1338.o0,t:1376.o0,f:1377.o0" outputs="s? t\3Af:1378.o0" uid="1378" uid_parent="root"/>
-  <Node _name="Select" inputs="s:1324.o0,t:1374.o0,f:1378.o0" outputs="s? t\3Af:1379.o0" uid="1379" uid_parent="root"/>
-  <Constant type="int32" value="-77" outputs="value:1380.v" uid="1380" uid_parent="root"/>
-  <Constant type="int32" value="0" outputs="value:1381.v" uid="1381" uid_parent="root"/>
-  <Node _name="Select" inputs="s:1002.v,t:1380.v,f:1381.v" outputs="s? t\3Af:1382.o0" uid="1382" uid_parent="root"/>
-  <Constant type="int32" value="50" outputs="value:1383.v" uid="1383" uid_parent="root"/>
-  <Node _name="Add" inputs="x:1004.o2,y:1383.v" outputs="x+y:1384.o0" uid="1384" uid_parent="root"/>
-  <Constant type="int32" value="10" outputs="value:1385.v" uid="1385" uid_parent="root"/>
-  <Node _name="Quotient &amp; Remainder" inputs="x:1384.o0,y:1385.v" outputs="x-y*floor(x/y):1386.o0,floor(x/y):1386.o1" uid="1386" uid_parent="root"/>
-  <Constant type="int32" value="48" outputs="value:1387.v" uid="1387" uid_parent="root"/>
-  <Node _name="Add" inputs="x:1386.o1,y:1387.v" outputs="x+y:1388.o0" uid="1388" uid_parent="root"/>
-  <Call target="Tile_Read.vi" inputs="Tiles:1004.o0,X:1084.o0,Y:1388.o0,error in:1351.o1" outputs="Tile:1389.o0,error out:1389.o1" uid="1389" uid_parent="root"/>
-  <Node _name="To Long Integer" inputs="number:1389.o0" outputs="32bit integer:1390.o0" uid="1390" uid_parent="root"/>
-  <Node _name="Index Array" inputs="array:1005.v,index:1390.o0" outputs="element:1391.o0" uid="1391" uid_parent="root"/>
-  <Constant type="int32" value="0" outputs="value:1392.v" uid="1392" uid_parent="root"/>
-  <Node _name="Greater?" inputs="x:1391.o0,y:1392.v" outputs="x &gt; y?:1393.o0" uid="1393" uid_parent="root"/>
-  <Constant type="int32" value="24" outputs="value:1394.v" uid="1394" uid_parent="root"/>
-  <Node _name="Add" inputs="x:1386.o1,y:1394.v" outputs="x+y:1395.o0" uid="1395" uid_parent="root"/>
-  <Call target="Tile_Read.vi" inputs="Tiles:1004.o0,X:1084.o0,Y:1395.o0,error in:1389.o1" outputs="Tile:1396.o0,error out:1396.o1" uid="1396" uid_parent="root"/>
-  <Node _name="To Long Integer" inputs="number:1396.o0" outputs="32bit integer:1397.o0" uid="1397" uid_parent="root"/>
-  <Constant type="int32" value="5" outputs="value:1398.v" uid="1398" uid_parent="root"/>
-  <Node _name="Equal?" inputs="x:1397.o0,y:1398.v" outputs="x = y?:1399.o0" uid="1399" uid_parent="root"/>
-  <Node _name="Not" inputs="x:1399.o0" outputs=".not. x?:1400.o0" uid="1400" uid_parent="root"/>
-  <Call target="Tile_Read.vi" inputs="Tiles:1004.o0,X:1084.o0,Y:1388.o0,error in:1396.o1" outputs="Tile:1401.o0,error out:1401.o1" uid="1401" uid_parent="root"/>
+  <Node _name="Equal?" inputs="x:1004.o7,y:1366.v" outputs="x = y?:1367.o0" uid="1367" uid_parent="root"/>
+  <Node _name="And" inputs="x:1365.o0,y:1367.o0" outputs="x .and. y?:1368.o0" uid="1368" uid_parent="root"/>
+  <Constant type="int32" value="2" outputs="value:1369.v" uid="1369" uid_parent="root"/>
+  <Node _name="Or" inputs="x:1329.o0,y:1343.o0" outputs="x .or. y?:1370.o0" uid="1370" uid_parent="root"/>
+  <Constant type="int32" value="0" outputs="value:1371.v" uid="1371" uid_parent="root"/>
+  <Node _name="Or" inputs="x:1363.o0,y:1368.o0" outputs="x .or. y?:1372.o0" uid="1372" uid_parent="root"/>
+  <Constant type="int32" value="2" outputs="value:1373.v" uid="1373" uid_parent="root"/>
+  <Constant type="int32" value="1" outputs="value:1374.v" uid="1374" uid_parent="root"/>
+  <Node _name="Select" inputs="s:1372.o0,t:1373.v,f:1374.v" outputs="s? t\3Af:1375.o0" uid="1375" uid_parent="root"/>
+  <Node _name="Select" inputs="s:1370.o0,t:1371.v,f:1375.o0" outputs="s? t\3Af:1376.o0" uid="1376" uid_parent="root"/>
+  <Node _name="Select" inputs="s:1002.v,t:1369.v,f:1376.o0" outputs="s? t\3Af:1377.o0" uid="1377" uid_parent="root"/>
+  <Constant type="int32" value="10" outputs="value:1378.v" uid="1378" uid_parent="root"/>
+  <Node _name="Multiply" inputs="x:1337.o0,y:1378.v" outputs="x*y:1379.o0" uid="1379" uid_parent="root"/>
+  <Constant type="int32" value="10" outputs="value:1380.v" uid="1380" uid_parent="root"/>
+  <Node _name="Multiply" inputs="x:1349.o0,y:1380.v" outputs="x*y:1381.o0" uid="1381" uid_parent="root"/>
+  <Node _name="Select" inputs="s:1318.o0,t:1004.o2,f:1304.o0" outputs="s? t\3Af:1382.o0" uid="1382" uid_parent="root"/>
+  <Node _name="Select" inputs="s:1343.o0,t:1381.o0,f:1382.o0" outputs="s? t\3Af:1383.o0" uid="1383" uid_parent="root"/>
+  <Node _name="Select" inputs="s:1329.o0,t:1379.o0,f:1383.o0" outputs="s? t\3Af:1384.o0" uid="1384" uid_parent="root"/>
+  <Constant type="int32" value="-77" outputs="value:1385.v" uid="1385" uid_parent="root"/>
+  <Constant type="int32" value="0" outputs="value:1386.v" uid="1386" uid_parent="root"/>
+  <Node _name="Select" inputs="s:1002.v,t:1385.v,f:1386.v" outputs="s? t\3Af:1387.o0" uid="1387" uid_parent="root"/>
+  <Constant type="int32" value="50" outputs="value:1388.v" uid="1388" uid_parent="root"/>
+  <Node _name="Add" inputs="x:1004.o2,y:1388.v" outputs="x+y:1389.o0" uid="1389" uid_parent="root"/>
+  <Constant type="int32" value="10" outputs="value:1390.v" uid="1390" uid_parent="root"/>
+  <Node _name="Quotient &amp; Remainder" inputs="x:1389.o0,y:1390.v" outputs="x-y*floor(x/y):1391.o0,floor(x/y):1391.o1" uid="1391" uid_parent="root"/>
+  <Constant type="int32" value="48" outputs="value:1392.v" uid="1392" uid_parent="root"/>
+  <Node _name="Add" inputs="x:1391.o1,y:1392.v" outputs="x+y:1393.o0" uid="1393" uid_parent="root"/>
+  <Call target="Tile_Read.vi" inputs="Tiles:1004.o0,X:1086.o0,Y:1393.o0,error in:1356.o1" outputs="Tile:1394.o0,error out:1394.o1" uid="1394" uid_parent="root"/>
+  <Node _name="To Long Integer" inputs="number:1394.o0" outputs="32bit integer:1395.o0" uid="1395" uid_parent="root"/>
+  <Node _name="Index Array" inputs="array:1007.v,index:1395.o0" outputs="element:1396.o0" uid="1396" uid_parent="root"/>
+  <Constant type="int32" value="0" outputs="value:1397.v" uid="1397" uid_parent="root"/>
+  <Node _name="Greater?" inputs="x:1396.o0,y:1397.v" outputs="x &gt; y?:1398.o0" uid="1398" uid_parent="root"/>
+  <Constant type="int32" value="24" outputs="value:1399.v" uid="1399" uid_parent="root"/>
+  <Node _name="Add" inputs="x:1391.o1,y:1399.v" outputs="x+y:1400.o0" uid="1400" uid_parent="root"/>
+  <Call target="Tile_Read.vi" inputs="Tiles:1004.o0,X:1086.o0,Y:1400.o0,error in:1394.o1" outputs="Tile:1401.o0,error out:1401.o1" uid="1401" uid_parent="root"/>
   <Node _name="To Long Integer" inputs="number:1401.o0" outputs="32bit integer:1402.o0" uid="1402" uid_parent="root"/>
   <Constant type="int32" value="5" outputs="value:1403.v" uid="1403" uid_parent="root"/>
   <Node _name="Equal?" inputs="x:1402.o0,y:1403.v" outputs="x = y?:1404.o0" uid="1404" uid_parent="root"/>
   <Node _name="Not" inputs="x:1404.o0" outputs=".not. x?:1405.o0" uid="1405" uid_parent="root"/>
-  <Node _name="And" inputs="x:1400.o0,y:1405.o0" outputs="x .and. y?:1406.o0" uid="1406" uid_parent="root"/>
-  <Constant type="int32" value="0" outputs="value:1407.v" uid="1407" uid_parent="root"/>
-  <Constant type="int32" value="2" outputs="value:1408.v" uid="1408" uid_parent="root"/>
-  <Constant type="int32" value="3" outputs="value:1409.v" uid="1409" uid_parent="root"/>
-  <Node _name="Select" inputs="s:1406.o0,t:1408.v,f:1409.v" outputs="s? t\3Af:1410.o0" uid="1410" uid_parent="root"/>
-  <Node _name="Select" inputs="s:1393.o0,t:1407.v,f:1410.o0" outputs="s? t\3Af:1411.o0" uid="1411" uid_parent="root"/>
-  <Constant type="int32" value="32" outputs="value:1412.v" uid="1412" uid_parent="root"/>
-  <Node _name="Quotient &amp; Remainder" inputs="x:1388.o0,y:1412.v" outputs="x-y*floor(x/y):1413.o0,floor(x/y):1413.o1" uid="1413" uid_parent="root"/>
-  <Constant type="int32" value="32" outputs="value:1414.v" uid="1414" uid_parent="root"/>
-  <Node _name="Multiply" inputs="x:1413.o1,y:1414.v" outputs="x*y:1415.o0" uid="1415" uid_parent="root"/>
-  <Constant type="int32" value="48" outputs="value:1416.v" uid="1416" uid_parent="root"/>
-  <Node _name="Subtract" inputs="x:1415.o0,y:1416.v" outputs="x-y:1417.o0" uid="1417" uid_parent="root"/>
-  <Constant type="int32" value="10" outputs="value:1418.v" uid="1418" uid_parent="root"/>
-  <Node _name="Multiply" inputs="x:1417.o0,y:1418.v" outputs="x*y:1419.o0" uid="1419" uid_parent="root"/>
-  <Node _name="Select" inputs="s:1393.o0,t:1419.o0,f:1384.o0" outputs="s? t\3Af:1420.o0" uid="1420" uid_parent="root"/>
-  <Node _name="Select" inputs="s:1021.o0,t:1282.o0,f:1411.o0" outputs="s? t\3Af:1421.o0" uid="1421" uid_parent="root"/>
-  <Node _name="Select" inputs="s:1019.o0,t:1372.o0,f:1421.o0" outputs="s? t\3Af:1422.o0" uid="1422" uid_parent="root"/>
-  <Node _name="Select" inputs="s:1017.o0,t:1161.o0,f:1422.o0" outputs="s? t\3Af:1423.o0" uid="1423" uid_parent="root"/>
-  <Node _name="Select" inputs="s:1021.o0,t:1291.o0,f:1004.o1" outputs="s? t\3Af:1424.o0" uid="1424" uid_parent="root"/>
-  <Node _name="Select" inputs="s:1019.o0,t:1004.o1,f:1424.o0" outputs="s? t\3Af:1425.o0" uid="1425" uid_parent="root"/>
-  <Node _name="Select" inputs="s:1017.o0,t:1164.o0,f:1425.o0" outputs="s? t\3Af:1426.o0" uid="1426" uid_parent="root"/>
-  <Node _name="Select" inputs="s:1021.o0,t:1286.o0,f:1420.o0" outputs="s? t\3Af:1427.o0" uid="1427" uid_parent="root"/>
-  <Node _name="Select" inputs="s:1019.o0,t:1379.o0,f:1427.o0" outputs="s? t\3Af:1428.o0" uid="1428" uid_parent="root"/>
-  <Node _name="Select" inputs="s:1017.o0,t:1169.o0,f:1428.o0" outputs="s? t\3Af:1429.o0" uid="1429" uid_parent="root"/>
-  <Constant type="int32" value="0" outputs="value:1430.v" uid="1430" uid_parent="root"/>
-  <Node _name="Select" inputs="s:1021.o0,t:1290.o0,f:1430.v" outputs="s? t\3Af:1431.o0" uid="1431" uid_parent="root"/>
-  <Node _name="Select" inputs="s:1019.o0,t:1382.o0,f:1431.o0" outputs="s? t\3Af:1432.o0" uid="1432" uid_parent="root"/>
-  <Node _name="Select" inputs="s:1017.o0,t:1172.o0,f:1432.o0" outputs="s? t\3Af:1433.o0" uid="1433" uid_parent="root"/>
-  <Constant type="int32" value="2" outputs="value:1434.v" uid="1434" uid_parent="root"/>
-  <Node _name="Equal?" inputs="x:1423.o0,y:1434.v" outputs="x = y?:1435.o0" uid="1435" uid_parent="root"/>
-  <Constant type="int32" value="10" outputs="value:1436.v" uid="1436" uid_parent="root"/>
-  <Node _name="Quotient &amp; Remainder" inputs="x:1429.o0,y:1436.v" outputs="x-y*floor(x/y):1437.o0,floor(x/y):1437.o1" uid="1437" uid_parent="root"/>
-  <Node _name="Select" inputs="s:1435.o0,t:1004.o8,f:1437.o1" outputs="s? t\3Af:1438.o0" uid="1438" uid_parent="root"/>
-  <Constant type="int32" value="0" outputs="value:1439.v" uid="1439" uid_parent="root"/>
-  <Node _name="Greater?" inputs="x:1004.o6,y:1439.v" outputs="x &gt; y?:1440.o0" uid="1440" uid_parent="root"/>
-  <Constant type="int32" value="0" outputs="value:1441.v" uid="1441" uid_parent="root"/>
-  <Constant type="int32" value="0" outputs="value:1442.v" uid="1442" uid_parent="root"/>
-  <Node _name="Less?" inputs="x:1004.o6,y:1442.v" outputs="x &lt; y?:1443.o0" uid="1443" uid_parent="root"/>
-  <Constant type="int32" value="1" outputs="value:1444.v" uid="1444" uid_parent="root"/>
-  <Node _name="Select" inputs="s:1443.o0,t:1444.v,f:1004.o5" outputs="s? t\3Af:1445.o0" uid="1445" uid_parent="root"/>
-  <Node _name="Select" inputs="s:1440.o0,t:1441.v,f:1445.o0" outputs="s? t\3Af:1446.o0" uid="1446" uid_parent="root"/>
-  <Node _name="Bundle By Name" fields="X10,Y10,VY10,Mode,Facing,StandY,Dead" inputs="X10:1426.o0,Y10:1429.o0,VY10:1433.o0,Mode:1423.o0,Facing:1446.o0,StandY:1438.o0,Dead:1296.o0,input cluster:1001.v" outputs="output cluster:1447.o0" uid="1447" uid_parent="root"/>
-  <Indicator _name="State out" type="cluster{uint32.Tick,int32.Phase,int32.PhaseTicks,int32.Level,int32.Room,int32.X10,int32.Y10,int32.VY10,int32.Mode,int32.Facing,int32.Run,int32.Vert,int32.StandY,int32.EntryX10,int32.EntryY10,int32.EntryMode,int32.Lives,int32.Score,int32.NextLife,int32.KeyR,int32.KeyB,int32.KeyY,bool.Torch,int32.FloorPhase,bool.Dead,bool.LevelStart,bool.Quit,int32.Sound,uint32.Seed,int32.DemoStep,array.2{uint8}.Tiles,array{cluster{string.ID,int32.Depth,int32.Column,array.2{uint8}.Tiles}}.World,array{cluster{int32.Kind,int32.X10,int32.Y10,int32.Dir,int32.Mode}}.Enemies,array{cluster{int32.Score,string.Name}}.Highscores,array{int32}.Name,int32.Cursor}" value="[0,0,0,1,0,0,0,0,0,0,0,0,0,0,0,0,4,0,10000,0,0,0,false,0,false,false,false,0,12345,0,[],[],[],[],[0,0,0],0]" conIdx="4" connection="recommended" inputs="value:1447.o0" uid="1448" uid_parent="root"/>
-  <Indicator _name="error out" type="cluster{bool.status,int32.code,string.source}" value="[false,0,]" conIdx="15" connection="recommended" inputs="value:1401.o1" uid="1449" uid_parent="root"/>
+  <Call target="Tile_Read.vi" inputs="Tiles:1004.o0,X:1086.o0,Y:1393.o0,error in:1401.o1" outputs="Tile:1406.o0,error out:1406.o1" uid="1406" uid_parent="root"/>
+  <Node _name="To Long Integer" inputs="number:1406.o0" outputs="32bit integer:1407.o0" uid="1407" uid_parent="root"/>
+  <Constant type="int32" value="5" outputs="value:1408.v" uid="1408" uid_parent="root"/>
+  <Node _name="Equal?" inputs="x:1407.o0,y:1408.v" outputs="x = y?:1409.o0" uid="1409" uid_parent="root"/>
+  <Node _name="Not" inputs="x:1409.o0" outputs=".not. x?:1410.o0" uid="1410" uid_parent="root"/>
+  <Node _name="And" inputs="x:1405.o0,y:1410.o0" outputs="x .and. y?:1411.o0" uid="1411" uid_parent="root"/>
+  <Constant type="int32" value="0" outputs="value:1412.v" uid="1412" uid_parent="root"/>
+  <Constant type="int32" value="2" outputs="value:1413.v" uid="1413" uid_parent="root"/>
+  <Constant type="int32" value="3" outputs="value:1414.v" uid="1414" uid_parent="root"/>
+  <Node _name="Select" inputs="s:1411.o0,t:1413.v,f:1414.v" outputs="s? t\3Af:1415.o0" uid="1415" uid_parent="root"/>
+  <Node _name="Select" inputs="s:1398.o0,t:1412.v,f:1415.o0" outputs="s? t\3Af:1416.o0" uid="1416" uid_parent="root"/>
+  <Constant type="int32" value="32" outputs="value:1417.v" uid="1417" uid_parent="root"/>
+  <Node _name="Quotient &amp; Remainder" inputs="x:1393.o0,y:1417.v" outputs="x-y*floor(x/y):1418.o0,floor(x/y):1418.o1" uid="1418" uid_parent="root"/>
+  <Constant type="int32" value="32" outputs="value:1419.v" uid="1419" uid_parent="root"/>
+  <Node _name="Multiply" inputs="x:1418.o1,y:1419.v" outputs="x*y:1420.o0" uid="1420" uid_parent="root"/>
+  <Constant type="int32" value="48" outputs="value:1421.v" uid="1421" uid_parent="root"/>
+  <Node _name="Subtract" inputs="x:1420.o0,y:1421.v" outputs="x-y:1422.o0" uid="1422" uid_parent="root"/>
+  <Constant type="int32" value="10" outputs="value:1423.v" uid="1423" uid_parent="root"/>
+  <Node _name="Multiply" inputs="x:1422.o0,y:1423.v" outputs="x*y:1424.o0" uid="1424" uid_parent="root"/>
+  <Node _name="Select" inputs="s:1398.o0,t:1424.o0,f:1389.o0" outputs="s? t\3Af:1425.o0" uid="1425" uid_parent="root"/>
+  <Node _name="Select" inputs="s:1023.o0,t:1285.o0,f:1416.o0" outputs="s? t\3Af:1426.o0" uid="1426" uid_parent="root"/>
+  <Node _name="Select" inputs="s:1021.o0,t:1377.o0,f:1426.o0" outputs="s? t\3Af:1427.o0" uid="1427" uid_parent="root"/>
+  <Node _name="Select" inputs="s:1019.o0,t:1163.o0,f:1427.o0" outputs="s? t\3Af:1428.o0" uid="1428" uid_parent="root"/>
+  <Node _name="Select" inputs="s:1023.o0,t:1294.o0,f:1004.o1" outputs="s? t\3Af:1429.o0" uid="1429" uid_parent="root"/>
+  <Node _name="Select" inputs="s:1021.o0,t:1004.o1,f:1429.o0" outputs="s? t\3Af:1430.o0" uid="1430" uid_parent="root"/>
+  <Node _name="Select" inputs="s:1019.o0,t:1166.o0,f:1430.o0" outputs="s? t\3Af:1431.o0" uid="1431" uid_parent="root"/>
+  <Node _name="Select" inputs="s:1023.o0,t:1289.o0,f:1425.o0" outputs="s? t\3Af:1432.o0" uid="1432" uid_parent="root"/>
+  <Node _name="Select" inputs="s:1021.o0,t:1384.o0,f:1432.o0" outputs="s? t\3Af:1433.o0" uid="1433" uid_parent="root"/>
+  <Node _name="Select" inputs="s:1019.o0,t:1171.o0,f:1433.o0" outputs="s? t\3Af:1434.o0" uid="1434" uid_parent="root"/>
+  <Constant type="int32" value="0" outputs="value:1435.v" uid="1435" uid_parent="root"/>
+  <Node _name="Select" inputs="s:1023.o0,t:1293.o0,f:1435.v" outputs="s? t\3Af:1436.o0" uid="1436" uid_parent="root"/>
+  <Node _name="Select" inputs="s:1021.o0,t:1387.o0,f:1436.o0" outputs="s? t\3Af:1437.o0" uid="1437" uid_parent="root"/>
+  <Node _name="Select" inputs="s:1019.o0,t:1174.o0,f:1437.o0" outputs="s? t\3Af:1438.o0" uid="1438" uid_parent="root"/>
+  <Constant type="int32" value="2" outputs="value:1439.v" uid="1439" uid_parent="root"/>
+  <Node _name="Equal?" inputs="x:1428.o0,y:1439.v" outputs="x = y?:1440.o0" uid="1440" uid_parent="root"/>
+  <Constant type="int32" value="10" outputs="value:1441.v" uid="1441" uid_parent="root"/>
+  <Node _name="Quotient &amp; Remainder" inputs="x:1434.o0,y:1441.v" outputs="x-y*floor(x/y):1442.o0,floor(x/y):1442.o1" uid="1442" uid_parent="root"/>
+  <Node _name="Select" inputs="s:1440.o0,t:1004.o8,f:1442.o1" outputs="s? t\3Af:1443.o0" uid="1443" uid_parent="root"/>
+  <Constant type="int32" value="0" outputs="value:1444.v" uid="1444" uid_parent="root"/>
+  <Node _name="Greater?" inputs="x:1004.o6,y:1444.v" outputs="x &gt; y?:1445.o0" uid="1445" uid_parent="root"/>
+  <Constant type="int32" value="0" outputs="value:1446.v" uid="1446" uid_parent="root"/>
+  <Constant type="int32" value="0" outputs="value:1447.v" uid="1447" uid_parent="root"/>
+  <Node _name="Less?" inputs="x:1004.o6,y:1447.v" outputs="x &lt; y?:1448.o0" uid="1448" uid_parent="root"/>
+  <Constant type="int32" value="1" outputs="value:1449.v" uid="1449" uid_parent="root"/>
+  <Node _name="Select" inputs="s:1448.o0,t:1449.v,f:1004.o5" outputs="s? t\3Af:1450.o0" uid="1450" uid_parent="root"/>
+  <Node _name="Select" inputs="s:1445.o0,t:1446.v,f:1450.o0" outputs="s? t\3Af:1451.o0" uid="1451" uid_parent="root"/>
+  <Node _name="Bundle By Name" fields="X10,Y10,VY10,Mode,Facing,StandY,Dead" inputs="X10:1431.o0,Y10:1434.o0,VY10:1438.o0,Mode:1428.o0,Facing:1451.o0,StandY:1443.o0,Dead:1301.o0,input cluster:1001.v" outputs="output cluster:1452.o0" uid="1452" uid_parent="root"/>
+  <Indicator _name="State out" type="cluster{uint32.Tick,int32.Phase,int32.PhaseTicks,int32.Level,int32.Room,int32.X10,int32.Y10,int32.VY10,int32.Mode,int32.Facing,int32.Run,int32.Vert,int32.StandY,int32.EntryX10,int32.EntryY10,int32.EntryMode,int32.Lives,int32.Score,int32.NextLife,int32.KeyR,int32.KeyB,int32.KeyY,bool.Torch,int32.FloorPhase,bool.Dead,bool.LevelStart,bool.Quit,int32.Sound,uint32.Seed,int32.DemoStep,array.2{uint8}.Tiles,array{cluster{string.ID,int32.Depth,int32.Column,array.2{uint8}.Tiles}}.World,array{cluster{int32.Kind,int32.X10,int32.Y10,int32.Dir,int32.Mode}}.Enemies,array{cluster{int32.Score,string.Name}}.Highscores,array{int32}.Name,int32.Cursor}" value="[0,0,0,1,0,0,0,0,0,0,0,0,0,0,0,0,4,0,10000,0,0,0,false,0,false,false,false,0,12345,0,[],[],[],[],[0,0,0],0]" conIdx="4" connection="recommended" inputs="value:1452.o0" uid="1453" uid_parent="root"/>
+  <Indicator _name="error out" type="cluster{bool.status,int32.code,string.source}" value="[false,0,]" conIdx="15" connection="recommended" inputs="value:1406.o1" uid="1454" uid_parent="root"/>
 </VI>

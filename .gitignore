@@ -11,3 +11,7 @@ Tests/Caraya/*-TestReport.xml
 # Python
 __pycache__/
 *.pyc
+
+# Zwischenstaende des Demo-Planers
+build/plan_demo.log
+build/demo_partial.json

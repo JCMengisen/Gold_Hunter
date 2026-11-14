@@ -9,6 +9,7 @@ import sys
 from gh_lib import *
 import gen_play as gp
 from gen_game import read_lines
+from gen_play import allb
 
 FRAME, FRAME_V = 'array.2{uint8}', '[]'
 BSPR = 'cluster{array.2{uint8}.Pix,array.2{uint8}.Mask}'      # Maske: 255 = sichtbar, 0 = durchsichtig
@@ -143,6 +144,13 @@ def scene_blit():
         cpos = d.bun(d.const(POS, '[0,0]'), [('X', cxp), ('Y', d.sel(gp.ge(d, cix, c(0)), cyp, c(-2000)))])
         cd = d.call('Sprite_Blit.vi', [('Picture', ed['Picture out']), ('Sprites', sp), ('Index', gp.maxv(d, cix, c(0))), ('Position', cpos),
                                        ('error in', ed['error out'])], ['Picture out', 'error out'])
+        # Fallschirm ueber Claude, solange er in der Schatzkammer faellt
+        rm, md, vy = d.unb(s, ['Room', 'Mode', 'VY10'])
+        chute = allb(d, d.eq(rm, c(TREASURE_IDX)), d.eq(md, c(2)), d.gt(vy, c(0)))
+        ppos = d.bun(d.const(POS, '[0,0]'), [('X', d.sub(cxp, c(8))), ('Y', d.sel(chute, d.sub(cyp, c(30)), c(-2000)))])
+        pc = d.call('Sprite_Blit.vi', [('Picture', cd['Picture out']), ('Sprites', sp), ('Index', c(SPR['parachute'])), ('Position', ppos),
+                                       ('error in', cd['error out'])], ['Picture out', 'error out'])
+        cd = pc
         ov = d.call('Overlay_Blit.vi', [('Picture', cd['Picture out']), ('Sprites', sp), ('State', s), ('Clip', clip), ('error in', cd['error out'])],
                     ['Picture out', 'error out'])
         return [ov['Picture out'], ov['error out']]

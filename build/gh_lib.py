@@ -366,3 +366,6 @@ CHEAT_CODE = [44, 22, 38, 22]
 CHEAT_MARK = -1
 # Cheat: diese ScanCodes zaehlen nicht (Shift links/rechts, Caps Lock, Ctrl, Alt)
 CHEAT_IGNORE = [42, 54, 58, 29, 56]
+
+# Schatzkammer: Claude schwebt am Fallschirm hinunter (Fallgeschwindigkeit hoechstens CHUTE10), die Landung ist nie toedlich
+CHUTE10 = 12

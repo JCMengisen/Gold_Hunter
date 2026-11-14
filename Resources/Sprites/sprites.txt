@@ -99,3 +99,4 @@ glyph_38
 glyph_39
 glyph_40
 glyph_41
+parachute

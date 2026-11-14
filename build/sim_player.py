@@ -7,6 +7,7 @@ T_ = TILE_CODE
 ORDER = [rid for row in WORLD for rid in row if rid]
 PRISTINE = {rid: [[T_.get(ch, 0) for ch in line] for line in ROOMS[rid].lines()] for rid in ORDER}
 WHERE = {rid: (d, x) for d, row in enumerate(WORLD) for x, rid in enumerate(row) if rid}
+TREASURE_ID = ORDER[TREASURE_IDX]
 
 
 def fdiv(a, b):
@@ -67,7 +68,8 @@ class Sim:
             n_y10 = y10 + vert * CLIMB10 if (not jump and to_lad) else y10
             n_vy = JUMP10 if jump else 0
         elif mode == 2:
-            vy = min(self.vy + GRAVITY10, VY_MAX10)
+            chute = self.room == TREASURE_ID           # Schatzkammer: Fallschirm
+            vy = min(self.vy + GRAVITY10, CHUTE10 if chute else VY_MAX10)
             ay10 = y10 + vy
             ay = fdiv(ay10, 10)
             afeet = ay + CLAUDE_H
@@ -87,7 +89,7 @@ class Sim:
             n_y10 = land_y * 10 if land else y10 if bump else ay10
             n_vy = 0 if (land or bump or grab) else vy
             n_x10 = snap10 if grab else xa10
-            dead = land and (land_y - stand > MAX_FALL)
+            dead = land and (land_y - stand > MAX_FALL) and not chute
         elif mode == 1:
             ly10 = y10 + vert * CLIMB10
             ly = fdiv(ly10, 10)

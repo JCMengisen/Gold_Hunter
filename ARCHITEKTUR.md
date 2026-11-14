@@ -161,7 +161,7 @@ UI-Schleife (Key Down/Up per ScanCode) --Queue--> Engine-Schleife (16 ms): Game_
 |---|---|---|
 | `Source\Level\GH_Level.lvlib` | Resource_Path, World_Load, Room_Load, Tile_At, Entities_From_Tiles | Dateien lesen, Kachelzugriff |
 | `Source\Engine\GH_Engine.lvlib` | Game_Start, Game_Step, Game_Play, Player_Move, Room_Change, Floor_Cycle, Belt_Push, Spider_Step, Skull_Step, Snake_Step, Hit_Check, Items_Collect, Door_Open, Extra_Life, Treasure_Step, Level_Enter, Highscore_Load/Save/Insert, Demo_Input, Sound_Flags | Spiellogik, ohne Grafik |
-| `Source\Render\GH_Render.lvlib` | Image_Load, SpriteAtlas_Load, Sprite_Draw, Glyphs_Draw, Light_Draw, Hud_Draw, Overlay_Draw, Scene_Draw | Bild aufbauen |
+| `Source\Render\GH_Render.lvlib` | Image_Load, SpriteAtlas_Load, Sprite_Draw, Image_Draw, Room_Draw, Tile_Cut, Dirty_Tiles, Glyphs_Draw, Hud_Draw, Overlay_Draw, Scene_Draw | Bild aufbauen |
 | `Source\Audio\GH_Audio.lvlib` | Sound_Bank_Load, Sound_Mix | gestreamter Ton |
 | `Source\App\GH_App.lvlib` | App_Init, Window_Setup, Audio_Start, Key_Send, Engine_Tick, Render_Frame, Audio_Block, App_Close, Audio_Close | Bausteine von Main.vi |
 
@@ -190,21 +190,27 @@ Title -> Ready -> Playing <-> Paused
 
 ### Bildaufbau
 
-1. Hintergrund des Raums (1920 × 960). Mit Fackel oder in hellen Tiefen: das helle Bild.
-   Ohne Fackel in dunklen Tiefen: das dunkle Bild, darüber `Light_Draw`.
-2. `Light_Draw` (nur im Dunkeln): Kacheln im Umkreis von 3.3 Kacheln um Claude aus dem hellen Bild,
-   bis 5.3 Kacheln aus dem halbdunklen Bild. Das sind höchstens 90 Ausschnitte von 48 × 48 Pixeln.
-3. Schwundböden, Förderbänder (4 Bilder, laufen), Türen, Gold, Schlüssel, Fackel, Gegner – im Dunkeln nur, wenn sie im Lichtkreis liegen.
-4. Claude.
-5. HUD (Hintergrund `hud.png`, Werte als Glyphen und Symbole).
-6. Einblendungen (Titel, Level, Game Over, Punkte).
+Gemessen in M1 (`README_Meilenstein1.md`): Das Verfahren von Pauls Höhenflug (alles in ein Bild, dann rastern) braucht
+bei 1920 × 1080 rund 212 ms je Bild. Teuer ist der grosse Hintergrund im Bild, nicht das Sprite: 23 Sprites ohne
+Hintergrund kosten 3.5 ms. Deshalb wird nur gezeichnet, was sich ändert:
 
+1. Das Picture-Control löscht nie (`Erase First = never`). Beim Raumwechsel wird der Raum einmal ganz gezeichnet
+   (Hintergrund hell oder dunkel, alle Objekte, HUD).
+2. Pro Bild bestimmt `Dirty_Tiles` die Kacheln, die sich ändern: wo Claude oder ein Gegner war oder ist, wo eine
+   Animation weiterschaltet (Gold, Förderband, Schwundboden, Fackel), wo ein Objekt verschwindet und wo sich der
+   Lichtkreis verschiebt.
+3. `Tile_Cut` schneidet jede dieser Kacheln direkt aus den Bilddaten des passenden Raumbilds (hell, `_dim` oder
+   `_dark`, je nach Abstand zu Claude). NIs `Get Image Subset` ist dafür zu langsam (13 ms je Kachel).
+4. Darüber kommen die Sprites, die diese Kacheln berühren – im Dunkeln nur, wenn sie im Lichtkreis liegen.
+5. HUD-Felder werden nur neu gezeichnet, wenn sich ihr Wert ändert. Einblendungen (Titel, Level, Game Over) liegen
+   als Sprites darüber.
+
+Lichtkreis: bis 3.3 Kacheln um Claude hell, bis 5.3 Kacheln halbdunkel, sonst dunkel.
 Je Raum und Farbschema gibt es drei Bilder (hell, `_dim`, `_dark`), zusammen 333 Dateien mit 13 MB.
-Geladen werden nur die drei Bilder des aktuellen Raums, beim Raumwechsel.
+Geladen werden nur die drei Bilder des aktuellen Raums, beim Raumwechsel (gemessen 78 ms).
 
-**Risiko Bildrate:** Pauls Höhenflug brauchte 12 ms je Bild bei 896 × 832. Hier ist die Fläche 2.8-mal so gross.
-In M1 wird deshalb zuerst gemessen (`Tests\Test_Bench.vi`), auch das Laden beim Raumwechsel und der Lichtkreis.
-Reicht es nicht für 60 Bilder, rechnet die Engine weiter mit 60 Ticks und die Anzeige läuft mit 30 Bildern.
+**Offen bis M2:** Zeit von `Tile_Cut`, Anzeige im offenen Fenster und ob das Bild flimmert. Die Auflösung spielt bei
+diesem Verfahren kaum eine Rolle; 1280 × 720 (Grafik 2-fach statt 3-fach) bleibt als Ausweg, falls es doch nicht reicht.
 
 ### Übernommen aus `C:\Projects\Paul_Pensionierung`
 
@@ -239,8 +245,8 @@ Gold_Hunter\
 | Nr. | Inhalt | Stand |
 |---|---|---|
 | M0 | Architektur, Pyramide mit 36 Räumen, Lösbarkeitsprüfung, Sprites, Hintergründe | erledigt |
-| M1 | Projekt, Räume laden, Raum mit Sprites zeichnen, Bildrate messen | offen |
-| M2 | Claude: laufen, springen, Leiter, Seil, Stange, dünne Böden, Förderband, Sturz, Raumwechsel | offen |
+| M1 | Projekt, Räume laden, Raum mit Sprites zeichnen, Bildrate messen | erledigt, Bildaufbau muss neu (siehe 5) |
+| M2 | Neuer Bildaufbau (nur geänderte Kacheln) mit Messung im Fenster; Claude: laufen, springen, Leiter, Seil, Stange, dünne Böden, Förderband, Sturz, Raumwechsel | offen |
 | M3 | Gold, Schlüssel, Türen, Fackel, Dunkelheit mit Lichtkreis, Schwundböden; Test der Lösung per Tastenfolge | offen |
 | M4 | Spinne, Schlange, Totenkopf, Leben und Extraleben | offen |
 | M5 | Schatzkammer, Levelwechsel, Phasen, HUD, Highscore | offen |

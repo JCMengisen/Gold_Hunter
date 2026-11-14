@@ -1,0 +1,151 @@
+<VI _name="Test_Bench2.vi" description="Measurement of the dirty-tile idea, ms per frame over Count frames. Sprites only = all objects of the room drawn into a picture WITHOUT the background in it; Tiles = Tiles background tiles (48 x 48) cut out of the room image and drawn; Cut all = cutting the whole room image into its 800 tiles once.">
+  <Control _name="Room ID" type="string" value="405" outputs="value:9901.v" uid="9901" uid_parent="root"/>
+  <Control _name="Theme" type="int32" value="0" outputs="value:9902.v" uid="9902" uid_parent="root"/>
+  <Control _name="Count" type="int32" value="30" outputs="value:9903.v" uid="9903" uid_parent="root"/>
+  <Control _name="Tiles" type="int32" value="40" outputs="value:9904.v" uid="9904" uid_parent="root"/>
+  <Control _name="error in" type="cluster{bool.status,int32.code,string.source}" value="[false,0,]" conIdx="11" connection="required" outputs="value:9905.v" uid="9905" uid_parent="root"/>
+  <Call target="SpriteAtlas_Load.vi" inputs="error in:9905.v" outputs="Sprites:9906.o0,error out:9906.o1" uid="9906" uid_parent="root"/>
+  <Call target="Room_Load.vi" inputs="Room ID:9901.v,error in:9906.o1" outputs="Tiles:9907.o0,error out:9907.o1" uid="9907" uid_parent="root"/>
+  <Node _name="Number To Decimal String" inputs="number:9902.v,width (-):" outputs="decimal integer string:9908.o0" uid="9908" uid_parent="root"/>
+  <Constant type="string" value="room_" outputs="value:9909.v" uid="9909" uid_parent="root"/>
+  <Constant type="string" value="_" outputs="value:9910.v" uid="9910" uid_parent="root"/>
+  <Constant type="string" value=".png" outputs="value:9911.v" uid="9911" uid_parent="root"/>
+  <Node _name="Concatenate Strings" inputs="string:9909.v,string:9908.o0,string:9910.v,string:9901.v,string:9911.v" outputs="concatenated string:9912.o0" uid="9912" uid_parent="root"/>
+  <Call target="Image_Load.vi" inputs="File name:9912.o0,error in:9907.o1" outputs="Image:9913.o0,error out:9913.o1" uid="9913" uid_parent="root"/>
+  <Constant type="string" value="hud.png" outputs="value:9914.v" uid="9914" uid_parent="root"/>
+  <Call target="Image_Load.vi" inputs="File name:9914.v,error in:9913.o1" outputs="Image:9915.o0,error out:9915.o1" uid="9915" uid_parent="root"/>
+  <Node _name="Array Size" inputs="array:9906.o0" outputs="size(s):9916.o0" uid="9916" uid_parent="root"/>
+  <Constant type="int32" value="0" outputs="value:9917.v" uid="9917" uid_parent="root"/>
+  <Node _name="Multiply" inputs="x:9916.o0,y:9917.v" outputs="x*y:9918.o0" uid="9918" uid_parent="root"/>
+  <Node _name="Wait (ms)" inputs="milliseconds to wait:9918.o0" outputs="millisecond timer value:9919.o0" uid="9919" uid_parent="root"/>
+  <Constant type="int32" value="0" outputs="value:9920.v" uid="9920" uid_parent="root"/>
+  <Constant type="uint32" value="0" outputs="value:9921.v" uid="9921" uid_parent="root"/>
+  <Node _name="Multiply" inputs="x:9919.o0,y:9921.v" outputs="x*y:9922.o0" uid="9922" uid_parent="root"/>
+  <Node _name="To Long Integer" inputs="number:9922.o0" outputs="32bit integer:9923.o0" uid="9923" uid_parent="root"/>
+  <Node _name="Add" inputs="x:9903.v,y:9923.o0" outputs="x+y:9924.o0" uid="9924" uid_parent="root"/>
+  <Node _name="Initialize Array" inputs="element:9920.v,dimension size:9924.o0" outputs="initialized array:9925.o0" uid="9925" uid_parent="root"/>
+  <Structure _name="For Loop" count="9926i.v" maxin="" maxout="" uid="9926" uid_parent="root">
+    <Tunnel _id="In1" inputs="value:9925.o0" mode="index" outputs="value:9927.v" uid="9927" uid_parent="9926"/>
+    <Tunnel _id="In2" inputs="value:9906.o0" outputs="value:9928.v" uid="9928" uid_parent="9926"/>
+    <Tunnel _id="In3" inputs="value:9907.o0" outputs="value:9929.v" uid="9929" uid_parent="9926"/>
+    <ShiftReg uid="9930" uid_parent="9926">
+      <Left inputs="value:9915.o1" outputs="value:9931.v" uid="9931" uid_parent="9930"/>
+      <Right inputs="value:9936.o0" outputs="value:9932.v" uid="9932" uid_parent="9930"/>
+    </ShiftReg>
+    <Constant type="int32" value="0" outputs="value:9933.v" uid="9933" uid_parent="9926"/>
+    <Node _name="Index Array" inputs="array:9928.v,index:9933.v" outputs="element:9934.o0" uid="9934" uid_parent="9926"/>
+    <Call target="Draw Flattened Pixmap.vi" inputs="image data:9934.o0,picture:" outputs="new picture:9935.o0" uid="9935" uid_parent="9926"/>
+    <Call target="Room_Draw.vi" inputs="Picture:9935.o0,Sprites:9928.v,Tiles:9929.v,error in:9931.v" outputs="Picture out:,Count:,error out:9936.o0" uid="9936" uid_parent="9926"/>
+    <Tunnel _id="Out1" inputs="value:9926i.v" outputs="value:9937.v" uid="9937" uid_parent="9926"/>
+  </Structure>
+  <Constant type="int32" value="0" outputs="value:9938.v" uid="9938" uid_parent="root"/>
+  <Node _name="Multiply" inputs="x:9937.v,y:9938.v" outputs="x*y:9939.o0" uid="9939" uid_parent="root"/>
+  <Node _name="Wait (ms)" inputs="milliseconds to wait:9939.o0" outputs="millisecond timer value:9940.o0" uid="9940" uid_parent="root"/>
+  <Constant type="int32" value="0" outputs="value:9941.v" uid="9941" uid_parent="root"/>
+  <Constant type="uint32" value="0" outputs="value:9942.v" uid="9942" uid_parent="root"/>
+  <Node _name="Multiply" inputs="x:9940.o0,y:9942.v" outputs="x*y:9943.o0" uid="9943" uid_parent="root"/>
+  <Node _name="To Long Integer" inputs="number:9943.o0" outputs="32bit integer:9944.o0" uid="9944" uid_parent="root"/>
+  <Node _name="Add" inputs="x:9903.v,y:9944.o0" outputs="x+y:9945.o0" uid="9945" uid_parent="root"/>
+  <Node _name="Initialize Array" inputs="element:9941.v,dimension size:9945.o0" outputs="initialized array:9946.o0" uid="9946" uid_parent="root"/>
+  <Structure _name="For Loop" count="9947i.v" maxin="" maxout="" uid="9947" uid_parent="root">
+    <Tunnel _id="In1" inputs="value:9946.o0" mode="index" outputs="value:9948.v" uid="9948" uid_parent="9947"/>
+    <Tunnel _id="In2" inputs="value:9913.o0" outputs="value:9949.v" uid="9949" uid_parent="9947"/>
+    <Tunnel _id="In3" inputs="value:9906.o0" outputs="value:9950.v" uid="9950" uid_parent="9947"/>
+    <Tunnel _id="In4" inputs="value:9904.v" outputs="value:9951.v" uid="9951" uid_parent="9947"/>
+    <ShiftReg uid="9952" uid_parent="9947">
+      <Left inputs="value:9932.v" outputs="value:9953.v" uid="9953" uid_parent="9952"/>
+      <Right inputs="value:9968.v" outputs="value:9954.v" uid="9954" uid_parent="9952"/>
+    </ShiftReg>
+    <Constant type="int32" value="0" outputs="value:9955.v" uid="9955" uid_parent="9947"/>
+    <Node _name="Index Array" inputs="array:9950.v,index:9955.v" outputs="element:9956.o0" uid="9956" uid_parent="9947"/>
+    <Call target="Draw Flattened Pixmap.vi" inputs="image data:9956.o0,picture:" outputs="new picture:9957.o0" uid="9957" uid_parent="9947"/>
+    <Constant type="int32" value="0" outputs="value:9958.v" uid="9958" uid_parent="9947"/>
+    <Node _name="Initialize Array" inputs="element:9958.v,dimension size:9951.v" outputs="initialized array:9959.o0" uid="9959" uid_parent="9947"/>
+    <Structure _name="For Loop" count="9960i.v" maxin="" maxout="" uid="9960" uid_parent="9947">
+      <Tunnel _id="In1" inputs="value:9959.o0" mode="index" outputs="value:9961.v" uid="9961" uid_parent="9960"/>
+      <Tunnel _id="In2" inputs="value:9949.v" outputs="value:9962.v" uid="9962" uid_parent="9960"/>
+      <ShiftReg uid="9963" uid_parent="9960">
+        <Left inputs="value:9957.o0" outputs="value:9964.v" uid="9964" uid_parent="9963"/>
+        <Right inputs="value:9996.o0" outputs="value:9965.v" uid="9965" uid_parent="9963"/>
+      </ShiftReg>
+      <ShiftReg uid="9966" uid_parent="9960">
+        <Left inputs="value:9953.v" outputs="value:9967.v" uid="9967" uid_parent="9966"/>
+        <Right inputs="value:9996.o1" outputs="value:9968.v" uid="9968" uid_parent="9966"/>
+      </ShiftReg>
+      <Constant type="int32" value="40" outputs="value:9969.v" uid="9969" uid_parent="9960"/>
+      <Node _name="Quotient &amp; Remainder" inputs="x:9960i.v,y:9969.v" outputs="x-y*floor(x/y):9970.o0,floor(x/y):9970.o1" uid="9970" uid_parent="9960"/>
+      <Constant type="cluster{int32.X,int32.Y}" value="[0,0]" outputs="value:9971.v" uid="9971" uid_parent="9960"/>
+      <Constant type="int32" value="48" outputs="value:9972.v" uid="9972" uid_parent="9960"/>
+      <Node _name="Multiply" inputs="x:9970.o0,y:9972.v" outputs="x*y:9973.o0" uid="9973" uid_parent="9960"/>
+      <Constant type="int32" value="48" outputs="value:9974.v" uid="9974" uid_parent="9960"/>
+      <Node _name="Multiply" inputs="x:9970.o1,y:9974.v" outputs="x*y:9975.o0" uid="9975" uid_parent="9960"/>
+      <Constant type="int32" value="120" outputs="value:9976.v" uid="9976" uid_parent="9960"/>
+      <Node _name="Add" inputs="x:9975.o0,y:9976.v" outputs="x+y:9977.o0" uid="9977" uid_parent="9960"/>
+      <Node _name="Bundle By Name" fields="X,Y" inputs="X:9973.o0,Y:9977.o0,input cluster:9971.v" outputs="output cluster:9978.o0" uid="9978" uid_parent="9960"/>
+      <Constant type="int32" value="7" outputs="value:9979.v" uid="9979" uid_parent="9960"/>
+      <Node _name="Add" inputs="x:9970.o1,y:9979.v" outputs="x+y:9980.o0" uid="9980" uid_parent="9960"/>
+      <Constant type="int32" value="48" outputs="value:9981.v" uid="9981" uid_parent="9960"/>
+      <Node _name="Multiply" inputs="x:9970.o0,y:9981.v" outputs="x*y:9982.o0" uid="9982" uid_parent="9960"/>
+      <Constant type="int32" value="48" outputs="value:9983.v" uid="9983" uid_parent="9960"/>
+      <Node _name="Multiply" inputs="x:9980.o0,y:9983.v" outputs="x*y:9984.o0" uid="9984" uid_parent="9960"/>
+      <Constant type="cluster{int16.left,int16.top,int16.right,int16.bottom}" value="[0,0,0,0]" outputs="value:9985.v" uid="9985" uid_parent="9960"/>
+      <Node _name="To Word Integer" inputs="number:9982.o0" outputs="16bit integer:9986.o0" uid="9986" uid_parent="9960"/>
+      <Node _name="To Word Integer" inputs="number:9984.o0" outputs="16bit integer:9987.o0" uid="9987" uid_parent="9960"/>
+      <Constant type="int32" value="48" outputs="value:9988.v" uid="9988" uid_parent="9960"/>
+      <Node _name="Add" inputs="x:9982.o0,y:9988.v" outputs="x+y:9989.o0" uid="9989" uid_parent="9960"/>
+      <Node _name="To Word Integer" inputs="number:9989.o0" outputs="16bit integer:9990.o0" uid="9990" uid_parent="9960"/>
+      <Constant type="int32" value="48" outputs="value:9991.v" uid="9991" uid_parent="9960"/>
+      <Node _name="Add" inputs="x:9984.o0,y:9991.v" outputs="x+y:9992.o0" uid="9992" uid_parent="9960"/>
+      <Node _name="To Word Integer" inputs="number:9992.o0" outputs="16bit integer:9993.o0" uid="9993" uid_parent="9960"/>
+      <Node _name="Bundle By Name" fields="left,top,right,bottom" inputs="left:9986.o0,top:9987.o0,right:9990.o0,bottom:9993.o0,input cluster:9985.v" outputs="output cluster:9994.o0" uid="9994" uid_parent="9960"/>
+      <Call target="Get Image Subset.vi" inputs="subset rect:9994.o0,image data:9962.v" outputs="image subset:9995.o0,true subset rect:" uid="9995" uid_parent="9960"/>
+      <Call target="Image_Draw.vi" inputs="Picture:9964.v,Image:9995.o0,Position:9978.o0,error in:9967.v" outputs="Picture out:9996.o0,error out:9996.o1" uid="9996" uid_parent="9960"/>
+    </Structure>
+    <Tunnel _id="Out1" inputs="value:9947i.v" outputs="value:9997.v" uid="9997" uid_parent="9947"/>
+  </Structure>
+  <Constant type="int32" value="0" outputs="value:9998.v" uid="9998" uid_parent="root"/>
+  <Node _name="Multiply" inputs="x:9997.v,y:9998.v" outputs="x*y:9999.o0" uid="9999" uid_parent="root"/>
+  <Node _name="Wait (ms)" inputs="milliseconds to wait:9999.o0" outputs="millisecond timer value:10000.o0" uid="10000" uid_parent="root"/>
+  <Constant type="int32" value="800" outputs="value:10001.v" uid="10001" uid_parent="root"/>
+  <Constant type="int32" value="0" outputs="value:10002.v" uid="10002" uid_parent="root"/>
+  <Constant type="uint32" value="0" outputs="value:10003.v" uid="10003" uid_parent="root"/>
+  <Node _name="Multiply" inputs="x:10000.o0,y:10003.v" outputs="x*y:10004.o0" uid="10004" uid_parent="root"/>
+  <Node _name="To Long Integer" inputs="number:10004.o0" outputs="32bit integer:10005.o0" uid="10005" uid_parent="root"/>
+  <Node _name="Add" inputs="x:10001.v,y:10005.o0" outputs="x+y:10006.o0" uid="10006" uid_parent="root"/>
+  <Node _name="Initialize Array" inputs="element:10002.v,dimension size:10006.o0" outputs="initialized array:10007.o0" uid="10007" uid_parent="root"/>
+  <Structure _name="For Loop" count="10008i.v" maxin="" maxout="" uid="10008" uid_parent="root">
+    <Tunnel _id="In1" inputs="value:10007.o0" mode="index" outputs="value:10009.v" uid="10009" uid_parent="10008"/>
+    <Tunnel _id="In2" inputs="value:9913.o0" outputs="value:10010.v" uid="10010" uid_parent="10008"/>
+    <Constant type="int32" value="40" outputs="value:10011.v" uid="10011" uid_parent="10008"/>
+    <Node _name="Quotient &amp; Remainder" inputs="x:10008i.v,y:10011.v" outputs="x-y*floor(x/y):10012.o0,floor(x/y):10012.o1" uid="10012" uid_parent="10008"/>
+    <Constant type="int32" value="48" outputs="value:10013.v" uid="10013" uid_parent="10008"/>
+    <Node _name="Multiply" inputs="x:10012.o0,y:10013.v" outputs="x*y:10014.o0" uid="10014" uid_parent="10008"/>
+    <Constant type="int32" value="48" outputs="value:10015.v" uid="10015" uid_parent="10008"/>
+    <Node _name="Multiply" inputs="x:10012.o1,y:10015.v" outputs="x*y:10016.o0" uid="10016" uid_parent="10008"/>
+    <Constant type="cluster{int16.left,int16.top,int16.right,int16.bottom}" value="[0,0,0,0]" outputs="value:10017.v" uid="10017" uid_parent="10008"/>
+    <Node _name="To Word Integer" inputs="number:10014.o0" outputs="16bit integer:10018.o0" uid="10018" uid_parent="10008"/>
+    <Node _name="To Word Integer" inputs="number:10016.o0" outputs="16bit integer:10019.o0" uid="10019" uid_parent="10008"/>
+    <Constant type="int32" value="48" outputs="value:10020.v" uid="10020" uid_parent="10008"/>
+    <Node _name="Add" inputs="x:10014.o0,y:10020.v" outputs="x+y:10021.o0" uid="10021" uid_parent="10008"/>
+    <Node _name="To Word Integer" inputs="number:10021.o0" outputs="16bit integer:10022.o0" uid="10022" uid_parent="10008"/>
+    <Constant type="int32" value="48" outputs="value:10023.v" uid="10023" uid_parent="10008"/>
+    <Node _name="Add" inputs="x:10016.o0,y:10023.v" outputs="x+y:10024.o0" uid="10024" uid_parent="10008"/>
+    <Node _name="To Word Integer" inputs="number:10024.o0" outputs="16bit integer:10025.o0" uid="10025" uid_parent="10008"/>
+    <Node _name="Bundle By Name" fields="left,top,right,bottom" inputs="left:10018.o0,top:10019.o0,right:10022.o0,bottom:10025.o0,input cluster:10017.v" outputs="output cluster:10026.o0" uid="10026" uid_parent="10008"/>
+    <Call target="Get Image Subset.vi" inputs="subset rect:10026.o0,image data:10010.v" outputs="image subset:10027.o0,true subset rect:" uid="10027" uid_parent="10008"/>
+    <Tunnel _id="Out1" inputs="value:10027.o0" mode="index" outputs="value:10028.v" uid="10028" uid_parent="10008"/>
+  </Structure>
+  <Node _name="Array Size" inputs="array:10028.v" outputs="size(s):10029.o0" uid="10029" uid_parent="root"/>
+  <Constant type="int32" value="0" outputs="value:10030.v" uid="10030" uid_parent="root"/>
+  <Node _name="Multiply" inputs="x:10029.o0,y:10030.v" outputs="x*y:10031.o0" uid="10031" uid_parent="root"/>
+  <Node _name="Wait (ms)" inputs="milliseconds to wait:10031.o0" outputs="millisecond timer value:10032.o0" uid="10032" uid_parent="root"/>
+  <Node _name="Subtract" inputs="x:9940.o0,y:9919.o0" outputs="x-y:10033.o0" uid="10033" uid_parent="root"/>
+  <Node _name="Divide" inputs="x:10033.o0,y:9903.v" outputs="x/y:10034.o0" uid="10034" uid_parent="root"/>
+  <Indicator _name="ms Sprites only" type="double" value="0" inputs="value:10034.o0" uid="10035" uid_parent="root"/>
+  <Node _name="Subtract" inputs="x:10000.o0,y:9940.o0" outputs="x-y:10036.o0" uid="10036" uid_parent="root"/>
+  <Node _name="Divide" inputs="x:10036.o0,y:9903.v" outputs="x/y:10037.o0" uid="10037" uid_parent="root"/>
+  <Indicator _name="ms Tiles" type="double" value="0" inputs="value:10037.o0" uid="10038" uid_parent="root"/>
+  <Node _name="Subtract" inputs="x:10032.o0,y:10000.o0" outputs="x-y:10039.o0" uid="10039" uid_parent="root"/>
+  <Indicator _name="ms Cut all" type="uint32" value="0" inputs="value:10039.o0" uid="10040" uid_parent="root"/>
+  <Indicator _name="error out" type="cluster{bool.status,int32.code,string.source}" value="[false,0,]" inputs="value:9954.v" uid="10041" uid_parent="root"/>
+</VI>

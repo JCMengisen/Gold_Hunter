@@ -1,0 +1,12 @@
+<VI _name="GH_Level.lvlib:Tile_At.vi" description="Tile value under the point (X, Y) in playfield pixels (tile = 48 px). Outside the playfield 0 (empty).">
+  <Control _name="Tiles" type="array.2{uint8}" value="[]" conIdx="0" connection="required" outputs="value:1001.v" uid="1001" uid_parent="root"/>
+  <Control _name="X" type="int32" value="0" conIdx="5" connection="required" outputs="value:1002.v" uid="1002" uid_parent="root"/>
+  <Control _name="Y" type="int32" value="0" conIdx="7" connection="required" outputs="value:1003.v" uid="1003" uid_parent="root"/>
+  <Control _name="error in" type="cluster{bool.status,int32.code,string.source}" value="[false,0,]" conIdx="11" connection="required" outputs="value:1004.v" uid="1004" uid_parent="root"/>
+  <Constant type="int32" value="48" outputs="value:1005.v" uid="1005" uid_parent="root"/>
+  <Node _name="Quotient &amp; Remainder" inputs="x:1002.v,y:1005.v" outputs="x-y*floor(x/y):1006.o0,floor(x/y):1006.o1" uid="1006" uid_parent="root"/>
+  <Node _name="Quotient &amp; Remainder" inputs="x:1003.v,y:1005.v" outputs="x-y*floor(x/y):1007.o0,floor(x/y):1007.o1" uid="1007" uid_parent="root"/>
+  <Node _name="Index Array" dimensions="2" inputs="array:1001.v,index (row):1007.o1,index (col):1006.o1" outputs="element:1008.o0" uid="1008" uid_parent="root"/>
+  <Indicator _name="Tile" type="uint8" value="0" conIdx="4" connection="recommended" inputs="value:1008.o0" uid="1009" uid_parent="root"/>
+  <Indicator _name="error out" type="cluster{bool.status,int32.code,string.source}" value="[false,0,]" conIdx="15" connection="recommended" inputs="value:1004.v" uid="1010" uid_parent="root"/>
+</VI>

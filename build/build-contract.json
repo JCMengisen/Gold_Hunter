@@ -1,0 +1,393 @@
+{
+  "application": "Gold Hunter",
+  "root": "..",
+  "project": "GoldHunter.lvproj",
+  "panePattern": 4833,
+  "types": {
+    "Error": "cluster{bool.status,int32.code,string.source}",
+    "Tiles": "array.2{uint8}",
+    "Position": "cluster{int32.X,int32.Y}",
+    "ImageData": "cluster{int32.image type,int32.image depth,array{uint8}.image,array{uint8}.mask,array{uint32}.colors,cluster{int16.left,int16.top,int16.right,int16.bottom}.Rectangle}",
+    "Sprites": "array{cluster{int32.image type,int32.image depth,array{uint8}.image,array{uint8}.mask,array{uint32}.colors,cluster{int16.left,int16.top,int16.right,int16.bottom}.Rectangle}}",
+    "Rooms": "array{cluster{string.ID,int32.Depth,int32.Column,array.2{uint8}.Tiles}}"
+  },
+  "vis": [
+    {
+      "path": "Source\\Level\\Resource_Path.vi",
+      "builder": "level",
+      "purpose": "Path Resources\\Subfolder\\File name",
+      "calls": [],
+      "inputs": [
+        {
+          "name": "File name",
+          "type": "string",
+          "conIdx": 0,
+          "connection": "required"
+        },
+        {
+          "name": "Subfolder",
+          "type": "string",
+          "conIdx": 5,
+          "connection": "required"
+        },
+        {
+          "name": "error in",
+          "type": "@Error",
+          "conIdx": 11,
+          "connection": "required"
+        }
+      ],
+      "outputs": [
+        {
+          "name": "Path",
+          "type": "path",
+          "conIdx": 4,
+          "connection": "recommended"
+        },
+        {
+          "name": "error out",
+          "type": "@Error",
+          "conIdx": 15,
+          "connection": "recommended"
+        }
+      ]
+    },
+    {
+      "path": "Source\\Level\\Room_Load.vi",
+      "builder": "level",
+      "purpose": "Room text file -> tiles",
+      "calls": [
+        "Source\\Level\\Resource_Path.vi"
+      ],
+      "inputs": [
+        {
+          "name": "Room ID",
+          "type": "string",
+          "conIdx": 0,
+          "connection": "required"
+        },
+        {
+          "name": "error in",
+          "type": "@Error",
+          "conIdx": 11,
+          "connection": "required"
+        }
+      ],
+      "outputs": [
+        {
+          "name": "Tiles",
+          "type": "@Tiles",
+          "conIdx": 4,
+          "connection": "recommended"
+        },
+        {
+          "name": "error out",
+          "type": "@Error",
+          "conIdx": 15,
+          "connection": "recommended"
+        }
+      ]
+    },
+    {
+      "path": "Source\\Level\\World_Load.vi",
+      "builder": "level",
+      "purpose": "world.txt and all rooms",
+      "calls": [
+        "Source\\Level\\Resource_Path.vi",
+        "Source\\Level\\Room_Load.vi"
+      ],
+      "inputs": [
+        {
+          "name": "error in",
+          "type": "@Error",
+          "conIdx": 11,
+          "connection": "required"
+        }
+      ],
+      "outputs": [
+        {
+          "name": "Rooms",
+          "type": "@Rooms",
+          "conIdx": 4,
+          "connection": "recommended"
+        },
+        {
+          "name": "Grid",
+          "type": "array.2{string}",
+          "conIdx": 6,
+          "connection": "recommended"
+        },
+        {
+          "name": "error out",
+          "type": "@Error",
+          "conIdx": 15,
+          "connection": "recommended"
+        }
+      ]
+    },
+    {
+      "path": "Source\\Level\\Tile_At.vi",
+      "builder": "level",
+      "purpose": "Tile under a point",
+      "calls": [],
+      "inputs": [
+        {
+          "name": "Tiles",
+          "type": "@Tiles",
+          "conIdx": 0,
+          "connection": "required"
+        },
+        {
+          "name": "X",
+          "type": "int32",
+          "conIdx": 5,
+          "connection": "required"
+        },
+        {
+          "name": "Y",
+          "type": "int32",
+          "conIdx": 7,
+          "connection": "required"
+        },
+        {
+          "name": "error in",
+          "type": "@Error",
+          "conIdx": 11,
+          "connection": "required"
+        }
+      ],
+      "outputs": [
+        {
+          "name": "Tile",
+          "type": "uint8",
+          "conIdx": 4,
+          "connection": "recommended"
+        },
+        {
+          "name": "error out",
+          "type": "@Error",
+          "conIdx": 15,
+          "connection": "recommended"
+        }
+      ]
+    },
+    {
+      "path": "Source\\Render\\Image_Load.vi",
+      "builder": "render",
+      "purpose": "Load a PNG from Resources\\Images",
+      "calls": [
+        "Source\\Level\\Resource_Path.vi"
+      ],
+      "inputs": [
+        {
+          "name": "File name",
+          "type": "string",
+          "conIdx": 0,
+          "connection": "required"
+        },
+        {
+          "name": "error in",
+          "type": "@Error",
+          "conIdx": 11,
+          "connection": "required"
+        }
+      ],
+      "outputs": [
+        {
+          "name": "Image",
+          "type": "@ImageData",
+          "conIdx": 4,
+          "connection": "recommended"
+        },
+        {
+          "name": "error out",
+          "type": "@Error",
+          "conIdx": 15,
+          "connection": "recommended"
+        }
+      ]
+    },
+    {
+      "path": "Source\\Render\\SpriteAtlas_Load.vi",
+      "builder": "render",
+      "purpose": "Load the sprite atlas",
+      "calls": [
+        "Source\\Level\\Resource_Path.vi"
+      ],
+      "inputs": [
+        {
+          "name": "error in",
+          "type": "@Error",
+          "conIdx": 11,
+          "connection": "required"
+        }
+      ],
+      "outputs": [
+        {
+          "name": "Sprites",
+          "type": "@Sprites",
+          "conIdx": 4,
+          "connection": "recommended"
+        },
+        {
+          "name": "error out",
+          "type": "@Error",
+          "conIdx": 15,
+          "connection": "recommended"
+        }
+      ]
+    },
+    {
+      "path": "Source\\Render\\Sprite_Draw.vi",
+      "builder": "render",
+      "purpose": "Draw a sprite at a position",
+      "calls": [],
+      "inputs": [
+        {
+          "name": "Picture",
+          "type": "picture",
+          "conIdx": 0,
+          "connection": "required"
+        },
+        {
+          "name": "Sprites",
+          "type": "@Sprites",
+          "conIdx": 5,
+          "connection": "required"
+        },
+        {
+          "name": "Index",
+          "type": "int32",
+          "conIdx": 7,
+          "connection": "required"
+        },
+        {
+          "name": "Position",
+          "type": "@Position",
+          "conIdx": 9,
+          "connection": "required"
+        },
+        {
+          "name": "error in",
+          "type": "@Error",
+          "conIdx": 11,
+          "connection": "required"
+        }
+      ],
+      "outputs": [
+        {
+          "name": "Picture out",
+          "type": "picture",
+          "conIdx": 4,
+          "connection": "recommended"
+        },
+        {
+          "name": "error out",
+          "type": "@Error",
+          "conIdx": 15,
+          "connection": "recommended"
+        }
+      ]
+    },
+    {
+      "path": "Source\\Render\\Image_Draw.vi",
+      "builder": "render",
+      "purpose": "Draw one image at a position",
+      "calls": [],
+      "inputs": [
+        {
+          "name": "Picture",
+          "type": "picture",
+          "conIdx": 0,
+          "connection": "required"
+        },
+        {
+          "name": "Image",
+          "type": "@ImageData",
+          "conIdx": 5,
+          "connection": "required"
+        },
+        {
+          "name": "Position",
+          "type": "@Position",
+          "conIdx": 7,
+          "connection": "required"
+        },
+        {
+          "name": "error in",
+          "type": "@Error",
+          "conIdx": 11,
+          "connection": "required"
+        }
+      ],
+      "outputs": [
+        {
+          "name": "Picture out",
+          "type": "picture",
+          "conIdx": 4,
+          "connection": "recommended"
+        },
+        {
+          "name": "error out",
+          "type": "@Error",
+          "conIdx": 15,
+          "connection": "recommended"
+        }
+      ]
+    },
+    {
+      "path": "Source\\Render\\Room_Draw.vi",
+      "builder": "render",
+      "purpose": "Draw the objects of a room from its tiles",
+      "calls": [
+        "Source\\Render\\Sprite_Draw.vi"
+      ],
+      "inputs": [
+        {
+          "name": "Picture",
+          "type": "picture",
+          "conIdx": 0,
+          "connection": "required"
+        },
+        {
+          "name": "Sprites",
+          "type": "@Sprites",
+          "conIdx": 5,
+          "connection": "required"
+        },
+        {
+          "name": "Tiles",
+          "type": "@Tiles",
+          "conIdx": 7,
+          "connection": "required"
+        },
+        {
+          "name": "error in",
+          "type": "@Error",
+          "conIdx": 11,
+          "connection": "required"
+        }
+      ],
+      "outputs": [
+        {
+          "name": "Picture out",
+          "type": "picture",
+          "conIdx": 4,
+          "connection": "recommended"
+        },
+        {
+          "name": "Count",
+          "type": "int32",
+          "conIdx": 6,
+          "connection": "recommended"
+        },
+        {
+          "name": "error out",
+          "type": "@Error",
+          "conIdx": 15,
+          "connection": "recommended"
+        }
+      ]
+    }
+  ]
+}

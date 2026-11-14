@@ -1,0 +1,63 @@
+<VI _name="GH_Level.lvlib:World_Load.vi" description="Loads the whole world: reads Resources\Levels\world.txt (room grid, depth x column, --- = no room) and every room file with Room_Load. Rooms = all rooms in reading order with ID, Depth, Column and Tiles; Grid = the room IDs as in the file.">
+  <Control _name="error in" type="cluster{bool.status,int32.code,string.source}" value="[false,0,]" conIdx="11" connection="required" outputs="value:1001.v" uid="1001" uid_parent="root"/>
+  <Constant type="string" value="world.txt" outputs="value:1002.v" uid="1002" uid_parent="root"/>
+  <Constant type="string" value="Levels" outputs="value:1003.v" uid="1003" uid_parent="root"/>
+  <Call target="Resource_Path.vi" inputs="File name:1002.v,Subfolder:1003.v,error in:1001.v" outputs="Path:1004.o0,error out:1004.o1" uid="1004" uid_parent="root"/>
+  <Node _name="Read from Text File" convertEol="true" inputs="file (use dialog):1004.o0,count:,error in:1004.o1,prompt (Open existing file):" outputs="refnum out:,text:1005.o0,cancelled:,error out:1005.o1" uid="1005" uid_parent="root"/>
+  <Constant type="string" value="%s" outputs="value:1006.v" uid="1006" uid_parent="root"/>
+  <Constant type="array.2{string}" value="[]" outputs="value:1007.v" uid="1007" uid_parent="root"/>
+  <Constant type="string" value=" " outputs="value:1008.v" uid="1008" uid_parent="root"/>
+  <Node _name="Spreadsheet String To Array" inputs="format string:1006.v,spreadsheet string:1005.o0,array type (2D Dbl):1007.v,delimiter (Tab):1008.v" outputs="array:1009.o0" uid="1009" uid_parent="root"/>
+  <Constant type="string" value="---" outputs="value:1010.v" uid="1010" uid_parent="root"/>
+  <Constant type="cluster{string.ID,int32.Depth,int32.Column,array.2{uint8}.Tiles}" value="[,0,0,[]]" outputs="value:1011.v" uid="1011" uid_parent="root"/>
+  <Structure _name="For Loop" count="1012i.v" maxin="" maxout="" uid="1012" uid_parent="root">
+    <Tunnel _id="In1" inputs="value:1009.o0" mode="index" outputs="value:1013.v" uid="1013" uid_parent="1012"/>
+    <Tunnel _id="In2" inputs="value:1010.v" outputs="value:1014.v" uid="1014" uid_parent="1012"/>
+    <Tunnel _id="In3" inputs="value:1011.v" outputs="value:1015.v" uid="1015" uid_parent="1012"/>
+    <ShiftReg uid="1016" uid_parent="1012">
+      <Left inputs="value:1005.o1" outputs="value:1017.v" uid="1017" uid_parent="1016"/>
+      <Right inputs="value:1026.v" outputs="value:1018.v" uid="1018" uid_parent="1016"/>
+    </ShiftReg>
+    <Structure _name="For Loop" count="1019i.v" maxin="" maxout="" uid="1019" uid_parent="1012">
+      <Tunnel _id="In1" inputs="value:1013.v" mode="index" outputs="value:1020.v" uid="1020" uid_parent="1019"/>
+      <Tunnel _id="In2" inputs="value:1014.v" outputs="value:1021.v" uid="1021" uid_parent="1019"/>
+      <Tunnel _id="In3" inputs="value:1015.v" outputs="value:1022.v" uid="1022" uid_parent="1019"/>
+      <Tunnel _id="In4" inputs="value:1012i.v" outputs="value:1023.v" uid="1023" uid_parent="1019"/>
+      <ShiftReg uid="1024" uid_parent="1019">
+        <Left inputs="value:1017.v" outputs="value:1025.v" uid="1025" uid_parent="1024"/>
+        <Right inputs="value:1048.v" outputs="value:1026.v" uid="1026" uid_parent="1024"/>
+      </ShiftReg>
+      <Node _name="String Length" inputs="string:1020.v" outputs="length:1027.o0" uid="1027" uid_parent="1019"/>
+      <Constant type="int32" value="3" outputs="value:1028.v" uid="1028" uid_parent="1019"/>
+      <Node _name="Equal?" inputs="x:1027.o0,y:1028.v" outputs="x = y?:1029.o0" uid="1029" uid_parent="1019"/>
+      <Node _name="Not Equal?" inputs="x:1020.v,y:1021.v" outputs="x != y?:1030.o0" uid="1030" uid_parent="1019"/>
+      <Node _name="And" inputs="x:1029.o0,y:1030.o0" outputs="x .and. y?:1031.o0" uid="1031" uid_parent="1019"/>
+      <Structure _name="Case Structure" selectin="1031.o0" uid="1032" uid_parent="1019">
+        <Tunnel _id="In1" inputs="value:1020.v" uid="1033" uid_parent="1032"/>
+        <Tunnel _id="In2" inputs="value:1025.v" uid="1034" uid_parent="1032"/>
+        <CaseFrame selector="True" selectout="" uid="1035" uid_parent="1032">
+          <Tunnel _id="In1" outputs="value:1036.v" uid="1036" uid_parent="1035"/>
+          <Tunnel _id="In2" outputs="value:1037.v" uid="1037" uid_parent="1035"/>
+          <Call target="Room_Load.vi" inputs="Room ID:1036.v,error in:1037.v" outputs="Tiles:1038.o0,error out:1038.o1" uid="1038" uid_parent="1035"/>
+          <Tunnel _id="Out1" inputs="value:1038.o0" uid="1039" uid_parent="1035"/>
+          <Tunnel _id="Out2" inputs="value:1038.o1" uid="1040" uid_parent="1035"/>
+        </CaseFrame>
+        <CaseFrame selector="False" selectout="" uid="1041" uid_parent="1032">
+          <Tunnel _id="In1" outputs="value:1042.v" uid="1042" uid_parent="1041"/>
+          <Tunnel _id="In2" outputs="value:1043.v" uid="1043" uid_parent="1041"/>
+          <Constant type="array.2{uint8}" value="[]" outputs="value:1044.v" uid="1044" uid_parent="1041"/>
+          <Tunnel _id="Out1" inputs="value:1044.v" uid="1045" uid_parent="1041"/>
+          <Tunnel _id="Out2" inputs="value:1043.v" uid="1046" uid_parent="1041"/>
+        </CaseFrame>
+        <Tunnel _id="Out1" outputs="value:1047.v" uid="1047" uid_parent="1032"/>
+        <Tunnel _id="Out2" outputs="value:1048.v" uid="1048" uid_parent="1032"/>
+      </Structure>
+      <Node _name="Bundle By Name" fields="ID,Depth,Column,Tiles" inputs="ID:1020.v,Depth:1023.v,Column:1019i.v,Tiles:1047.v,input cluster:1022.v" outputs="output cluster:1049.o0" uid="1049" uid_parent="1019"/>
+      <Tunnel _id="Out1" inputs="value:1049.o0" cond="1031.o0" mode="index" outputs="value:1050.v" uid="1050" uid_parent="1019"/>
+    </Structure>
+    <Tunnel _id="Out1" inputs="value:1050.v" mode="concat" outputs="value:1051.v" uid="1051" uid_parent="1012"/>
+  </Structure>
+  <Indicator _name="Rooms" type="array{cluster{string.ID,int32.Depth,int32.Column,array.2{uint8}.Tiles}}" value="[]" conIdx="4" connection="recommended" inputs="value:1051.v" uid="1052" uid_parent="root"/>
+  <Indicator _name="Grid" type="array.2{string}" value="[]" conIdx="6" connection="recommended" inputs="value:1009.o0" uid="1053" uid_parent="root"/>
+  <Indicator _name="error out" type="cluster{bool.status,int32.code,string.source}" value="[false,0,]" conIdx="15" connection="recommended" inputs="value:1018.v" uid="1054" uid_parent="root"/>
+</VI>

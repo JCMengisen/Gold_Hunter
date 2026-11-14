@@ -37,40 +37,101 @@ TILE_SPRITE = {T['~']: 'floor_0', T['<']: 'belt_l_0', T['>']: 'belt_r_0', T['R']
 TOP_ALIGNED = [T['~'], T['<'], T['>'], T['R'], T['B'], T['Y']]     # oben an der Kachel ausgerichtet, sonst steht das Bild auf dem Boden
 DOOR_CODES = (T['R'], T['Y'])                                        # Tuer-Kachelwerte 10..12
 
-# Sprites zeichnen: der Startplatz P wird nicht als Objekt gezeichnet (Claude kommt aus dem Zustand)
-ROOM_SPRITE = {k: v for k, v in TILE_SPRITE.items() if k != T['P']}
+# Sprites der Raumobjekte (Room_Draw). Start P und Gegner S Z K zeichnet nicht Room_Draw (Claude und Gegner kommen aus dem Zustand).
+ROOM_SPRITE = {k: v for k, v in TILE_SPRITE.items() if k not in (T['P'], T['S'], T['Z'], T['K'])}
+ENEMY_CODES = (T['S'], T['K'])                                       # 19..21 = Spinne, Schlange, Totenkopf
 
 # Eingabe (Queue UI -> Engine), als uint16
-KEYS = ['None', 'Up', 'Down', 'Left', 'Right', 'Quit', 'Pause', 'Start', 'Jump', 'Release', 'ReleaseV']
+KEYS = ['None', 'Up', 'Down', 'Left', 'Right', 'Quit', 'Pause', 'Start', 'Jump', 'Release', 'ReleaseV', 'ReleaseL', 'ReleaseR']
 IN = {n: i for i, n in enumerate(KEYS)}
 KEY = 'uint16'
+# Tasten (ScanCode = physische Taste): gedrueckt / losgelassen. Esc/P = Pause (im Titel: beenden), Enter/N = Start.
+KEYS_DOWN = [(72, 'Up'), (80, 'Down'), (75, 'Left'), (77, 'Right'), (57, 'Jump'), (28, 'Start'), (49, 'Start'), (1, 'Pause'), (25, 'Pause')]
+KEYS_UP = [(75, 'ReleaseL'), (77, 'ReleaseR'), (72, 'ReleaseV'), (80, 'ReleaseV')]
+
+# Phasen des Spiels
+PHASES = ['Title', 'Ready', 'Playing', 'Paused', 'Dying', 'Treasure', 'LevelDone', 'GameOver', 'Name', 'Demo']
+PH = {n: i for i, n in enumerate(PHASES)}
+# Gegner: Kind 0 Spinne, 1 Schlange, 2 Totenkopf. Position = linke obere Ecke (32 x 32) in Zehntel Pixeln. Dir -1/+1.
+# Mode 0 laeuft waagrecht, 1 klettert (Dir -1 hoch, +1 runter).
+ENEMY = 'cluster{int32.Kind,int32.X10,int32.Y10,int32.Dir,int32.Mode}'
+ENEMIES = f'array{{{ENEMY}}}'
+HS = 'cluster{int32.Score,string.Name}'          # Score zuerst: Sort 1D Array sortiert nach dem ersten Element
+HSTAB = f'array{{{HS}}}'
+HS_MAX = 5
+HS_DEFAULT = '[[5000,CLAUDE],[4000,GOLDIE],[3000,DIGGER],[2000,MINER],[1000,ROOKIE]]'
+ALPHA = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ '             # Namenseingabe: Buchstaben + Leerzeichen (Index 26)
+NAME_LEN = 9
+NAME_START = '[' + ','.join(['0'] + ['26'] * (NAME_LEN - 1)) + ']'
 # Spielzustand. X10/Y10 = linke obere Ecke von Claude (32 x 48) im Spielfeld in ZEHNTEL Pixeln, VY10 Zehntel px/Tick (+ = runter).
 # Mode 0 Boden, 1 Leiter/Seil, 2 Luft, 3 Rutschstange. Facing 0 rechts, 1 links. Run -1/0/1, Vert -1 hoch/0/1 runter.
 # StandY = Y (px) des letzten festen Stands (Sturzhoehe). Entry* = Ankunft im Raum (Neustart nach einem Tod).
-STATE = (f'cluster{{uint32.Tick,int32.Room,int32.X10,int32.Y10,int32.VY10,int32.Mode,int32.Facing,int32.Run,int32.Vert,int32.StandY,'
-         f'int32.EntryX10,int32.EntryY10,int32.EntryMode,int32.Lives,bool.Dead,bool.Quit,{TILES}.Tiles}}')
-STATE_V = '[0,0,0,0,0,0,0,0,0,0,0,0,0,4,false,false,[]]'
-CHANNELS = f'cluster{{ref{{Queue}}{{{KEY}}}.Keys,ref{{Notifier}}{{{STATE}}}.Frames}}'
+# FloorPhase 0 Schwundboden da, 1 Warnung, 2 weg. Sound = Sound-Bits dieses Ticks. World = alle Raeume mit ihren aktuellen Kacheln.
+STATE = (f'cluster{{uint32.Tick,int32.Phase,int32.PhaseTicks,int32.Level,int32.Room,'
+         f'int32.X10,int32.Y10,int32.VY10,int32.Mode,int32.Facing,int32.Run,int32.Vert,int32.StandY,'
+         f'int32.EntryX10,int32.EntryY10,int32.EntryMode,'
+         f'int32.Lives,int32.Score,int32.NextLife,int32.KeyR,int32.KeyB,int32.KeyY,bool.Torch,'
+         f'int32.FloorPhase,bool.Dead,bool.LevelStart,bool.Quit,int32.Sound,uint32.Seed,int32.DemoStep,'
+         f'{TILES}.Tiles,{ROOMS}.World,{ENEMIES}.Enemies,{HSTAB}.Highscores,array{{int32}}.Name,int32.Cursor}}')
+STATE_V = '[0,0,0,1,0,0,0,0,0,0,0,0,0,0,0,0,4,0,10000,0,0,0,false,0,false,false,false,0,12345,0,[],[],[],[],[0,0,0],0]'
+CHANNELS = f'cluster{{ref{{Queue}}{{{KEY}}}.Keys,ref{{Notifier}}{{{STATE}}}.Frames,ref{{Queue}}{{int32}}.Sounds}}'
 # Physik (60 Ticks/s, Zehntel Pixel)
 CLAUDE_W, CLAUDE_H = 32, 48
 BOX_L, BOX_R = 8, 23                 # Kollisionskasten in x (16 px breit, mittig)
 WALK10, CLIMB10, SLIDE10, BELT10 = 35, 30, 50, 15
 JUMP10, GRAVITY10, VY_MAX10 = -77, 4, 100
 MAX_FALL = 133                       # px unter dem letzten festen Stand = tot (gut 4 Kacheln)
-LIVES = 4
+LIVES, MAX_LIVES, EXTRA_LIFE = 4, 7, 10000
 SOLID = [T['#'], T['<'], T['>'], T['R'], T['B'], T['Y']]
 PLATFORM = [T['='], T['~']]
 CLIMBABLE = [T['H'], T[':']]
+# Punkte
+PTS = {T['g']: 100, T['G']: 500, T['r']: 200, T['b']: 200, T['y']: 200, T['T']: 500}
+DOOR_POINTS = 100
+# Gegner-Kollision: Kasten je Kind (links, rechts, oben, unten) im 32 x 32-Bild; Claude: x 8..23, y 6..47
+EBOX = [(4, 27, 12, 31), (6, 25, 14, 31), (4, 27, 6, 31)]
+CBOX = (BOX_L, BOX_R, 6, 47)
+# Je Level (Index = min(Level, 3) - 1): Farbschema, dunkel ab Tiefe, Tempo Spinne / Totenkopf (Zehntel px/Tick),
+# Schwundboden da / weg (Ticks), Zeit in der Schatzkammer (Ticks)
+LV_THEME, LV_DARK = [0, 1, 2], [2, 1, 1]
+LV_SPIDER, LV_SKULL = [15, 20, 25], [20, 25, 30]
+LV_ON, LV_OFF, LV_WARN = [150, 120, 100], [90, 90, 100], 30
+LV_TREASURE = [900, 900, 780]
+# Dauer der Phasen (Ticks)
+READY_TICKS, DYING_TICKS, LEVELDONE_TICKS, GAMEOVER_TICKS = 100, 100, 150, 200
+TITLE_CARD, TITLE_SCORES, DEMO_LEN, TREASURE_MSG = 480, 300, 1500, 90
+DEMO_SEED = 4242
+# Sound-Bits (Game_Step setzt sie im Feld Sound) und Dateien in Prioritaet (Sound_Mix)
+SND = {'jump': 1, 'coin': 2, 'hoard': 4, 'key': 8, 'door': 16, 'torch': 32, 'life': 64, 'death': 128, 'treasure': 256,
+       'level': 512, 'gameover': 1024, 'ready': 2048, 'music': 4096}
+SND_PRIO = ['gameover', 'death', 'treasure', 'level', 'life', 'torch', 'door', 'key', 'hoard', 'coin', 'ready', 'jump']
+MUSIC_PHASES = ['Ready', 'Playing', 'Treasure']
+BANK = 'array{cluster{array{double}.Y}}'
+MIXER = 'cluster{array{double}.Current,int32.Position,int32.Priority,bool.Music,int32.MusicPos}'
+MIXER_V = '[[],0,99,false,0]'
+MUSIC_IDX, MUSIC_VOL = len(SND_PRIO), 0.30
+SND_RATE, SND_CHUNK, SND_BUFFER = 22050, 512, 2048
 
-# Gedaechtnis der Bild-Schleife: gezeichneter Raum, sein Hintergrundbild, Claudes Position in den letzten zwei Bildern
-RMEM = f'cluster{{int32.Room,{IMG}.Background,int32.X1,int32.Y1,int32.X2,int32.Y2}}'
-RMEM_V = f'[-1,{IMG_V},0,0,0,0]'
-# Tasten (ScanCode = physische Taste): gedrueckt / losgelassen. Esc beendet (bis es eine Pause gibt).
-KEYS_DOWN = [(72, 'Up'), (80, 'Down'), (75, 'Left'), (77, 'Right'), (57, 'Jump'), (28, 'Start'), (1, 'Quit')]
-KEYS_UP = [(75, 'Release'), (77, 'Release'), (72, 'ReleaseV'), (80, 'ReleaseV')]
+# Welt: Raum-Index = Reihenfolge in world.txt (Start = 0, Schatzkammer = letzter)
+import gh_levels as _gl
+ROOM_ORDER = [rid for row in _gl.WORLD for rid in row if rid]
+START_IDX, TREASURE_IDX = ROOM_ORDER.index(_gl.START), ROOM_ORDER.index(_gl.TREASURE)
+
+# Bildaufbau. Raumbilder als 2D-Raster (Zeilen x Bytes): 640 x 3840 (24 Bit).
+GRID = 'array.2{uint8}'
+LIGHT_IN, LIGHT_OUT, LIGHT_R = 11, 28, 6       # Abstand^2 in Kacheln: hell / halbdunkel, Radius des Bereichs
+VIEW = 'cluster{bool.Hide,int32.CX,int32.CY,int32.ClaudeIdx,int32.ClaudeX,int32.ClaudeY}'
+VIEW_V = '[false,0,0,-1,0,0]'
+RMEM = (f'cluster{{int32.RoomKey,int32.Key,int32.NameKey,{GRID}.Lit,{GRID}.Dim,{GRID}.Dark,{GRID}.Comp,{IMG}.Template,'
+        f'int32.CX,int32.CY,int32.X1,int32.Y1,int32.X2,int32.Y2,{ENEMIES}.Prev,int32.HudKey,int32.HudScore,int32.HudTime}}')
+RMEM_V = f'[-1,-1,-1,[],[],[],[],{IMG_V},-1,-1,0,0,0,0,[],-1,-1,-1]'
+PIECES = f'array{{{IMG}}}'
 # Sprite-Bilder von Claude: Profil = Facing * 7 + (0 steht, 1..4 laeuft, 5 springt, 6 faellt)
 SPR_SIDE_STEP = SPR['claude_l_stand'] - SPR['claude_r_stand']
-BLOCK_COLS, BLOCK_ROWS = 5, 6        # erneuertes Stueck um Claude (deckt drei Positionen plus eine Kachel Rand)
+GLYPH_W = 24
+CHARSET = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789 .:-!='
+# Einblendungen: (Sprite, X, Y) der Kaesten
+BOX_SMALL, BOX_WIDE, BOX_BIG = (480, 372), (400, 96), (360, 252)
 
 LIBS = {'Level': 'GH_Level.lvlib', 'Engine': 'GH_Engine.lvlib', 'Render': 'GH_Render.lvlib', 'Audio': 'GH_Audio.lvlib', 'App': 'GH_App.lvlib'}
 _SRC = os.path.join(ROOT, 'Source')

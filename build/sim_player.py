@@ -5,7 +5,7 @@ from gh_levels import ROOMS, WORLD
 
 T_ = TILE_CODE
 ORDER = [rid for row in WORLD for rid in row if rid]
-GRID = {rid: [[T_.get(ch, 0) for ch in line] for line in ROOMS[rid].lines()] for rid in ORDER}
+PRISTINE = {rid: [[T_.get(ch, 0) for ch in line] for line in ROOMS[rid].lines()] for rid in ORDER}
 WHERE = {rid: (d, x) for d, row in enumerate(WORLD) for x, rid in enumerate(row) if rid}
 
 
@@ -14,9 +14,13 @@ def fdiv(a, b):
 
 
 class Sim:
-    def __init__(self):
+    def __init__(self, level=1):
+        self.grid = {rid: [row[:] for row in PRISTINE[rid]] for rid in ORDER}
+        self.level = level
+        self.score, self.next_life, self.keys, self.torch, self.sounds = 0, EXTRA_LIFE, [0, 0, 0], False, 0
+        self.fphase = 0
         self.room = ORDER[0]
-        g = GRID[self.room]
+        g = self.grid[self.room]
         prow = next(r for r in range(ROWS) if T_['P'] in g[r])
         pcol = g[prow].index(T_['P'])
         self.y10 = ((prow + 1) * TILE - CLAUDE_H) * 10
@@ -30,11 +34,11 @@ class Sim:
     def tile(self, x, y):
         col = min(max(fdiv(x, TILE), 0), COLS - 1)
         row = min(max(fdiv(y, TILE), 0), ROWS - 1)
-        return GRID[self.room][row][col]
+        return self.grid[self.room][row][col]
 
     def move(self, jump):
         sol = lambda c: c in SOLID
-        pla = lambda c: c in PLATFORM
+        pla = lambda c: c in PLATFORM and not (c == T_['~'] and self.fphase == 2)
         lad = lambda c: c in CLIMBABLE
         pol = lambda c: c == T_['|']
         top = lambda y: fdiv(y, TILE) * TILE
@@ -113,6 +117,42 @@ class Sim:
         self.facing = 0 if run > 0 else 1 if run < 0 else self.facing
         return dead
 
+    def collect(self):
+        x, y = fdiv(self.x10, 10), fdiv(self.y10, 10)
+        for ox, oy in ((BOX_L, 16), (BOX_R, 16), (BOX_L, 40), (BOX_R, 40)):
+            col = min(max(fdiv(x + ox, TILE), 0), COLS - 1)
+            row = min(max(fdiv(y + oy, TILE), 0), ROWS - 1)
+            code = self.grid[self.room][row][col]
+            if T_['r'] <= code <= T_['T']:
+                self.grid[self.room][row][col] = 0
+                self.score += PTS.get(code, 0)
+                if code in (T_['r'], T_['b'], T_['y']):
+                    self.keys[code - T_['r']] += 1
+                    self.sounds |= SND['key']
+                elif code == T_['T']:
+                    self.torch = True
+                    self.sounds |= SND['torch']
+                else:
+                    self.sounds |= SND['coin'] if code == T_['g'] else SND['hoard']
+
+    def door(self):
+        x, y = fdiv(self.x10, 10), fdiv(self.y10, 10)
+        probe = x + BOX_R + 4 if self.facing == 0 else x + BOX_L - 4
+        col = min(max(fdiv(probe, TILE), 0), COLS - 1)
+        ra = min(max(fdiv(y + 40, TILE), 0), ROWS - 1)
+        rb = min(max(fdiv(y + 20, TILE), 0), ROWS - 1)
+        g = self.grid[self.room]
+        is_door = lambda v: T_['R'] <= v <= T_['Y']
+        code, row = (g[ra][col], ra) if is_door(g[ra][col]) else (g[rb][col], rb)
+        if is_door(code) and self.keys[code - T_['R']] > 0:
+            self.keys[code - T_['R']] -= 1
+            for k in range(-3, 4):
+                rr = min(max(row + k, 0), ROWS - 1)
+                if g[rr][col] == code:
+                    g[rr][col] = 0
+            self.score += DOOR_POINTS
+            self.sounds |= SND['door']
+
     def change(self):
         cx, cy = fdiv(self.x10, 10) + 16, fdiv(self.y10, 10) + 24
         dc = -1 if cx < 0 else 1 if cx >= W else 0
@@ -126,16 +166,34 @@ class Sim:
                 self.y10 -= dd * FIELD_H * 10
                 self.stand -= dd * FIELD_H
                 self.entry = (self.x10, self.y10, self.mode)
+                return
+        d, c = WHERE[self.room]
+        above = any((d2, c2) == (d - 1, c) for d2, c2 in WHERE.values())
+        if not above and self.y10 < 0:
+            self.y10 = 0
 
     def step(self, key=0):
         k = KEYS[key]
-        self.run = -1 if k == 'Left' else 1 if k == 'Right' else 0 if k == 'Release' else self.run
+        stop = k == 'Release' or (k == 'ReleaseL' and self.run == -1) or (k == 'ReleaseR' and self.run == 1)
+        self.run = -1 if k == 'Left' else 1 if k == 'Right' else 0 if stop else self.run
         self.vert = -1 if k == 'Up' else 1 if k == 'Down' else 0 if k == 'ReleaseV' else self.vert
         self.tick += 1
-        if self.move(k == 'Jump'):
-            self.x10, self.y10, self.mode = self.entry
-            self.vy, self.stand, self.lives = 0, fdiv(self.y10, 10), self.lives - 1
+        li = min(max(self.level - 1, 0), 2)
+        on, off = LV_ON[li], LV_OFF[li]
+        t = self.tick % (on + off)
+        self.fphase = 0 if t < on - LV_WARN else 1 if t < on else 2
+        if k == 'Jump':
+            pass
+        dead = self.move(k == 'Jump')
+        if k == 'Jump' and self.mode == 2 and self.vy == JUMP10:
+            self.sounds |= SND['jump']
+        self.collect()
+        self.door()
+        self.dead = dead
         self.change()
+        if self.score >= self.next_life:
+            self.next_life += EXTRA_LIFE
+            self.lives = min(self.lives + 1, MAX_LIVES)
         y = fdiv(self.y10, 10)
         self.min_y = min(self.min_y, y)
         self.air += self.mode == 2
@@ -144,26 +202,22 @@ class Sim:
         keys = dict(script)
         for i in range(ticks):
             self.step(keys.get(i, 0))
+            if getattr(self, 'dead', False):
+                break
         return dict(X=fdiv(self.x10, 10), Y=fdiv(self.y10, 10), Mode=self.mode, Room=ORDER.index(self.room), Lives=self.lives,
-                    MinY=self.min_y, Air=self.air)
+                    Score=self.score, Keys=self.keys[:], MinY=self.min_y, Air=self.air, Tick=self.tick)
 
 
 K = IN
 # Szenarien im Startraum 005 (Start: Spalte 8, oberste Etage): (Name, Tastenfolge [(Tick, Taste)], Ticks)
 SCENARIOS = [
-    ('stehen', [], 30),
-    ('Sprung auf der Stelle', [(0, K['Jump'])], 60),
-    ('rechts laufen 100 Ticks', [(0, K['Right']), (100, K['Release'])], 120),
-    ('Sprung im Lauf', [(0, K['Right']), (20, K['Jump']), (70, K['Release'])], 100),
-    ('links zur Stange und hinunter', [(0, K['Left'])], 260),
-    ('rechts zur Leiter, hinunter', [(0, K['Right']), (202, K['Release']), (203, K['Down']), (300, K['ReleaseV'])], 320),
-    ('Schwundboden ueberqueren', [(0, K['Right']), (202, K['Release']), (203, K['Down']), (280, K['ReleaseV']), (281, K['Left'])], 520),
+    ('Muenzen oben', [(0, K['Right'])], 160),
+    ('Sprung zur Plattform', [(0, K['Right']), (60, K['Jump']), (90, K['ReleaseR'])], 140),
+    ('Leiter runter, Schluessel blau', [(0, K['Right']), (202, K['ReleaseR']), (203, K['Down']), (300, K['ReleaseV']), (301, K['Left'])], 560),
 ]
 
 if __name__ == '__main__':
+    import sys
     for name, script, ticks in SCENARIOS:
-        s = Sim()
-        r = s.play(script, ticks)
+        r = Sim().play(script, ticks)
         print('%-32s At=%s Key=%s Ticks=%d -> %s' % (name, [t for t, _ in script], [k for _, k in script], ticks, r))
-    s = Sim()
-    print('Start', fdiv(s.x10, 10), fdiv(s.y10, 10))

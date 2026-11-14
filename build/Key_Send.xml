@@ -1,24 +1,37 @@
-<VI _name="Key_Send.vi" description="Translates a key (ScanCode = physical key, independent of the keyboard layout) into a game key and puts it into the key queue. Pressed: arrows, Space = Jump, Enter = Start, Esc = Quit; released: arrows = Release / ReleaseV. Quit (Stop button) also sends Quit. Quit out is true when the game shall end.">
-  <Control _name="Channels" type="cluster{ref{Queue}{uint16}.Keys,ref{Notifier}{cluster{uint32.Tick,int32.Room,int32.X10,int32.Y10,int32.VY10,int32.Mode,int32.Facing,int32.Run,int32.Vert,int32.StandY,int32.EntryX10,int32.EntryY10,int32.EntryMode,int32.Lives,bool.Dead,bool.Quit,array.2{uint8}.Tiles}}.Frames}" value="[,]" conIdx="0" connection="required" outputs="value:1001.v" uid="1001" uid_parent="root"/>
+<VI _name="GH_App.lvlib:Key_Send.vi" description="Translates a key (ScanCode = physical key, independent of the keyboard layout) into a game key and puts it into the key queue. Pressed: arrows, Space = Jump, Enter/N = Start, Esc/P = Pause; released: arrows = ReleaseL/ReleaseR/ReleaseV. The Stop button sends Quit. Quit out: the game ends (Stop, or Esc on the title screen - read from the last game state).">
+  <Control _name="Channels" type="cluster{ref{Queue}{uint16}.Keys,ref{Notifier}{cluster{uint32.Tick,int32.Phase,int32.PhaseTicks,int32.Level,int32.Room,int32.X10,int32.Y10,int32.VY10,int32.Mode,int32.Facing,int32.Run,int32.Vert,int32.StandY,int32.EntryX10,int32.EntryY10,int32.EntryMode,int32.Lives,int32.Score,int32.NextLife,int32.KeyR,int32.KeyB,int32.KeyY,bool.Torch,int32.FloorPhase,bool.Dead,bool.LevelStart,bool.Quit,int32.Sound,uint32.Seed,int32.DemoStep,array.2{uint8}.Tiles,array{cluster{string.ID,int32.Depth,int32.Column,array.2{uint8}.Tiles}}.World,array{cluster{int32.Kind,int32.X10,int32.Y10,int32.Dir,int32.Mode}}.Enemies,array{cluster{int32.Score,string.Name}}.Highscores,array{int32}.Name,int32.Cursor}}.Frames,ref{Queue}{int32}.Sounds}" value="[,,]" conIdx="0" connection="required" outputs="value:1001.v" uid="1001" uid_parent="root"/>
   <Control _name="ScanCode" type="int32" value="-1" conIdx="5" connection="required" outputs="value:1002.v" uid="1002" uid_parent="root"/>
   <Control _name="Released" type="bool" value="false" conIdx="7" connection="recommended" outputs="value:1003.v" uid="1003" uid_parent="root"/>
   <Control _name="Quit" type="bool" value="false" conIdx="9" connection="recommended" outputs="value:1004.v" uid="1004" uid_parent="root"/>
   <Control _name="error in" type="cluster{bool.status,int32.code,string.source}" value="[false,0,]" conIdx="11" connection="required" outputs="value:1005.v" uid="1005" uid_parent="root"/>
   <Constant _name="ScanCodes released" type="array{int32}" value="[75,77,72,80]" outputs="value:1006.v" uid="1006" uid_parent="root"/>
-  <Constant _name="Keys released" type="array{uint16}" value="[9,9,10,10]" outputs="value:1007.v" uid="1007" uid_parent="root"/>
+  <Constant _name="Keys released" type="array{uint16}" value="[11,12,10,10]" outputs="value:1007.v" uid="1007" uid_parent="root"/>
   <Node _name="Search 1D Array" inputs="1D array:1006.v,element:1002.v,start index (0):" outputs="index of element:1008.o0" uid="1008" uid_parent="root"/>
   <Node _name="Index Array" inputs="array:1007.v,index:1008.o0" outputs="element:1009.o0" uid="1009" uid_parent="root"/>
-  <Constant _name="ScanCodes pressed" type="array{int32}" value="[72,80,75,77,57,28,1]" outputs="value:1010.v" uid="1010" uid_parent="root"/>
-  <Constant _name="Keys pressed" type="array{uint16}" value="[1,2,3,4,8,7,5]" outputs="value:1011.v" uid="1011" uid_parent="root"/>
+  <Constant _name="ScanCodes pressed" type="array{int32}" value="[72,80,75,77,57,28,49,1,25]" outputs="value:1010.v" uid="1010" uid_parent="root"/>
+  <Constant _name="Keys pressed" type="array{uint16}" value="[1,2,3,4,8,7,7,6,6]" outputs="value:1011.v" uid="1011" uid_parent="root"/>
   <Node _name="Search 1D Array" inputs="1D array:1010.v,element:1002.v,start index (0):" outputs="index of element:1012.o0" uid="1012" uid_parent="root"/>
   <Node _name="Index Array" inputs="array:1011.v,index:1012.o0" outputs="element:1013.o0" uid="1013" uid_parent="root"/>
   <Node _name="Select" inputs="s:1003.v,t:1009.o0,f:1013.o0" outputs="s? t\3Af:1014.o0" uid="1014" uid_parent="root"/>
   <Constant type="uint16" value="5" outputs="value:1015.v" uid="1015" uid_parent="root"/>
   <Node _name="Select" inputs="s:1004.v,t:1015.v,f:1014.o0" outputs="s? t\3Af:1016.o0" uid="1016" uid_parent="root"/>
-  <Node _name="Unbundle By Name" fields="Keys" inputs="input cluster:1001.v" outputs="Keys:1017.o0" uid="1017" uid_parent="root"/>
-  <Node _name="Enqueue Element" inputs="queue:1017.o0,element:1016.o0,error in (no error):1005.v" outputs="queue out:,timed out?:,error out:1018.o0" uid="1018" uid_parent="root"/>
-  <Constant type="uint16" value="5" outputs="value:1019.v" uid="1019" uid_parent="root"/>
-  <Node _name="Equal?" inputs="x:1016.o0,y:1019.v" outputs="x = y?:1020.o0" uid="1020" uid_parent="root"/>
-  <Indicator _name="Quit out" type="bool" value="false" conIdx="4" connection="recommended" inputs="value:1020.o0" uid="1021" uid_parent="root"/>
-  <Indicator _name="error out" type="cluster{bool.status,int32.code,string.source}" value="[false,0,]" conIdx="15" connection="recommended" inputs="value:1018.o0" uid="1022" uid_parent="root"/>
+  <Node _name="Unbundle By Name" fields="Keys,Frames" inputs="input cluster:1001.v" outputs="Keys:1017.o0,Frames:1017.o1" uid="1017" uid_parent="root"/>
+  <Constant _name="do not wait" type="int32" value="0" outputs="value:1018.v" uid="1018" uid_parent="root"/>
+  <Node _name="Wait on Notification" inputs="notifier:1017.o1,timeout in ms (-1):1018.v,error in (no error):1005.v" outputs="notifier out:,notification:1019.o0,timed out?:1019.o1,error out:1019.o2" uid="1019" uid_parent="root"/>
+  <Node _name="Unbundle By Name" fields="Phase" inputs="input cluster:1019.o0" outputs="Phase:1020.o0" uid="1020" uid_parent="root"/>
+  <Node _name="Enqueue Element" inputs="queue:1017.o0,element:1016.o0,error in (no error):1019.o2" outputs="queue out:,timed out?:,error out:1021.o0" uid="1021" uid_parent="root"/>
+  <Constant type="int32" value="0" outputs="value:1022.v" uid="1022" uid_parent="root"/>
+  <Node _name="Equal?" inputs="x:1020.o0,y:1022.v" outputs="x = y?:1023.o0" uid="1023" uid_parent="root"/>
+  <Node _name="Not" inputs="x:1019.o1" outputs=".not. x?:1024.o0" uid="1024" uid_parent="root"/>
+  <Node _name="And" inputs="x:1023.o0,y:1024.o0" outputs="x .and. y?:1025.o0" uid="1025" uid_parent="root"/>
+  <Constant type="uint16" value="5" outputs="value:1026.v" uid="1026" uid_parent="root"/>
+  <Node _name="Equal?" inputs="x:1016.o0,y:1026.v" outputs="x = y?:1027.o0" uid="1027" uid_parent="root"/>
+  <Constant type="uint16" value="6" outputs="value:1028.v" uid="1028" uid_parent="root"/>
+  <Node _name="Equal?" inputs="x:1016.o0,y:1028.v" outputs="x = y?:1029.o0" uid="1029" uid_parent="root"/>
+  <Node _name="And" inputs="x:1029.o0,y:1025.o0" outputs="x .and. y?:1030.o0" uid="1030" uid_parent="root"/>
+  <Node _name="Or" inputs="x:1027.o0,y:1030.o0" outputs="x .or. y?:1031.o0" uid="1031" uid_parent="root"/>
+  <Node _name="Unbundle By Name" fields="status" inputs="input cluster:1021.o0" outputs="status:1032.o0" uid="1032" uid_parent="root"/>
+  <Node _name="Or" inputs="x:1031.o0,y:1032.o0" outputs="x .or. y?:1033.o0" uid="1033" uid_parent="root"/>
+  <Indicator _name="Quit out" type="bool" value="false" conIdx="4" connection="recommended" inputs="value:1033.o0" uid="1034" uid_parent="root"/>
+  <Indicator _name="error out" type="cluster{bool.status,int32.code,string.source}" value="[false,0,]" conIdx="15" connection="recommended" inputs="value:1021.o0" uid="1035" uid_parent="root"/>
 </VI>

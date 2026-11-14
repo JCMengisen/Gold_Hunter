@@ -1,0 +1,22 @@
+<VI _name="GH_Audio.lvlib:Sound_Bank_Load.vi" description="Loads all sound effects once (order = priority: gameover, death, treasure, level, life, torch, door, key, hoard, coin, ready, jump, then the music): Resources\Sounds\&lt;name&gt;.wav, first channel as samples (-1..1).">
+  <Control _name="error in" type="cluster{bool.status,int32.code,string.source}" value="[false,0,]" conIdx="11" connection="required" outputs="value:1001.v" uid="1001" uid_parent="root"/>
+  <Constant _name="Files" type="array{string}" value="[gameover.wav,death.wav,treasure.wav,level.wav,life.wav,torch.wav,door.wav,key.wav,hoard.wav,coin.wav,ready.wav,jump.wav,music.wav]" outputs="value:1002.v" uid="1002" uid_parent="root"/>
+  <Structure _name="For Loop" count="" maxin="" maxout="" uid="1003" uid_parent="root">
+    <Tunnel _id="In1" inputs="value:1002.v" mode="index" outputs="value:1004.v" uid="1004" uid_parent="1003"/>
+    <ShiftReg uid="1005" uid_parent="1003">
+      <Left inputs="value:1001.v" outputs="value:1006.v" uid="1006" uid_parent="1005"/>
+      <Right inputs="value:1010.o1" outputs="value:1007.v" uid="1007" uid_parent="1005"/>
+    </ShiftReg>
+    <Constant type="string" value="Sounds" outputs="value:1008.v" uid="1008" uid_parent="1003"/>
+    <Call target="Resource_Path.vi" inputs="File name:1004.v,Subfolder:1008.v,error in:1006.v" outputs="Path:1009.o0,error out:1009.o1" uid="1009" uid_parent="1003"/>
+    <Call target="Sound File Read Simple.vi" inputs="path:1009.o0,error in (no error):1009.o1" outputs="path out:,data:1010.o0,offset:,error out:1010.o1" uid="1010" uid_parent="1003"/>
+    <Constant type="int32" value="0" outputs="value:1011.v" uid="1011" uid_parent="1003"/>
+    <Node _name="Index Array" inputs="array:1010.o0,index:1011.v" outputs="element:1012.o0" uid="1012" uid_parent="1003"/>
+    <Node _name="Get Waveform Components" fields="Y" inputs="waveform:1012.o0" outputs="Y:1013.o0" uid="1013" uid_parent="1003"/>
+    <Constant type="cluster{array{double}.Y}" value="[[]]" outputs="value:1014.v" uid="1014" uid_parent="1003"/>
+    <Node _name="Bundle By Name" fields="Y" inputs="Y:1013.o0,input cluster:1014.v" outputs="output cluster:1015.o0" uid="1015" uid_parent="1003"/>
+    <Tunnel _id="Out1" inputs="value:1015.o0" mode="index" outputs="value:1016.v" uid="1016" uid_parent="1003"/>
+  </Structure>
+  <Indicator _name="Bank" type="array{cluster{array{double}.Y}}" value="[]" conIdx="4" connection="recommended" inputs="value:1016.v" uid="1017" uid_parent="root"/>
+  <Indicator _name="error out" type="cluster{bool.status,int32.code,string.source}" value="[false,0,]" conIdx="15" connection="recommended" inputs="value:1007.v" uid="1018" uid_parent="root"/>
+</VI>

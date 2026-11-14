@@ -1,59 +1,79 @@
-<VI _name="Test_Run.vi" description="Test: plays a key script. Game_Start, then Ticks ticks of Game_Step; at tick At[k] the key Key[k] is sent (values see Game_Step: 1 Up, 2 Down, 3 Left, 4 Right, 8 Jump, 9 Release, 10 ReleaseV). Returns where Claude ends: X and Y in pixels, Mode, Room, Lives, the highest point reached (Min Y) and the number of ticks spent in the air.">
-  <Control _name="At" type="array{int32}" value="[]" outputs="value:14001.v" uid="14001" uid_parent="root"/>
-  <Control _name="Key" type="array{uint16}" value="[]" outputs="value:14002.v" uid="14002" uid_parent="root"/>
-  <Control _name="Ticks" type="int32" value="60" outputs="value:14003.v" uid="14003" uid_parent="root"/>
-  <Control _name="error in" type="cluster{bool.status,int32.code,string.source}" value="[false,0,]" conIdx="11" connection="required" outputs="value:14004.v" uid="14004" uid_parent="root"/>
-  <Call target="Game_Start.vi" inputs="error in:14004.v" outputs="State:14005.o0,Rooms:14005.o1,error out:14005.o2" uid="14005" uid_parent="root"/>
-  <Constant type="int32" value="100000" outputs="value:14006.v" uid="14006" uid_parent="root"/>
-  <Constant type="int32" value="0" outputs="value:14007.v" uid="14007" uid_parent="root"/>
-  <Constant type="int32" value="0" outputs="value:14008.v" uid="14008" uid_parent="root"/>
-  <Node _name="Initialize Array" inputs="element:14008.v,dimension size:14003.v" outputs="initialized array:14009.o0" uid="14009" uid_parent="root"/>
-  <Structure _name="For Loop" count="14010i.v" maxin="" maxout="" uid="14010" uid_parent="root">
-    <Tunnel _id="In1" inputs="value:14009.o0" mode="index" outputs="value:14011.v" uid="14011" uid_parent="14010"/>
-    <Tunnel _id="In2" inputs="value:14001.v" outputs="value:14012.v" uid="14012" uid_parent="14010"/>
-    <Tunnel _id="In3" inputs="value:14002.v" outputs="value:14013.v" uid="14013" uid_parent="14010"/>
-    <Tunnel _id="In4" inputs="value:14005.o1" outputs="value:14014.v" uid="14014" uid_parent="14010"/>
-    <ShiftReg uid="14015" uid_parent="14010">
-      <Left inputs="value:14005.o0" outputs="value:14016.v" uid="14016" uid_parent="14015"/>
-      <Right inputs="value:14029.o0" outputs="value:14017.v" uid="14017" uid_parent="14015"/>
+<VI _name="Test_Run.vi" description="Test: Test_Setup, then Ticks ticks of Game_Step; at tick At[k] the key Key[k] is sent (values see Game_Step: 1 Up, 2 Down, 3 Left, 4 Right, 6 Pause, 7 Start, 8 Jump, 9 Release, 10 ReleaseV, 11 ReleaseL, 12 ReleaseR). Returns where Claude ends and the game state: X, Y (px), Mode, Room, Phase, Lives, Score, keys, torch, the highest point (Min Y), ticks in the air and all sound bits that occurred.">
+  <Control _name="At" type="array{int32}" value="[]" outputs="value:16001.v" uid="16001" uid_parent="root"/>
+  <Control _name="Key" type="array{uint16}" value="[]" outputs="value:16002.v" uid="16002" uid_parent="root"/>
+  <Control _name="Ticks" type="int32" value="60" outputs="value:16003.v" uid="16003" uid_parent="root"/>
+  <Control _name="Level" type="int32" value="1" outputs="value:16004.v" uid="16004" uid_parent="root"/>
+  <Control _name="Room" type="int32" value="-1" outputs="value:16005.v" uid="16005" uid_parent="root"/>
+  <Control _name="X" type="int32" value="0" outputs="value:16006.v" uid="16006" uid_parent="root"/>
+  <Control _name="Y" type="int32" value="0" outputs="value:16007.v" uid="16007" uid_parent="root"/>
+  <Control _name="Torch" type="bool" value="false" outputs="value:16008.v" uid="16008" uid_parent="root"/>
+  <Control _name="Phase" type="int32" value="2" outputs="value:16009.v" uid="16009" uid_parent="root"/>
+  <Control _name="Keys" type="int32" value="0" outputs="value:16010.v" uid="16010" uid_parent="root"/>
+  <Control _name="error in" type="cluster{bool.status,int32.code,string.source}" value="[false,0,]" conIdx="11" connection="required" outputs="value:16011.v" uid="16011" uid_parent="root"/>
+  <Call target="Test_Setup.vi" inputs="Level:16004.v,Room:16005.v,X:16006.v,Y:16007.v,Torch:16008.v,Phase:16009.v,Keys:16010.v,error in:16011.v" outputs="State:16012.o0,Rooms:16012.o1,error out:16012.o2" uid="16012" uid_parent="root"/>
+  <Constant type="int32" value="100000" outputs="value:16013.v" uid="16013" uid_parent="root"/>
+  <Constant type="int32" value="0" outputs="value:16014.v" uid="16014" uid_parent="root"/>
+  <Constant type="int32" value="0" outputs="value:16015.v" uid="16015" uid_parent="root"/>
+  <Constant type="int32" value="0" outputs="value:16016.v" uid="16016" uid_parent="root"/>
+  <Node _name="Initialize Array" inputs="element:16016.v,dimension size:16003.v" outputs="initialized array:16017.o0" uid="16017" uid_parent="root"/>
+  <Structure _name="For Loop" count="16018i.v" maxin="" maxout="" uid="16018" uid_parent="root">
+    <Tunnel _id="In1" inputs="value:16017.o0" mode="index" outputs="value:16019.v" uid="16019" uid_parent="16018"/>
+    <Tunnel _id="In2" inputs="value:16001.v" outputs="value:16020.v" uid="16020" uid_parent="16018"/>
+    <Tunnel _id="In3" inputs="value:16002.v" outputs="value:16021.v" uid="16021" uid_parent="16018"/>
+    <Tunnel _id="In4" inputs="value:16012.o1" outputs="value:16022.v" uid="16022" uid_parent="16018"/>
+    <ShiftReg uid="16023" uid_parent="16018">
+      <Left inputs="value:16012.o0" outputs="value:16024.v" uid="16024" uid_parent="16023"/>
+      <Right inputs="value:16040.o0" outputs="value:16025.v" uid="16025" uid_parent="16023"/>
     </ShiftReg>
-    <ShiftReg uid="14018" uid_parent="14010">
-      <Left inputs="value:14005.o2" outputs="value:14019.v" uid="14019" uid_parent="14018"/>
-      <Right inputs="value:14029.o1" outputs="value:14020.v" uid="14020" uid_parent="14018"/>
+    <ShiftReg uid="16026" uid_parent="16018">
+      <Left inputs="value:16012.o2" outputs="value:16027.v" uid="16027" uid_parent="16026"/>
+      <Right inputs="value:16040.o1" outputs="value:16028.v" uid="16028" uid_parent="16026"/>
     </ShiftReg>
-    <ShiftReg uid="14021" uid_parent="14010">
-      <Left inputs="value:14006.v" outputs="value:14022.v" uid="14022" uid_parent="14021"/>
-      <Right inputs="value:14034.o0" outputs="value:14023.v" uid="14023" uid_parent="14021"/>
+    <ShiftReg uid="16029" uid_parent="16018">
+      <Left inputs="value:16013.v" outputs="value:16030.v" uid="16030" uid_parent="16029"/>
+      <Right inputs="value:16045.o0" outputs="value:16031.v" uid="16031" uid_parent="16029"/>
     </ShiftReg>
-    <ShiftReg uid="14024" uid_parent="14010">
-      <Left inputs="value:14007.v" outputs="value:14025.v" uid="14025" uid_parent="14024"/>
-      <Right inputs="value:14039.o0" outputs="value:14026.v" uid="14026" uid_parent="14024"/>
+    <ShiftReg uid="16032" uid_parent="16018">
+      <Left inputs="value:16014.v" outputs="value:16033.v" uid="16033" uid_parent="16032"/>
+      <Right inputs="value:16050.o0" outputs="value:16034.v" uid="16034" uid_parent="16032"/>
     </ShiftReg>
-    <Node _name="Search 1D Array" inputs="1D array:14012.v,element:14010i.v,start index (0):" outputs="index of element:14027.o0" uid="14027" uid_parent="14010"/>
-    <Node _name="Index Array" inputs="array:14013.v,index:14027.o0" outputs="element:14028.o0" uid="14028" uid_parent="14010"/>
-    <Call target="Game_Step.vi" inputs="State:14016.v,Key:14028.o0,Rooms:14014.v,error in:14019.v" outputs="State out:14029.o0,error out:14029.o1" uid="14029" uid_parent="14010"/>
-    <Node _name="Unbundle By Name" fields="Y10,Mode" inputs="input cluster:14029.o0" outputs="Y10:14030.o0,Mode:14030.o1" uid="14030" uid_parent="14010"/>
-    <Constant type="int32" value="10" outputs="value:14031.v" uid="14031" uid_parent="14010"/>
-    <Node _name="Quotient &amp; Remainder" inputs="x:14030.o0,y:14031.v" outputs="x-y*floor(x/y):14032.o0,floor(x/y):14032.o1" uid="14032" uid_parent="14010"/>
-    <Node _name="Less?" inputs="x:14032.o1,y:14022.v" outputs="x &lt; y?:14033.o0" uid="14033" uid_parent="14010"/>
-    <Node _name="Select" inputs="s:14033.o0,t:14032.o1,f:14022.v" outputs="s? t\3Af:14034.o0" uid="14034" uid_parent="14010"/>
-    <Constant type="int32" value="2" outputs="value:14035.v" uid="14035" uid_parent="14010"/>
-    <Node _name="Equal?" inputs="x:14030.o1,y:14035.v" outputs="x = y?:14036.o0" uid="14036" uid_parent="14010"/>
-    <Node _name="Boolean To (0\2C1)" inputs="Boolean:14036.o0" outputs="0\2C 1:14037.o0" uid="14037" uid_parent="14010"/>
-    <Node _name="To Long Integer" inputs="number:14037.o0" outputs="32bit integer:14038.o0" uid="14038" uid_parent="14010"/>
-    <Node _name="Add" inputs="x:14025.v,y:14038.o0" outputs="x+y:14039.o0" uid="14039" uid_parent="14010"/>
+    <ShiftReg uid="16035" uid_parent="16018">
+      <Left inputs="value:16015.v" outputs="value:16036.v" uid="16036" uid_parent="16035"/>
+      <Right inputs="value:16051.o0" outputs="value:16037.v" uid="16037" uid_parent="16035"/>
+    </ShiftReg>
+    <Node _name="Search 1D Array" inputs="1D array:16020.v,element:16018i.v,start index (0):" outputs="index of element:16038.o0" uid="16038" uid_parent="16018"/>
+    <Node _name="Index Array" inputs="array:16021.v,index:16038.o0" outputs="element:16039.o0" uid="16039" uid_parent="16018"/>
+    <Call target="Game_Step.vi" inputs="State:16024.v,Key:16039.o0,Rooms:16022.v,error in:16027.v" outputs="State out:16040.o0,error out:16040.o1" uid="16040" uid_parent="16018"/>
+    <Node _name="Unbundle By Name" fields="Y10,Mode,Sound" inputs="input cluster:16040.o0" outputs="Y10:16041.o0,Mode:16041.o1,Sound:16041.o2" uid="16041" uid_parent="16018"/>
+    <Constant type="int32" value="10" outputs="value:16042.v" uid="16042" uid_parent="16018"/>
+    <Node _name="Quotient &amp; Remainder" inputs="x:16041.o0,y:16042.v" outputs="x-y*floor(x/y):16043.o0,floor(x/y):16043.o1" uid="16043" uid_parent="16018"/>
+    <Node _name="Less?" inputs="x:16043.o1,y:16030.v" outputs="x &lt; y?:16044.o0" uid="16044" uid_parent="16018"/>
+    <Node _name="Select" inputs="s:16044.o0,t:16043.o1,f:16030.v" outputs="s? t\3Af:16045.o0" uid="16045" uid_parent="16018"/>
+    <Constant type="int32" value="2" outputs="value:16046.v" uid="16046" uid_parent="16018"/>
+    <Node _name="Equal?" inputs="x:16041.o1,y:16046.v" outputs="x = y?:16047.o0" uid="16047" uid_parent="16018"/>
+    <Node _name="Boolean To (0\2C1)" inputs="Boolean:16047.o0" outputs="0\2C 1:16048.o0" uid="16048" uid_parent="16018"/>
+    <Node _name="To Long Integer" inputs="number:16048.o0" outputs="32bit integer:16049.o0" uid="16049" uid_parent="16018"/>
+    <Node _name="Add" inputs="x:16033.v,y:16049.o0" outputs="x+y:16050.o0" uid="16050" uid_parent="16018"/>
+    <Node _name="Or" inputs="x:16036.v,y:16041.o2" outputs="x .or. y?:16051.o0" uid="16051" uid_parent="16018"/>
   </Structure>
-  <Node _name="Unbundle By Name" fields="X10,Y10,Mode,Room,Lives" inputs="input cluster:14017.v" outputs="X10:14040.o0,Y10:14040.o1,Mode:14040.o2,Room:14040.o3,Lives:14040.o4" uid="14040" uid_parent="root"/>
-  <Constant type="int32" value="10" outputs="value:14041.v" uid="14041" uid_parent="root"/>
-  <Node _name="Quotient &amp; Remainder" inputs="x:14040.o0,y:14041.v" outputs="x-y*floor(x/y):14042.o0,floor(x/y):14042.o1" uid="14042" uid_parent="root"/>
-  <Indicator _name="X" type="int32" value="0" inputs="value:14042.o1" uid="14043" uid_parent="root"/>
-  <Constant type="int32" value="10" outputs="value:14044.v" uid="14044" uid_parent="root"/>
-  <Node _name="Quotient &amp; Remainder" inputs="x:14040.o1,y:14044.v" outputs="x-y*floor(x/y):14045.o0,floor(x/y):14045.o1" uid="14045" uid_parent="root"/>
-  <Indicator _name="Y" type="int32" value="0" inputs="value:14045.o1" uid="14046" uid_parent="root"/>
-  <Indicator _name="Mode" type="int32" value="0" inputs="value:14040.o2" uid="14047" uid_parent="root"/>
-  <Indicator _name="Room" type="int32" value="0" inputs="value:14040.o3" uid="14048" uid_parent="root"/>
-  <Indicator _name="Lives" type="int32" value="0" inputs="value:14040.o4" uid="14049" uid_parent="root"/>
-  <Indicator _name="Min Y" type="int32" value="0" inputs="value:14023.v" uid="14050" uid_parent="root"/>
-  <Indicator _name="Air ticks" type="int32" value="0" inputs="value:14026.v" uid="14051" uid_parent="root"/>
-  <Indicator _name="error out" type="cluster{bool.status,int32.code,string.source}" value="[false,0,]" inputs="value:14020.v" uid="14052" uid_parent="root"/>
+  <Node _name="Unbundle By Name" fields="X10,Y10,Mode,Room,Phase,Lives,Score,KeyR,KeyB,KeyY,Torch" inputs="input cluster:16025.v" outputs="X10:16052.o0,Y10:16052.o1,Mode:16052.o2,Room:16052.o3,Phase:16052.o4,Lives:16052.o5,Score:16052.o6,KeyR:16052.o7,KeyB:16052.o8,KeyY:16052.o9,Torch:16052.o10" uid="16052" uid_parent="root"/>
+  <Constant type="int32" value="10" outputs="value:16053.v" uid="16053" uid_parent="root"/>
+  <Node _name="Quotient &amp; Remainder" inputs="x:16052.o0,y:16053.v" outputs="x-y*floor(x/y):16054.o0,floor(x/y):16054.o1" uid="16054" uid_parent="root"/>
+  <Constant type="int32" value="10" outputs="value:16055.v" uid="16055" uid_parent="root"/>
+  <Node _name="Quotient &amp; Remainder" inputs="x:16052.o1,y:16055.v" outputs="x-y*floor(x/y):16056.o0,floor(x/y):16056.o1" uid="16056" uid_parent="root"/>
+  <Indicator _name="X out" type="int32" value="0" inputs="value:16054.o1" uid="16057" uid_parent="root"/>
+  <Indicator _name="Y out" type="int32" value="0" inputs="value:16056.o1" uid="16058" uid_parent="root"/>
+  <Indicator _name="Mode" type="int32" value="0" inputs="value:16052.o2" uid="16059" uid_parent="root"/>
+  <Indicator _name="Room out" type="int32" value="0" inputs="value:16052.o3" uid="16060" uid_parent="root"/>
+  <Indicator _name="Phase out" type="int32" value="0" inputs="value:16052.o4" uid="16061" uid_parent="root"/>
+  <Indicator _name="Lives" type="int32" value="0" inputs="value:16052.o5" uid="16062" uid_parent="root"/>
+  <Indicator _name="Score" type="int32" value="0" inputs="value:16052.o6" uid="16063" uid_parent="root"/>
+  <Indicator _name="KeyR" type="int32" value="0" inputs="value:16052.o7" uid="16064" uid_parent="root"/>
+  <Indicator _name="KeyB" type="int32" value="0" inputs="value:16052.o8" uid="16065" uid_parent="root"/>
+  <Indicator _name="KeyY" type="int32" value="0" inputs="value:16052.o9" uid="16066" uid_parent="root"/>
+  <Indicator _name="Torch out" type="bool" value="false" inputs="value:16052.o10" uid="16067" uid_parent="root"/>
+  <Indicator _name="Min Y" type="int32" value="0" inputs="value:16031.v" uid="16068" uid_parent="root"/>
+  <Indicator _name="Air ticks" type="int32" value="0" inputs="value:16034.v" uid="16069" uid_parent="root"/>
+  <Indicator _name="Sounds" type="int32" value="0" inputs="value:16037.v" uid="16070" uid_parent="root"/>
+  <Indicator _name="error out" type="cluster{bool.status,int32.code,string.source}" value="[false,0,]" inputs="value:16028.v" uid="16071" uid_parent="root"/>
 </VI>

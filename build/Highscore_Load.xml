@@ -1,0 +1,35 @@
+<VI _name="GH_Engine.lvlib:Highscore_Load.vi" description="Reads the highscore list from Resources\Data\highscores.txt (one line per entry: Score;Name). Without the file or with an empty file the default list comes back and no error.">
+  <Control _name="error in" type="cluster{bool.status,int32.code,string.source}" value="[false,0,]" conIdx="11" connection="required" outputs="value:1001.v" uid="1001" uid_parent="root"/>
+  <Constant type="string" value="highscores.txt" outputs="value:1002.v" uid="1002" uid_parent="root"/>
+  <Constant type="string" value="Data" outputs="value:1003.v" uid="1003" uid_parent="root"/>
+  <Call target="Resource_Path.vi" inputs="File name:1002.v,Subfolder:1003.v,error in:1001.v" outputs="Path:1004.o0,error out:1004.o1" uid="1004" uid_parent="root"/>
+  <Node _name="Read from Text File" convertEol="true" inputs="file (use dialog):1004.o0,count:,error in:1004.o1,prompt (Open existing file):" outputs="refnum out:,text:1005.o0,cancelled:,error out:1005.o1" uid="1005" uid_parent="root"/>
+  <Constant type="string" value="%s" outputs="value:1006.v" uid="1006" uid_parent="root"/>
+  <Constant type="array.2{string}" value="[]" outputs="value:1007.v" uid="1007" uid_parent="root"/>
+  <Constant type="string" value=";" outputs="value:1008.v" uid="1008" uid_parent="root"/>
+  <Node _name="Spreadsheet String To Array" inputs="format string:1006.v,spreadsheet string:1005.o0,array type (2D Dbl):1007.v,delimiter (Tab):1008.v" outputs="array:1009.o0" uid="1009" uid_parent="root"/>
+  <Structure _name="For Loop" count="" maxin="" maxout="" uid="1010" uid_parent="root">
+    <Tunnel _id="In1" inputs="value:1009.o0" mode="index" outputs="value:1011.v" uid="1011" uid_parent="1010"/>
+    <Constant type="int32" value="0" outputs="value:1012.v" uid="1012" uid_parent="1010"/>
+    <Node _name="Index Array" inputs="array:1011.v,index:1012.v" outputs="element:1013.o0" uid="1013" uid_parent="1010"/>
+    <Constant type="int32" value="0" outputs="value:1014.v" uid="1014" uid_parent="1010"/>
+    <Node _name="Decimal String To Number" inputs="string:1013.o0,offset:,default (0L):1014.v" outputs="offset past number:,number:1015.o0" uid="1015" uid_parent="1010"/>
+    <Constant type="cluster{int32.Score,string.Name}" value="[0,]" outputs="value:1016.v" uid="1016" uid_parent="1010"/>
+    <Constant type="int32" value="1" outputs="value:1017.v" uid="1017" uid_parent="1010"/>
+    <Node _name="Index Array" inputs="array:1011.v,index:1017.v" outputs="element:1018.o0" uid="1018" uid_parent="1010"/>
+    <Node _name="Bundle By Name" fields="Score,Name" inputs="Score:1015.o0,Name:1018.o0,input cluster:1016.v" outputs="output cluster:1019.o0" uid="1019" uid_parent="1010"/>
+    <Tunnel _id="Out1" inputs="value:1019.o0" mode="index" outputs="value:1020.v" uid="1020" uid_parent="1010"/>
+  </Structure>
+  <Node _name="Unbundle By Name" fields="status" inputs="input cluster:1005.o1" outputs="status:1021.o0" uid="1021" uid_parent="root"/>
+  <Node _name="Array Size" inputs="array:1020.v" outputs="size(s):1022.o0" uid="1022" uid_parent="root"/>
+  <Node _name="To Long Integer" inputs="number:1022.o0" outputs="32bit integer:1023.o0" uid="1023" uid_parent="root"/>
+  <Constant type="int32" value="0" outputs="value:1024.v" uid="1024" uid_parent="root"/>
+  <Node _name="Equal?" inputs="x:1023.o0,y:1024.v" outputs="x = y?:1025.o0" uid="1025" uid_parent="root"/>
+  <Node _name="Or" inputs="x:1021.o0,y:1025.o0" outputs="x .or. y?:1026.o0" uid="1026" uid_parent="root"/>
+  <Constant _name="Default list" type="array{cluster{int32.Score,string.Name}}" value="[[5000,CLAUDE],[4000,GOLDIE],[3000,DIGGER],[2000,MINER],[1000,ROOKIE]]" outputs="value:1027.v" uid="1027" uid_parent="root"/>
+  <Node _name="Select" inputs="s:1026.o0,t:1027.v,f:1020.v" outputs="s? t\3Af:1028.o0" uid="1028" uid_parent="root"/>
+  <Indicator _name="Table" type="array{cluster{int32.Score,string.Name}}" value="[]" conIdx="4" connection="recommended" inputs="value:1028.o0" uid="1029" uid_parent="root"/>
+  <Constant type="cluster{bool.status,int32.code,string.source}" value="[false,0,]" outputs="value:1030.v" uid="1030" uid_parent="root"/>
+  <Node _name="Select" inputs="s:1021.o0,t:1030.v,f:1005.o1" outputs="s? t\3Af:1031.o0" uid="1031" uid_parent="root"/>
+  <Indicator _name="error out" type="cluster{bool.status,int32.code,string.source}" value="[false,0,]" conIdx="15" connection="recommended" inputs="value:1031.o0" uid="1032" uid_parent="root"/>
+</VI>

@@ -6,6 +6,10 @@ from gh_lib import *
 SCREEN = f'[0,0,{W},{H}]'
 
 
+def size(d, arr):
+    return d.i32(d.node('Array Size', [('array', arr)], ['size(s)'])['size(s)'])
+
+
 def room_image_name(d, theme, rid, suffix=''):
     num = d.node('Number To Decimal String', [('number', theme), ('width (-)', '')], ['decimal integer string'])['decimal integer string']
     return d.node('Concatenate Strings', [('string', d.const('string', 'room_')), ('string', num), ('string', d.const('string', '_')),
@@ -456,47 +460,164 @@ def snapshot_dirty():
     d.write()
 
 
-def test_run():
-    d = Doc('Test_Run.vi', 'Test: plays a key script. Game_Start, then Ticks ticks of Game_Step; at tick At[k] the key Key[k] is sent '
-            '(values see Game_Step: 1 Up, 2 Down, 3 Left, 4 Right, 8 Jump, 9 Release, 10 ReleaseV). Returns where Claude ends: X and Y in '
-            'pixels, Mode, Room, Lives, the highest point reached (Min Y) and the number of ticks spent in the air.', 14000)
-    at = d.ctrl('At', 'array{int32}', '[]')
-    keys = d.ctrl('Key', 'array{uint16}', '[]')
-    ticks = d.ctrl('Ticks', 'int32', '60')
+def test_setup():
+    d = Doc('Test_Setup.vi', 'Test helper: Game_Start, then a new game in Level; with Room >= 0 Claude is put into that room at (X, Y) px '
+            '(the room gets its tiles and enemies, the position is the restart point). Torch sets the torch, Keys the number of keys of each colour. Phase = phase to start in '
+            '(2 = Playing).', 15000)
+    level = d.ctrl('Level', 'int32', '1', 0)
+    room = d.ctrl('Room', 'int32', '-1', 5)
+    x = d.ctrl('X', 'int32', '0', 7)
+    y = d.ctrl('Y', 'int32', '0', 9)
+    torch = d.ctrl('Torch', 'bool', 'false', 1)
+    phase = d.ctrl('Phase', 'int32', '2', 2)
+    keys = d.ctrl('Keys', 'int32', '0', 3)
     e = d.err_in()
     c = d.i32c
     gs = d.call('Game_Start.vi', [('error in', e)], ['State', 'Rooms', 'error out'])
-    big, zero = c(100000), c(0)
+    gn = d.call('Game_New.vi', [('State', gs['State']), ('Rooms', gs['Rooms']), ('Demo', d.const('bool', 'false')), ('error in', gs['error out'])],
+                ['State out', 'error out'])
+    ls = d.call('Level_Setup.vi', [('State', gn['State out']), ('Rooms', gs['Rooms']), ('Level', level), ('error in', gn['error out'])],
+                ['State out', 'error out'])
+    world, = d.unb(ls['State out'], ['World'])
+    use = d.node('Greater Or Equal To 0?', [('x', room)], ['x &gt;= 0?'])['x &gt;= 0?']
+    tiles, = d.unb(d.idx(world, d.sel(use, room, c(0))), ['Tiles'])
+    ei = d.call('Enemies_Init.vi', [('Tiles', tiles), ('error in', ls['error out'])], ['Enemies', 'error out'])
+    x10, y10 = d.mul(x, c(10)), d.mul(y, c(10))
+    moved_ = d.bun(ls['State out'], [('Room', room), ('Tiles', tiles), ('Enemies', ei['Enemies']), ('X10', x10), ('Y10', y10), ('StandY', y),
+                                     ('EntryX10', x10), ('EntryY10', y10)])
+    st = d.sel(use, moved_, ls['State out'])
+    st2 = d.bun(st, [('Torch', torch), ('Phase', phase), ('PhaseTicks', c(0)), ('Sound', c(0)), ('KeyR', keys), ('KeyB', keys), ('KeyY', keys)])
+    d.indic('State', STATE, STATE_V, st2, 4)
+    d.indic('Rooms', ROOMS, '[]', gs['Rooms'], 6)
+    d.err_out(ei['error out'])
+    d.write()
+
+
+def test_run():
+    d = Doc('Test_Run.vi', 'Test: Test_Setup, then Ticks ticks of Game_Step; at tick At[k] the key Key[k] is sent (values see Game_Step: '
+            '1 Up, 2 Down, 3 Left, 4 Right, 6 Pause, 7 Start, 8 Jump, 9 Release, 10 ReleaseV, 11 ReleaseL, 12 ReleaseR). Returns where Claude '
+            'ends and the game state: X, Y (px), Mode, Room, Phase, Lives, Score, keys, torch, the highest point (Min Y), ticks in the air '
+            'and all sound bits that occurred.', 16000)
+    at = d.ctrl('At', 'array{int32}', '[]')
+    keys = d.ctrl('Key', 'array{uint16}', '[]')
+    ticks = d.ctrl('Ticks', 'int32', '60')
+    level = d.ctrl('Level', 'int32', '1')
+    room = d.ctrl('Room', 'int32', '-1')
+    x = d.ctrl('X', 'int32', '0')
+    y = d.ctrl('Y', 'int32', '0')
+    torch = d.ctrl('Torch', 'bool', 'false')
+    phase = d.ctrl('Phase', 'int32', '2')
+    keys_n = d.ctrl('Keys', 'int32', '0')
+    e = d.err_in()
+    c = d.i32c
+    ts = d.call('Test_Setup.vi', [('Level', level), ('Room', room), ('X', x), ('Y', y), ('Torch', torch), ('Phase', phase), ('Keys', keys_n), ('error in', e)],
+                ['State', 'Rooms', 'error out'])
+    big, zero, zero2 = c(100000), c(0), c(0)
     cnt = d.node('Initialize Array', [('element', c(0)), ('dimension size', ticks)], ['initialized array'])['initialized array']
     lp = d.begin('For Loop', 'count="@i.v" maxin="" maxout=""')
     i = f'{lp}i.v'
     d.tunnel_in(1, cnt, 'index')
-    at1, keys1, rooms1 = d.tunnel_in(2, at), d.tunnel_in(3, keys), d.tunnel_in(4, gs['Rooms'])
-    s_l, s_r = shiftreg(d, lp, gs['State'])
-    e_l, e_r = shiftreg(d, lp, gs['error out'])
+    at1, keys1, rooms1 = d.tunnel_in(2, at), d.tunnel_in(3, keys), d.tunnel_in(4, ts['Rooms'])
+    s_l, s_r = shiftreg(d, lp, ts['State'])
+    e_l, e_r = shiftreg(d, lp, ts['error out'])
     m_l, m_r = shiftreg(d, lp, big)
     a_l, a_r = shiftreg(d, lp, zero)
+    b_l, b_r = shiftreg(d, lp, zero2)
     hit = d.node('Search 1D Array', [('1D array', at1), ('element', i), ('start index (0)', '')], ['index of element'])['index of element']
     st = d.call('Game_Step.vi', [('State', s_l), ('Key', d.idx(keys1, hit)), ('Rooms', rooms1), ('error in', e_l)], ['State out', 'error out'])
-    y10, mode = d.unb(st['State out'], ['Y10', 'Mode'])
-    y = d.qr(y10, c(10))[1]
-    m2 = d.sel(d.lt(y, m_l), y, m_l)
+    y10, mode, snd = d.unb(st['State out'], ['Y10', 'Mode', 'Sound'])
+    yy = d.qr(y10, c(10))[1]
+    m2 = d.sel(d.lt(yy, m_l), yy, m_l)
     a2 = d.add2(a_l, d.i32(d.b01(d.eq(mode, c(2)))))
+    b2 = d.or_(b_l, snd)
     d.end()
     final = close_reg(d, s_r, st['State out'])
-    x10, y10, mode, room, lives = d.unb(final, ['X10', 'Y10', 'Mode', 'Room', 'Lives'])
-    d.indic('X', 'int32', '0', d.qr(x10, c(10))[1])
-    d.indic('Y', 'int32', '0', d.qr(y10, c(10))[1])
-    d.indic('Mode', 'int32', '0', mode)
-    d.indic('Room', 'int32', '0', room)
-    d.indic('Lives', 'int32', '0', lives)
+    fx, fy, fm, fr, fp, fl, fs, k1, k2, k3, ft = d.unb(final, ['X10', 'Y10', 'Mode', 'Room', 'Phase', 'Lives', 'Score', 'KeyR', 'KeyB', 'KeyY', 'Torch'])
+    for name, v in (('X out', d.qr(fx, c(10))[1]), ('Y out', d.qr(fy, c(10))[1]), ('Mode', fm), ('Room out', fr), ('Phase out', fp), ('Lives', fl), ('Score', fs),
+                    ('KeyR', k1), ('KeyB', k2), ('KeyY', k3)):
+        d.indic(name, 'int32', '0', v)
+    d.indic('Torch out', 'bool', 'false', ft)
     d.indic('Min Y', 'int32', '0', close_reg(d, m_r, m2))
     d.indic('Air ticks', 'int32', '0', close_reg(d, a_r, a2))
+    d.indic('Sounds', 'int32', '0', close_reg(d, b_r, b2))
     d.indic('error out', ERR, ERR_V, close_reg(d, e_r, st['error out']))
     d.write()
 
 
-ALL = {f.__name__: f for f in (snapshot_room, test_world, test_bench, test_bench2, test_bench3, render_demo, snapshot_dirty, test_run)}
+def snapshot_run():
+    d = Doc('Snapshot_Run.vi', 'Test of the whole picture build-up: Test_Setup, then Ticks ticks of Game_Step with the key script (At, Key), '
+            'each tick drawn by Frame_Draw. Its pieces are copied onto an emulated screen exactly like the picture control (never erasing). '
+            'The screen after the last tick is saved as Resources\\Preview\\<File name>. Avg ms / Max ms = time of Frame_Draw.', 17000)
+    at = d.ctrl('At', 'array{int32}', '[]')
+    keys = d.ctrl('Key', 'array{uint16}', '[]')
+    ticks = d.ctrl('Ticks', 'int32', '60')
+    level = d.ctrl('Level', 'int32', '1')
+    room = d.ctrl('Room', 'int32', '-1')
+    x = d.ctrl('X', 'int32', '0')
+    y = d.ctrl('Y', 'int32', '0')
+    torch = d.ctrl('Torch', 'bool', 'false')
+    phase = d.ctrl('Phase', 'int32', '2')
+    fn = d.ctrl('File name', 'string', 'lv_run.png')
+    keys_n = d.ctrl('Keys', 'int32', '0')
+    e = d.err_in()
+    c = d.i32c
+    ts = d.call('Test_Setup.vi', [('Level', level), ('Room', room), ('X', x), ('Y', y), ('Torch', torch), ('Phase', phase), ('Keys', keys_n), ('error in', e)],
+                ['State', 'Rooms', 'error out'])
+    sa = d.call('SpriteAtlas_Load.vi', [('error in', ts['error out'])], ['Sprites', 'error out'])
+    hud = d.call('Image_Load.vi', [('File name', d.const('string', 'hud.png')), ('error in', sa['error out'])], ['Image', 'error out'])
+    tit = d.call('Image_Load.vi', [('File name', d.const('string', 'title.png')), ('error in', hud['error out'])], ['Image', 'error out'])
+    screen = d.node('Initialize Array', [('element', d.const('uint8', '0')), ('dimension size', c(H)), ('dimension size', c(W * 3))],
+                    ['initialized array'])['initialized array']
+    mem0, zero, zero2 = d.const(RMEM, RMEM_V, 'Nothing drawn'), d.const('uint32', '0'), d.const('uint32', '0')
+    cnt = d.node('Initialize Array', [('element', c(0)), ('dimension size', ticks)], ['initialized array'])['initialized array']
+    lp = d.begin('For Loop', 'count="@i.v" maxin="" maxout=""')
+    i = f'{lp}i.v'
+    d.tunnel_in(1, cnt, 'index')
+    at1, keys1, rooms1, spr1, hud1, tit1 = (d.tunnel_in(k + 2, v) for k, v in enumerate((at, keys, ts['Rooms'], sa['Sprites'], hud['Image'], tit['Image'])))
+    s_l, s_r = shiftreg(d, lp, ts['State'])
+    e_l, e_r = shiftreg(d, lp, tit['error out'])
+    m_l, m_r = shiftreg(d, lp, mem0)
+    g_l, g_r = shiftreg(d, lp, screen)
+    t_l, t_r = shiftreg(d, lp, zero)
+    x_l, x_r = shiftreg(d, lp, zero2)
+    hit = d.node('Search 1D Array', [('1D array', at1), ('element', i), ('start index (0)', '')], ['index of element'])['index of element']
+    st = d.call('Game_Step.vi', [('State', s_l), ('Key', d.idx(keys1, hit)), ('Rooms', rooms1), ('error in', e_l)], ['State out', 'error out'])
+    t0 = d.node('Tick Count (ms)', [], ['millisecond timer value'])['millisecond timer value']
+    fd = d.call('Frame_Draw.vi', [('State', st['State out']), ('Sprites', spr1), ('Hud', hud1), ('Title', tit1), ('Memory', m_l),
+                                  ('error in', st['error out'])], ['-Picture', 'Pieces', 'Memory out', 'error out'])
+    t1 = d.node('Tick Count (ms)', [], ['millisecond timer value'])['millisecond timer value']
+    dt = d.sub(t1, d.add2(t0, d.mul(size(d, fd['Pieces']), d.const('uint32', '0'))))
+    lp2 = d.begin('For Loop', 'count="" maxin="" maxout=""')
+    pc = d.tunnel_in(1, fd['Pieces'], 'index')
+    h_l, h_r = shiftreg(d, lp2, g_l)
+    data, rect = d.unb(pc, ['image', 'Rectangle'])
+    l, t, r, b = (d.i32(v) for v in d.unb(rect, ['left', 'top', 'right', 'bottom']))
+    hh, ww = d.sub(b, t), d.mul(d.sub(r, l), c(3))
+    blk = d.node('Reshape Array', [('array', data), ('dimension size', hh), ('dimension size', ww)], ['output array'])['output array']
+    h2 = d.node('Replace Array Subset', [('array', h_l), ('new element/subarray', blk), ('index (row)', t), ('index (col)', d.mul(l, c(3)))],
+                ['output array'], extra='dimensions="2"')['output array']
+    d.end()
+    g2 = close_reg(d, h_r, h2)
+    t2 = d.add2(t_l, dt)
+    x2 = d.sel(d.gt(dt, x_l), dt, x_l)
+    d.end()
+    close_reg(d, s_r, st['State out'])
+    close_reg(d, m_r, fd['Memory out'])
+    grid = close_reg(d, g_r, g2)
+    total, mx = close_reg(d, t_r, t2), close_reg(d, x_r, x2)
+    err = close_reg(d, e_r, fd['error out'])
+    flat = d.node('Reshape Array', [('array', grid), ('dimension size', c(H * W * 3))], ['output array'])['output array']
+    img = d.bun(tit['Image'], [('image', flat), ('Rectangle', d.const(RECT, f'[0,0,{W},{H}]'))])
+    rp = d.call('Resource_Path.vi', [('File name', fn), ('Subfolder', d.const('string', 'Preview')), ('error in', err)], ['Path', 'error out'])
+    wr = d.call('Write PNG File.vi', [('compression (default)', ''), ('error in (no error)', rp['error out']), ('image data', img),
+                                      ('path to PNG file', rp['Path'])], ['error out', '-path'])
+    d.indic('Avg ms', 'double', '0', d.node('Divide', [('x', total), ('y', ticks)], ['x/y'])['x/y'])
+    d.indic('Max ms', 'uint32', '0', mx)
+    d.indic('error out', ERR, ERR_V, wr['error out'])
+    d.write()
+
+
+ALL = {f.__name__: f for f in (snapshot_room, test_world, test_bench, test_bench2, test_bench3, render_demo, snapshot_dirty, test_setup, test_run, snapshot_run)}
 if __name__ == '__main__':
     for name in (sys.argv[1:] or ALL):
         ALL[name]()

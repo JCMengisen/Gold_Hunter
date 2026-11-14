@@ -10,15 +10,23 @@
     "ImageData": "cluster{int32.image type,int32.image depth,array{uint8}.image,array{uint8}.mask,array{uint32}.colors,cluster{int16.left,int16.top,int16.right,int16.bottom}.Rectangle}",
     "Sprites": "array{cluster{int32.image type,int32.image depth,array{uint8}.image,array{uint8}.mask,array{uint32}.colors,cluster{int16.left,int16.top,int16.right,int16.bottom}.Rectangle}}",
     "Rooms": "array{cluster{string.ID,int32.Depth,int32.Column,array.2{uint8}.Tiles}}",
-    "State": "cluster{uint32.Tick,int32.Room,int32.X10,int32.Y10,int32.VY10,int32.Mode,int32.Facing,int32.Run,int32.Vert,int32.StandY,int32.EntryX10,int32.EntryY10,int32.EntryMode,int32.Lives,bool.Dead,bool.Quit,array.2{uint8}.Tiles}",
-    "RenderMemory": "cluster{int32.Room,cluster{int32.image type,int32.image depth,array{uint8}.image,array{uint8}.mask,array{uint32}.colors,cluster{int16.left,int16.top,int16.right,int16.bottom}.Rectangle}.Background,int32.X1,int32.Y1,int32.X2,int32.Y2}",
-    "Channels": "cluster{ref{Queue}{uint16}.Keys,ref{Notifier}{cluster{uint32.Tick,int32.Room,int32.X10,int32.Y10,int32.VY10,int32.Mode,int32.Facing,int32.Run,int32.Vert,int32.StandY,int32.EntryX10,int32.EntryY10,int32.EntryMode,int32.Lives,bool.Dead,bool.Quit,array.2{uint8}.Tiles}}.Frames}"
+    "State": "cluster{uint32.Tick,int32.Phase,int32.PhaseTicks,int32.Level,int32.Room,int32.X10,int32.Y10,int32.VY10,int32.Mode,int32.Facing,int32.Run,int32.Vert,int32.StandY,int32.EntryX10,int32.EntryY10,int32.EntryMode,int32.Lives,int32.Score,int32.NextLife,int32.KeyR,int32.KeyB,int32.KeyY,bool.Torch,int32.FloorPhase,bool.Dead,bool.LevelStart,bool.Quit,int32.Sound,uint32.Seed,int32.DemoStep,array.2{uint8}.Tiles,array{cluster{string.ID,int32.Depth,int32.Column,array.2{uint8}.Tiles}}.World,array{cluster{int32.Kind,int32.X10,int32.Y10,int32.Dir,int32.Mode}}.Enemies,array{cluster{int32.Score,string.Name}}.Highscores,array{int32}.Name,int32.Cursor}",
+    "Enemies": "array{cluster{int32.Kind,int32.X10,int32.Y10,int32.Dir,int32.Mode}}",
+    "Highscores": "array{cluster{int32.Score,string.Name}}",
+    "Grid": "array.2{uint8}",
+    "Rect": "cluster{int16.left,int16.top,int16.right,int16.bottom}",
+    "View": "cluster{bool.Hide,int32.CX,int32.CY,int32.ClaudeIdx,int32.ClaudeX,int32.ClaudeY}",
+    "RenderMemory": "cluster{int32.RoomKey,int32.Key,int32.NameKey,array.2{uint8}.Lit,array.2{uint8}.Dim,array.2{uint8}.Dark,array.2{uint8}.Comp,cluster{int32.image type,int32.image depth,array{uint8}.image,array{uint8}.mask,array{uint32}.colors,cluster{int16.left,int16.top,int16.right,int16.bottom}.Rectangle}.Template,int32.CX,int32.CY,int32.X1,int32.Y1,int32.X2,int32.Y2,array{cluster{int32.Kind,int32.X10,int32.Y10,int32.Dir,int32.Mode}}.Prev,int32.HudKey,int32.HudScore,int32.HudTime}",
+    "Pieces": "array{cluster{int32.image type,int32.image depth,array{uint8}.image,array{uint8}.mask,array{uint32}.colors,cluster{int16.left,int16.top,int16.right,int16.bottom}.Rectangle}}",
+    "Bank": "array{cluster{array{double}.Y}}",
+    "Mixer": "cluster{array{double}.Current,int32.Position,int32.Priority,bool.Music,int32.MusicPos}",
+    "Channels": "cluster{ref{Queue}{uint16}.Keys,ref{Notifier}{cluster{uint32.Tick,int32.Phase,int32.PhaseTicks,int32.Level,int32.Room,int32.X10,int32.Y10,int32.VY10,int32.Mode,int32.Facing,int32.Run,int32.Vert,int32.StandY,int32.EntryX10,int32.EntryY10,int32.EntryMode,int32.Lives,int32.Score,int32.NextLife,int32.KeyR,int32.KeyB,int32.KeyY,bool.Torch,int32.FloorPhase,bool.Dead,bool.LevelStart,bool.Quit,int32.Sound,uint32.Seed,int32.DemoStep,array.2{uint8}.Tiles,array{cluster{string.ID,int32.Depth,int32.Column,array.2{uint8}.Tiles}}.World,array{cluster{int32.Kind,int32.X10,int32.Y10,int32.Dir,int32.Mode}}.Enemies,array{cluster{int32.Score,string.Name}}.Highscores,array{int32}.Name,int32.Cursor}}.Frames,ref{Queue}{int32}.Sounds}"
   },
   "vis": [
     {
       "path": "Source\\Level\\Resource_Path.vi",
       "builder": "level",
-      "purpose": "Path Resources\\Subfolder\\File name",
+      "purpose": "Resource_Path",
       "calls": [],
       "inputs": [
         {
@@ -58,7 +66,7 @@
     {
       "path": "Source\\Level\\Room_Load.vi",
       "builder": "level",
-      "purpose": "Room text file -> tiles",
+      "purpose": "Room_Load",
       "calls": [
         "Source\\Level\\Resource_Path.vi"
       ],
@@ -94,7 +102,7 @@
     {
       "path": "Source\\Level\\World_Load.vi",
       "builder": "level",
-      "purpose": "world.txt and all rooms",
+      "purpose": "World_Load",
       "calls": [
         "Source\\Level\\Resource_Path.vi",
         "Source\\Level\\Room_Load.vi"
@@ -131,7 +139,53 @@
     {
       "path": "Source\\Level\\Tile_At.vi",
       "builder": "level",
-      "purpose": "Tile under a point",
+      "purpose": "Tile_At",
+      "calls": [],
+      "inputs": [
+        {
+          "name": "Tiles",
+          "type": "@Tiles",
+          "conIdx": 0,
+          "connection": "required"
+        },
+        {
+          "name": "X",
+          "type": "int32",
+          "conIdx": 5,
+          "connection": "required"
+        },
+        {
+          "name": "Y",
+          "type": "int32",
+          "conIdx": 7,
+          "connection": "required"
+        },
+        {
+          "name": "error in",
+          "type": "@Error",
+          "conIdx": 11,
+          "connection": "required"
+        }
+      ],
+      "outputs": [
+        {
+          "name": "Tile",
+          "type": "uint8",
+          "conIdx": 4,
+          "connection": "recommended"
+        },
+        {
+          "name": "error out",
+          "type": "@Error",
+          "conIdx": 15,
+          "connection": "recommended"
+        }
+      ]
+    },
+    {
+      "path": "Source\\Level\\Tile_Read.vi",
+      "builder": "level",
+      "purpose": "Tile_Read",
       "calls": [],
       "inputs": [
         {
@@ -177,7 +231,7 @@
     {
       "path": "Source\\Render\\Image_Load.vi",
       "builder": "render",
-      "purpose": "Load a PNG from Resources\\Images",
+      "purpose": "Image_Load",
       "calls": [
         "Source\\Level\\Resource_Path.vi"
       ],
@@ -213,7 +267,7 @@
     {
       "path": "Source\\Render\\SpriteAtlas_Load.vi",
       "builder": "render",
-      "purpose": "Load the sprite atlas",
+      "purpose": "SpriteAtlas_Load",
       "calls": [
         "Source\\Level\\Resource_Path.vi"
       ],
@@ -243,7 +297,7 @@
     {
       "path": "Source\\Render\\Sprite_Draw.vi",
       "builder": "render",
-      "purpose": "Draw a sprite at a position",
+      "purpose": "Sprite_Draw",
       "calls": [],
       "inputs": [
         {
@@ -295,7 +349,7 @@
     {
       "path": "Source\\Render\\Image_Draw.vi",
       "builder": "render",
-      "purpose": "Draw one image at a position",
+      "purpose": "Image_Draw",
       "calls": [],
       "inputs": [
         {
@@ -339,63 +393,9 @@
       ]
     },
     {
-      "path": "Source\\Render\\Room_Draw.vi",
-      "builder": "render",
-      "purpose": "Draw the objects of a room from its tiles",
-      "calls": [
-        "Source\\Render\\Sprite_Draw.vi"
-      ],
-      "inputs": [
-        {
-          "name": "Picture",
-          "type": "picture",
-          "conIdx": 0,
-          "connection": "required"
-        },
-        {
-          "name": "Sprites",
-          "type": "@Sprites",
-          "conIdx": 5,
-          "connection": "required"
-        },
-        {
-          "name": "Tiles",
-          "type": "@Tiles",
-          "conIdx": 7,
-          "connection": "required"
-        },
-        {
-          "name": "error in",
-          "type": "@Error",
-          "conIdx": 11,
-          "connection": "required"
-        }
-      ],
-      "outputs": [
-        {
-          "name": "Picture out",
-          "type": "picture",
-          "conIdx": 4,
-          "connection": "recommended"
-        },
-        {
-          "name": "Count",
-          "type": "int32",
-          "conIdx": 6,
-          "connection": "recommended"
-        },
-        {
-          "name": "error out",
-          "type": "@Error",
-          "conIdx": 15,
-          "connection": "recommended"
-        }
-      ]
-    },
-    {
       "path": "Source\\Render\\Tile_Cut.vi",
       "builder": "render",
-      "purpose": "Cut one tile out of a room image",
+      "purpose": "Tile_Cut",
       "calls": [],
       "inputs": [
         {
@@ -447,7 +447,7 @@
     {
       "path": "Source\\Render\\Block_Cut.vi",
       "builder": "render",
-      "purpose": "Cut a block of tiles out of a room image as one piece",
+      "purpose": "Block_Cut",
       "calls": [],
       "inputs": [
         {
@@ -509,55 +509,9 @@
       ]
     },
     {
-      "path": "Source\\Level\\Tile_Read.vi",
-      "builder": "level",
-      "purpose": "Tile under a point, clamped to the room",
-      "calls": [],
-      "inputs": [
-        {
-          "name": "Tiles",
-          "type": "@Tiles",
-          "conIdx": 0,
-          "connection": "required"
-        },
-        {
-          "name": "X",
-          "type": "int32",
-          "conIdx": 5,
-          "connection": "required"
-        },
-        {
-          "name": "Y",
-          "type": "int32",
-          "conIdx": 7,
-          "connection": "required"
-        },
-        {
-          "name": "error in",
-          "type": "@Error",
-          "conIdx": 11,
-          "connection": "required"
-        }
-      ],
-      "outputs": [
-        {
-          "name": "Tile",
-          "type": "uint8",
-          "conIdx": 4,
-          "connection": "recommended"
-        },
-        {
-          "name": "error out",
-          "type": "@Error",
-          "conIdx": 15,
-          "connection": "recommended"
-        }
-      ]
-    },
-    {
       "path": "Source\\Engine\\Player_Move.vi",
       "builder": "engine",
-      "purpose": "Move Claude by one tick",
+      "purpose": "Player_Move",
       "calls": [
         "Source\\Level\\Tile_Read.vi"
       ],
@@ -597,21 +551,51 @@
       ]
     },
     {
+      "path": "Source\\Engine\\Enemies_Init.vi",
+      "builder": "engine",
+      "purpose": "Enemies_Init",
+      "calls": [],
+      "inputs": [
+        {
+          "name": "Tiles",
+          "type": "@Tiles",
+          "conIdx": 0,
+          "connection": "required"
+        },
+        {
+          "name": "error in",
+          "type": "@Error",
+          "conIdx": 11,
+          "connection": "required"
+        }
+      ],
+      "outputs": [
+        {
+          "name": "Enemies",
+          "type": "@Enemies",
+          "conIdx": 4,
+          "connection": "recommended"
+        },
+        {
+          "name": "error out",
+          "type": "@Error",
+          "conIdx": 15,
+          "connection": "recommended"
+        }
+      ]
+    },
+    {
       "path": "Source\\Engine\\Room_Change.vi",
       "builder": "engine",
-      "purpose": "Change the room at the edge of the playfield",
-      "calls": [],
+      "purpose": "Room_Change",
+      "calls": [
+        "Source\\Engine\\Enemies_Init.vi"
+      ],
       "inputs": [
         {
           "name": "State",
           "type": "@State",
           "conIdx": 0,
-          "connection": "required"
-        },
-        {
-          "name": "Rooms",
-          "type": "@Rooms",
-          "conIdx": 5,
           "connection": "required"
         },
         {
@@ -643,11 +627,528 @@
       ]
     },
     {
+      "path": "Source\\Engine\\Items_Collect.vi",
+      "builder": "engine",
+      "purpose": "Items_Collect",
+      "calls": [],
+      "inputs": [
+        {
+          "name": "State",
+          "type": "@State",
+          "conIdx": 0,
+          "connection": "required"
+        },
+        {
+          "name": "error in",
+          "type": "@Error",
+          "conIdx": 11,
+          "connection": "required"
+        }
+      ],
+      "outputs": [
+        {
+          "name": "State out",
+          "type": "@State",
+          "conIdx": 4,
+          "connection": "recommended"
+        },
+        {
+          "name": "error out",
+          "type": "@Error",
+          "conIdx": 15,
+          "connection": "recommended"
+        }
+      ]
+    },
+    {
+      "path": "Source\\Engine\\Door_Open.vi",
+      "builder": "engine",
+      "purpose": "Door_Open",
+      "calls": [],
+      "inputs": [
+        {
+          "name": "State",
+          "type": "@State",
+          "conIdx": 0,
+          "connection": "required"
+        },
+        {
+          "name": "error in",
+          "type": "@Error",
+          "conIdx": 11,
+          "connection": "required"
+        }
+      ],
+      "outputs": [
+        {
+          "name": "State out",
+          "type": "@State",
+          "conIdx": 4,
+          "connection": "recommended"
+        },
+        {
+          "name": "Opened",
+          "type": "bool",
+          "conIdx": 6,
+          "connection": "recommended"
+        },
+        {
+          "name": "error out",
+          "type": "@Error",
+          "conIdx": 15,
+          "connection": "recommended"
+        }
+      ]
+    },
+    {
+      "path": "Source\\Engine\\Enemies_Step.vi",
+      "builder": "engine",
+      "purpose": "Enemies_Step",
+      "calls": [
+        "Source\\Level\\Tile_Read.vi"
+      ],
+      "inputs": [
+        {
+          "name": "State",
+          "type": "@State",
+          "conIdx": 0,
+          "connection": "required"
+        },
+        {
+          "name": "error in",
+          "type": "@Error",
+          "conIdx": 11,
+          "connection": "required"
+        }
+      ],
+      "outputs": [
+        {
+          "name": "State out",
+          "type": "@State",
+          "conIdx": 4,
+          "connection": "recommended"
+        },
+        {
+          "name": "error out",
+          "type": "@Error",
+          "conIdx": 15,
+          "connection": "recommended"
+        }
+      ]
+    },
+    {
+      "path": "Source\\Engine\\Hit_Check.vi",
+      "builder": "engine",
+      "purpose": "Hit_Check",
+      "calls": [],
+      "inputs": [
+        {
+          "name": "State",
+          "type": "@State",
+          "conIdx": 0,
+          "connection": "required"
+        },
+        {
+          "name": "error in",
+          "type": "@Error",
+          "conIdx": 11,
+          "connection": "required"
+        }
+      ],
+      "outputs": [
+        {
+          "name": "Hit",
+          "type": "bool",
+          "conIdx": 4,
+          "connection": "recommended"
+        },
+        {
+          "name": "error out",
+          "type": "@Error",
+          "conIdx": 15,
+          "connection": "recommended"
+        }
+      ]
+    },
+    {
+      "path": "Source\\Engine\\Respawn.vi",
+      "builder": "engine",
+      "purpose": "Respawn",
+      "calls": [
+        "Source\\Engine\\Enemies_Init.vi"
+      ],
+      "inputs": [
+        {
+          "name": "State",
+          "type": "@State",
+          "conIdx": 0,
+          "connection": "required"
+        },
+        {
+          "name": "error in",
+          "type": "@Error",
+          "conIdx": 11,
+          "connection": "required"
+        }
+      ],
+      "outputs": [
+        {
+          "name": "State out",
+          "type": "@State",
+          "conIdx": 4,
+          "connection": "recommended"
+        },
+        {
+          "name": "error out",
+          "type": "@Error",
+          "conIdx": 15,
+          "connection": "recommended"
+        }
+      ]
+    },
+    {
+      "path": "Source\\Engine\\Level_Setup.vi",
+      "builder": "engine",
+      "purpose": "Level_Setup",
+      "calls": [
+        "Source\\Engine\\Enemies_Init.vi"
+      ],
+      "inputs": [
+        {
+          "name": "State",
+          "type": "@State",
+          "conIdx": 0,
+          "connection": "required"
+        },
+        {
+          "name": "Rooms",
+          "type": "@Rooms",
+          "conIdx": 5,
+          "connection": "required"
+        },
+        {
+          "name": "Level",
+          "type": "int32",
+          "conIdx": 7,
+          "connection": "required"
+        },
+        {
+          "name": "error in",
+          "type": "@Error",
+          "conIdx": 11,
+          "connection": "required"
+        }
+      ],
+      "outputs": [
+        {
+          "name": "State out",
+          "type": "@State",
+          "conIdx": 4,
+          "connection": "recommended"
+        },
+        {
+          "name": "error out",
+          "type": "@Error",
+          "conIdx": 15,
+          "connection": "recommended"
+        }
+      ]
+    },
+    {
+      "path": "Source\\Engine\\Game_New.vi",
+      "builder": "engine",
+      "purpose": "Game_New",
+      "calls": [
+        "Source\\Engine\\Level_Setup.vi"
+      ],
+      "inputs": [
+        {
+          "name": "State",
+          "type": "@State",
+          "conIdx": 0,
+          "connection": "required"
+        },
+        {
+          "name": "Rooms",
+          "type": "@Rooms",
+          "conIdx": 5,
+          "connection": "required"
+        },
+        {
+          "name": "Demo",
+          "type": "bool",
+          "conIdx": 7,
+          "connection": "recommended"
+        },
+        {
+          "name": "error in",
+          "type": "@Error",
+          "conIdx": 11,
+          "connection": "required"
+        }
+      ],
+      "outputs": [
+        {
+          "name": "State out",
+          "type": "@State",
+          "conIdx": 4,
+          "connection": "recommended"
+        },
+        {
+          "name": "error out",
+          "type": "@Error",
+          "conIdx": 15,
+          "connection": "recommended"
+        }
+      ]
+    },
+    {
+      "path": "Source\\Engine\\Keys_Apply.vi",
+      "builder": "engine",
+      "purpose": "Keys_Apply",
+      "calls": [],
+      "inputs": [
+        {
+          "name": "State",
+          "type": "@State",
+          "conIdx": 0,
+          "connection": "required"
+        },
+        {
+          "name": "Key",
+          "type": "uint16",
+          "conIdx": 5,
+          "connection": "recommended"
+        },
+        {
+          "name": "error in",
+          "type": "@Error",
+          "conIdx": 11,
+          "connection": "required"
+        }
+      ],
+      "outputs": [
+        {
+          "name": "State out",
+          "type": "@State",
+          "conIdx": 4,
+          "connection": "recommended"
+        },
+        {
+          "name": "error out",
+          "type": "@Error",
+          "conIdx": 15,
+          "connection": "recommended"
+        }
+      ]
+    },
+    {
+      "path": "Source\\Engine\\Game_Play.vi",
+      "builder": "engine",
+      "purpose": "Game_Play",
+      "calls": [
+        "Source\\Engine\\Player_Move.vi",
+        "Source\\Engine\\Items_Collect.vi",
+        "Source\\Engine\\Door_Open.vi",
+        "Source\\Engine\\Enemies_Step.vi",
+        "Source\\Engine\\Hit_Check.vi",
+        "Source\\Engine\\Room_Change.vi"
+      ],
+      "inputs": [
+        {
+          "name": "State",
+          "type": "@State",
+          "conIdx": 0,
+          "connection": "required"
+        },
+        {
+          "name": "Jump",
+          "type": "bool",
+          "conIdx": 5,
+          "connection": "recommended"
+        },
+        {
+          "name": "error in",
+          "type": "@Error",
+          "conIdx": 11,
+          "connection": "required"
+        }
+      ],
+      "outputs": [
+        {
+          "name": "State out",
+          "type": "@State",
+          "conIdx": 4,
+          "connection": "recommended"
+        },
+        {
+          "name": "Hit",
+          "type": "bool",
+          "conIdx": 6,
+          "connection": "recommended"
+        },
+        {
+          "name": "Died",
+          "type": "bool",
+          "conIdx": 8,
+          "connection": "recommended"
+        },
+        {
+          "name": "error out",
+          "type": "@Error",
+          "conIdx": 15,
+          "connection": "recommended"
+        }
+      ]
+    },
+    {
+      "path": "Source\\Engine\\Demo_Input.vi",
+      "builder": "engine",
+      "purpose": "Demo_Input",
+      "calls": [],
+      "inputs": [
+        {
+          "name": "Step",
+          "type": "int32",
+          "conIdx": 0,
+          "connection": "required"
+        },
+        {
+          "name": "error in",
+          "type": "@Error",
+          "conIdx": 11,
+          "connection": "required"
+        }
+      ],
+      "outputs": [
+        {
+          "name": "Key",
+          "type": "uint16",
+          "conIdx": 4,
+          "connection": "recommended"
+        },
+        {
+          "name": "error out",
+          "type": "@Error",
+          "conIdx": 15,
+          "connection": "recommended"
+        }
+      ]
+    },
+    {
+      "path": "Source\\Engine\\Highscore_Load.vi",
+      "builder": "engine",
+      "purpose": "Highscore_Load",
+      "calls": [
+        "Source\\Level\\Resource_Path.vi"
+      ],
+      "inputs": [
+        {
+          "name": "error in",
+          "type": "@Error",
+          "conIdx": 11,
+          "connection": "required"
+        }
+      ],
+      "outputs": [
+        {
+          "name": "Table",
+          "type": "@Highscores",
+          "conIdx": 4,
+          "connection": "recommended"
+        },
+        {
+          "name": "error out",
+          "type": "@Error",
+          "conIdx": 15,
+          "connection": "recommended"
+        }
+      ]
+    },
+    {
+      "path": "Source\\Engine\\Highscore_Save.vi",
+      "builder": "engine",
+      "purpose": "Highscore_Save",
+      "calls": [
+        "Source\\Level\\Resource_Path.vi"
+      ],
+      "inputs": [
+        {
+          "name": "Table",
+          "type": "@Highscores",
+          "conIdx": 0,
+          "connection": "required"
+        },
+        {
+          "name": "error in",
+          "type": "@Error",
+          "conIdx": 11,
+          "connection": "required"
+        }
+      ],
+      "outputs": [
+        {
+          "name": "error out",
+          "type": "@Error",
+          "conIdx": 15,
+          "connection": "recommended"
+        }
+      ]
+    },
+    {
+      "path": "Source\\Engine\\Highscore_Insert.vi",
+      "builder": "engine",
+      "purpose": "Highscore_Insert",
+      "calls": [],
+      "inputs": [
+        {
+          "name": "Table",
+          "type": "@Highscores",
+          "conIdx": 0,
+          "connection": "required"
+        },
+        {
+          "name": "Score",
+          "type": "int32",
+          "conIdx": 5,
+          "connection": "required"
+        },
+        {
+          "name": "Name",
+          "type": "string",
+          "conIdx": 7,
+          "connection": "required"
+        },
+        {
+          "name": "error in",
+          "type": "@Error",
+          "conIdx": 11,
+          "connection": "required"
+        }
+      ],
+      "outputs": [
+        {
+          "name": "Table out",
+          "type": "@Highscores",
+          "conIdx": 4,
+          "connection": "recommended"
+        },
+        {
+          "name": "error out",
+          "type": "@Error",
+          "conIdx": 15,
+          "connection": "recommended"
+        }
+      ]
+    },
+    {
       "path": "Source\\Engine\\Game_Start.vi",
       "builder": "engine",
-      "purpose": "Load the world, first state",
+      "purpose": "Game_Start",
       "calls": [
-        "Source\\Level\\World_Load.vi"
+        "Source\\Level\\World_Load.vi",
+        "Source\\Engine\\Highscore_Load.vi",
+        "Source\\Engine\\Level_Setup.vi"
       ],
       "inputs": [
         {
@@ -681,10 +1182,16 @@
     {
       "path": "Source\\Engine\\Game_Step.vi",
       "builder": "engine",
-      "purpose": "One game tick",
+      "purpose": "Game_Step",
       "calls": [
-        "Source\\Engine\\Player_Move.vi",
-        "Source\\Engine\\Room_Change.vi"
+        "Source\\Engine\\Game_New.vi",
+        "Source\\Engine\\Demo_Input.vi",
+        "Source\\Engine\\Keys_Apply.vi",
+        "Source\\Engine\\Game_Play.vi",
+        "Source\\Engine\\Respawn.vi",
+        "Source\\Engine\\Level_Setup.vi",
+        "Source\\Engine\\Highscore_Insert.vi",
+        "Source\\Engine\\Highscore_Save.vi"
       ],
       "inputs": [
         {
@@ -728,15 +1235,557 @@
       ]
     },
     {
+      "path": "Source\\Render\\Room_Images.vi",
+      "builder": "render",
+      "purpose": "Room_Images",
+      "calls": [
+        "Source\\Render\\Image_Load.vi"
+      ],
+      "inputs": [
+        {
+          "name": "Room ID",
+          "type": "string",
+          "conIdx": 0,
+          "connection": "required"
+        },
+        {
+          "name": "Theme",
+          "type": "int32",
+          "conIdx": 5,
+          "connection": "required"
+        },
+        {
+          "name": "error in",
+          "type": "@Error",
+          "conIdx": 11,
+          "connection": "required"
+        }
+      ],
+      "outputs": [
+        {
+          "name": "Lit",
+          "type": "@Grid",
+          "conIdx": 4,
+          "connection": "recommended"
+        },
+        {
+          "name": "Dim",
+          "type": "@Grid",
+          "conIdx": 6,
+          "connection": "recommended"
+        },
+        {
+          "name": "Dark",
+          "type": "@Grid",
+          "conIdx": 8,
+          "connection": "recommended"
+        },
+        {
+          "name": "Template",
+          "type": "@ImageData",
+          "conIdx": 10,
+          "connection": "recommended"
+        },
+        {
+          "name": "error out",
+          "type": "@Error",
+          "conIdx": 15,
+          "connection": "recommended"
+        }
+      ]
+    },
+    {
+      "path": "Source\\Render\\Light_Update.vi",
+      "builder": "render",
+      "purpose": "Light_Update",
+      "calls": [],
+      "inputs": [
+        {
+          "name": "Comp",
+          "type": "@Grid",
+          "conIdx": 0,
+          "connection": "required"
+        },
+        {
+          "name": "Lit",
+          "type": "@Grid",
+          "conIdx": 5,
+          "connection": "required"
+        },
+        {
+          "name": "Dim",
+          "type": "@Grid",
+          "conIdx": 7,
+          "connection": "required"
+        },
+        {
+          "name": "Dark",
+          "type": "@Grid",
+          "conIdx": 9,
+          "connection": "required"
+        },
+        {
+          "name": "Old CX",
+          "type": "int32",
+          "conIdx": 1,
+          "connection": "required"
+        },
+        {
+          "name": "Old CY",
+          "type": "int32",
+          "conIdx": 2,
+          "connection": "required"
+        },
+        {
+          "name": "CX",
+          "type": "int32",
+          "conIdx": 3,
+          "connection": "required"
+        },
+        {
+          "name": "CY",
+          "type": "int32",
+          "conIdx": 13,
+          "connection": "required"
+        },
+        {
+          "name": "error in",
+          "type": "@Error",
+          "conIdx": 11,
+          "connection": "required"
+        }
+      ],
+      "outputs": [
+        {
+          "name": "Comp out",
+          "type": "@Grid",
+          "conIdx": 4,
+          "connection": "recommended"
+        },
+        {
+          "name": "Rect",
+          "type": "@Rect",
+          "conIdx": 6,
+          "connection": "recommended"
+        },
+        {
+          "name": "error out",
+          "type": "@Error",
+          "conIdx": 15,
+          "connection": "recommended"
+        }
+      ]
+    },
+    {
+      "path": "Source\\Render\\Grid_Block.vi",
+      "builder": "render",
+      "purpose": "Grid_Block",
+      "calls": [],
+      "inputs": [
+        {
+          "name": "Grid",
+          "type": "@Grid",
+          "conIdx": 0,
+          "connection": "required"
+        },
+        {
+          "name": "Template",
+          "type": "@ImageData",
+          "conIdx": 5,
+          "connection": "required"
+        },
+        {
+          "name": "Rect",
+          "type": "@Rect",
+          "conIdx": 7,
+          "connection": "required"
+        },
+        {
+          "name": "error in",
+          "type": "@Error",
+          "conIdx": 11,
+          "connection": "required"
+        }
+      ],
+      "outputs": [
+        {
+          "name": "Block",
+          "type": "@ImageData",
+          "conIdx": 4,
+          "connection": "recommended"
+        },
+        {
+          "name": "error out",
+          "type": "@Error",
+          "conIdx": 15,
+          "connection": "recommended"
+        }
+      ]
+    },
+    {
+      "path": "Source\\Render\\Room_Draw.vi",
+      "builder": "render",
+      "purpose": "Room_Draw",
+      "calls": [
+        "Source\\Render\\Sprite_Draw.vi"
+      ],
+      "inputs": [
+        {
+          "name": "Picture",
+          "type": "picture",
+          "conIdx": 0,
+          "connection": "required"
+        },
+        {
+          "name": "Sprites",
+          "type": "@Sprites",
+          "conIdx": 5,
+          "connection": "required"
+        },
+        {
+          "name": "Tiles",
+          "type": "@Tiles",
+          "conIdx": 7,
+          "connection": "required"
+        },
+        {
+          "name": "Region",
+          "type": "@Rect",
+          "conIdx": 9,
+          "connection": "required"
+        },
+        {
+          "name": "FloorPhase",
+          "type": "int32",
+          "conIdx": 1,
+          "connection": "required"
+        },
+        {
+          "name": "View",
+          "type": "@View",
+          "conIdx": 2,
+          "connection": "required"
+        },
+        {
+          "name": "error in",
+          "type": "@Error",
+          "conIdx": 11,
+          "connection": "required"
+        }
+      ],
+      "outputs": [
+        {
+          "name": "Picture out",
+          "type": "picture",
+          "conIdx": 4,
+          "connection": "recommended"
+        },
+        {
+          "name": "error out",
+          "type": "@Error",
+          "conIdx": 15,
+          "connection": "recommended"
+        }
+      ]
+    },
+    {
+      "path": "Source\\Render\\Enemies_Draw.vi",
+      "builder": "render",
+      "purpose": "Enemies_Draw",
+      "calls": [
+        "Source\\Render\\Sprite_Draw.vi"
+      ],
+      "inputs": [
+        {
+          "name": "Picture",
+          "type": "picture",
+          "conIdx": 0,
+          "connection": "required"
+        },
+        {
+          "name": "Sprites",
+          "type": "@Sprites",
+          "conIdx": 5,
+          "connection": "required"
+        },
+        {
+          "name": "Enemies",
+          "type": "@Enemies",
+          "conIdx": 7,
+          "connection": "required"
+        },
+        {
+          "name": "Tick",
+          "type": "uint32",
+          "conIdx": 9,
+          "connection": "required"
+        },
+        {
+          "name": "View",
+          "type": "@View",
+          "conIdx": 1,
+          "connection": "required"
+        },
+        {
+          "name": "error in",
+          "type": "@Error",
+          "conIdx": 11,
+          "connection": "required"
+        }
+      ],
+      "outputs": [
+        {
+          "name": "Picture out",
+          "type": "picture",
+          "conIdx": 4,
+          "connection": "recommended"
+        },
+        {
+          "name": "error out",
+          "type": "@Error",
+          "conIdx": 15,
+          "connection": "recommended"
+        }
+      ]
+    },
+    {
+      "path": "Source\\Render\\Glyphs_Draw.vi",
+      "builder": "render",
+      "purpose": "Glyphs_Draw",
+      "calls": [
+        "Source\\Render\\Sprite_Draw.vi"
+      ],
+      "inputs": [
+        {
+          "name": "Picture",
+          "type": "picture",
+          "conIdx": 0,
+          "connection": "required"
+        },
+        {
+          "name": "Sprites",
+          "type": "@Sprites",
+          "conIdx": 5,
+          "connection": "required"
+        },
+        {
+          "name": "Text",
+          "type": "string",
+          "conIdx": 7,
+          "connection": "required"
+        },
+        {
+          "name": "Position",
+          "type": "@Position",
+          "conIdx": 9,
+          "connection": "required"
+        },
+        {
+          "name": "error in",
+          "type": "@Error",
+          "conIdx": 11,
+          "connection": "required"
+        }
+      ],
+      "outputs": [
+        {
+          "name": "Picture out",
+          "type": "picture",
+          "conIdx": 4,
+          "connection": "recommended"
+        },
+        {
+          "name": "error out",
+          "type": "@Error",
+          "conIdx": 15,
+          "connection": "recommended"
+        }
+      ]
+    },
+    {
+      "path": "Source\\Render\\Hud_Draw.vi",
+      "builder": "render",
+      "purpose": "Hud_Draw",
+      "calls": [
+        "Source\\Render\\Sprite_Draw.vi",
+        "Source\\Render\\Glyphs_Draw.vi"
+      ],
+      "inputs": [
+        {
+          "name": "Sprites",
+          "type": "@Sprites",
+          "conIdx": 0,
+          "connection": "required"
+        },
+        {
+          "name": "Hud",
+          "type": "@ImageData",
+          "conIdx": 5,
+          "connection": "required"
+        },
+        {
+          "name": "State",
+          "type": "@State",
+          "conIdx": 7,
+          "connection": "required"
+        },
+        {
+          "name": "error in",
+          "type": "@Error",
+          "conIdx": 11,
+          "connection": "required"
+        }
+      ],
+      "outputs": [
+        {
+          "name": "Piece",
+          "type": "@ImageData",
+          "conIdx": 4,
+          "connection": "recommended"
+        },
+        {
+          "name": "error out",
+          "type": "@Error",
+          "conIdx": 15,
+          "connection": "recommended"
+        }
+      ]
+    },
+    {
+      "path": "Source\\Render\\Overlay_Draw.vi",
+      "builder": "render",
+      "purpose": "Overlay_Draw",
+      "calls": [
+        "Source\\Render\\Sprite_Draw.vi",
+        "Source\\Render\\Glyphs_Draw.vi"
+      ],
+      "inputs": [
+        {
+          "name": "Picture",
+          "type": "picture",
+          "conIdx": 0,
+          "connection": "required"
+        },
+        {
+          "name": "Sprites",
+          "type": "@Sprites",
+          "conIdx": 5,
+          "connection": "required"
+        },
+        {
+          "name": "State",
+          "type": "@State",
+          "conIdx": 7,
+          "connection": "required"
+        },
+        {
+          "name": "Clip",
+          "type": "@Rect",
+          "conIdx": 9,
+          "connection": "required"
+        },
+        {
+          "name": "error in",
+          "type": "@Error",
+          "conIdx": 11,
+          "connection": "required"
+        }
+      ],
+      "outputs": [
+        {
+          "name": "Picture out",
+          "type": "picture",
+          "conIdx": 4,
+          "connection": "recommended"
+        },
+        {
+          "name": "error out",
+          "type": "@Error",
+          "conIdx": 15,
+          "connection": "recommended"
+        }
+      ]
+    },
+    {
+      "path": "Source\\Render\\Piece_Compose.vi",
+      "builder": "render",
+      "purpose": "Piece_Compose",
+      "calls": [
+        "Source\\Render\\Grid_Block.vi",
+        "Source\\Render\\Room_Draw.vi",
+        "Source\\Render\\Enemies_Draw.vi",
+        "Source\\Render\\Sprite_Draw.vi",
+        "Source\\Render\\Overlay_Draw.vi"
+      ],
+      "inputs": [
+        {
+          "name": "Grid",
+          "type": "@Grid",
+          "conIdx": 0,
+          "connection": "required"
+        },
+        {
+          "name": "Template",
+          "type": "@ImageData",
+          "conIdx": 5,
+          "connection": "required"
+        },
+        {
+          "name": "Rect",
+          "type": "@Rect",
+          "conIdx": 7,
+          "connection": "required"
+        },
+        {
+          "name": "Sprites",
+          "type": "@Sprites",
+          "conIdx": 9,
+          "connection": "required"
+        },
+        {
+          "name": "State",
+          "type": "@State",
+          "conIdx": 1,
+          "connection": "required"
+        },
+        {
+          "name": "View",
+          "type": "@View",
+          "conIdx": 2,
+          "connection": "required"
+        },
+        {
+          "name": "error in",
+          "type": "@Error",
+          "conIdx": 11,
+          "connection": "required"
+        }
+      ],
+      "outputs": [
+        {
+          "name": "Piece",
+          "type": "@ImageData",
+          "conIdx": 4,
+          "connection": "recommended"
+        },
+        {
+          "name": "error out",
+          "type": "@Error",
+          "conIdx": 15,
+          "connection": "recommended"
+        }
+      ]
+    },
+    {
       "path": "Source\\Render\\Frame_Draw.vi",
       "builder": "render",
-      "purpose": "Draw one frame of a game state",
+      "purpose": "Frame_Draw",
       "calls": [
-        "Source\\Render\\Image_Load.vi",
-        "Source\\Render\\Image_Draw.vi",
-        "Source\\Render\\Block_Cut.vi",
-        "Source\\Render\\Room_Draw.vi",
-        "Source\\Render\\Sprite_Draw.vi"
+        "Source\\Render\\Room_Images.vi",
+        "Source\\Render\\Light_Update.vi",
+        "Source\\Render\\Overlay_Draw.vi",
+        "Source\\Render\\Piece_Compose.vi",
+        "Source\\Render\\Hud_Draw.vi"
       ],
       "inputs": [
         {
@@ -752,13 +1801,13 @@
           "connection": "required"
         },
         {
-          "name": "Rooms",
-          "type": "@Rooms",
+          "name": "Hud",
+          "type": "@ImageData",
           "conIdx": 7,
           "connection": "required"
         },
         {
-          "name": "Hud",
+          "name": "Title",
           "type": "@ImageData",
           "conIdx": 9,
           "connection": "required"
@@ -784,9 +1833,139 @@
           "connection": "recommended"
         },
         {
+          "name": "Pieces",
+          "type": "@Pieces",
+          "conIdx": 6,
+          "connection": "recommended"
+        },
+        {
           "name": "Memory out",
           "type": "@RenderMemory",
+          "conIdx": 8,
+          "connection": "recommended"
+        },
+        {
+          "name": "error out",
+          "type": "@Error",
+          "conIdx": 15,
+          "connection": "recommended"
+        }
+      ]
+    },
+    {
+      "path": "Source\\Audio\\Sound_Bank_Load.vi",
+      "builder": "audio",
+      "purpose": "Sound_Bank_Load",
+      "calls": [
+        "Source\\Level\\Resource_Path.vi"
+      ],
+      "inputs": [
+        {
+          "name": "error in",
+          "type": "@Error",
+          "conIdx": 11,
+          "connection": "required"
+        }
+      ],
+      "outputs": [
+        {
+          "name": "Bank",
+          "type": "@Bank",
+          "conIdx": 4,
+          "connection": "recommended"
+        },
+        {
+          "name": "error out",
+          "type": "@Error",
+          "conIdx": 15,
+          "connection": "recommended"
+        }
+      ]
+    },
+    {
+      "path": "Source\\Audio\\Sound_Mix.vi",
+      "builder": "audio",
+      "purpose": "Sound_Mix",
+      "calls": [],
+      "inputs": [
+        {
+          "name": "Sounds",
+          "type": "int32",
+          "conIdx": 0,
+          "connection": "required"
+        },
+        {
+          "name": "Bank",
+          "type": "@Bank",
+          "conIdx": 5,
+          "connection": "required"
+        },
+        {
+          "name": "Current",
+          "type": "array{double}",
+          "conIdx": 7,
+          "connection": "required"
+        },
+        {
+          "name": "Position",
+          "type": "int32",
+          "conIdx": 9,
+          "connection": "required"
+        },
+        {
+          "name": "Priority",
+          "type": "int32",
+          "conIdx": 1,
+          "connection": "required"
+        },
+        {
+          "name": "Music on",
+          "type": "bool",
+          "conIdx": 2,
+          "connection": "recommended"
+        },
+        {
+          "name": "Music Position",
+          "type": "int32",
+          "conIdx": 3,
+          "connection": "recommended"
+        },
+        {
+          "name": "error in",
+          "type": "@Error",
+          "conIdx": 11,
+          "connection": "required"
+        }
+      ],
+      "outputs": [
+        {
+          "name": "Block",
+          "type": "array{double}",
+          "conIdx": 4,
+          "connection": "recommended"
+        },
+        {
+          "name": "Current out",
+          "type": "array{double}",
           "conIdx": 6,
+          "connection": "recommended"
+        },
+        {
+          "name": "Position out",
+          "type": "int32",
+          "conIdx": 8,
+          "connection": "recommended"
+        },
+        {
+          "name": "Priority out",
+          "type": "int32",
+          "conIdx": 10,
+          "connection": "recommended"
+        },
+        {
+          "name": "Music Position out",
+          "type": "int32",
+          "conIdx": 13,
           "connection": "recommended"
         },
         {
@@ -800,7 +1979,7 @@
     {
       "path": "Source\\App\\App_Init.vi",
       "builder": "app",
-      "purpose": "Create queue and notifier",
+      "purpose": "App_Init",
       "calls": [],
       "inputs": [
         {
@@ -828,7 +2007,7 @@
     {
       "path": "Source\\App\\App_Close.vi",
       "builder": "app",
-      "purpose": "Release queue and notifier",
+      "purpose": "App_Close",
       "calls": [],
       "inputs": [
         {
@@ -856,7 +2035,7 @@
     {
       "path": "Source\\App\\Window_Setup.vi",
       "builder": "app",
-      "purpose": "Set up the window of Main",
+      "purpose": "Window_Setup",
       "calls": [],
       "inputs": [
         {
@@ -884,7 +2063,7 @@
     {
       "path": "Source\\App\\Key_Send.vi",
       "builder": "app",
-      "purpose": "Translate a key and queue it",
+      "purpose": "Key_Send",
       "calls": [],
       "inputs": [
         {
@@ -936,7 +2115,7 @@
     {
       "path": "Source\\App\\Engine_Tick.vi",
       "builder": "app",
-      "purpose": "One game tick with queue and notifier",
+      "purpose": "Engine_Tick",
       "calls": [
         "Source\\Engine\\Game_Step.vi"
       ],
@@ -990,10 +2169,9 @@
     {
       "path": "Source\\App\\Render_Frame.vi",
       "builder": "app",
-      "purpose": "Wait for a state and draw it",
+      "purpose": "Render_Frame",
       "calls": [
-        "Source\\Render\\Frame_Draw.vi",
-        "Source\\Render\\Sprite_Draw.vi"
+        "Source\\Render\\Frame_Draw.vi"
       ],
       "inputs": [
         {
@@ -1009,13 +2187,13 @@
           "connection": "required"
         },
         {
-          "name": "Rooms",
-          "type": "@Rooms",
+          "name": "Hud",
+          "type": "@ImageData",
           "conIdx": 7,
           "connection": "required"
         },
         {
-          "name": "Hud",
+          "name": "Title",
           "type": "@ImageData",
           "conIdx": 9,
           "connection": "required"
@@ -1070,6 +2248,142 @@
           "conIdx": 13,
           "connection": "recommended"
         },
+        {
+          "name": "error out",
+          "type": "@Error",
+          "conIdx": 15,
+          "connection": "recommended"
+        }
+      ]
+    },
+    {
+      "path": "Source\\App\\Audio_Start.vi",
+      "builder": "app",
+      "purpose": "Audio_Start",
+      "calls": [
+        "Source\\Audio\\Sound_Bank_Load.vi"
+      ],
+      "inputs": [
+        {
+          "name": "error in",
+          "type": "@Error",
+          "conIdx": 11,
+          "connection": "required"
+        }
+      ],
+      "outputs": [
+        {
+          "name": "Bank",
+          "type": "@Bank",
+          "conIdx": 4,
+          "connection": "recommended"
+        },
+        {
+          "name": "Task ID",
+          "type": "uint32",
+          "conIdx": 6,
+          "connection": "recommended"
+        },
+        {
+          "name": "Mixer",
+          "type": "@Mixer",
+          "conIdx": 8,
+          "connection": "recommended"
+        },
+        {
+          "name": "error out",
+          "type": "@Error",
+          "conIdx": 15,
+          "connection": "recommended"
+        }
+      ]
+    },
+    {
+      "path": "Source\\App\\Audio_Block.vi",
+      "builder": "app",
+      "purpose": "Audio_Block",
+      "calls": [
+        "Source\\Audio\\Sound_Mix.vi"
+      ],
+      "inputs": [
+        {
+          "name": "Channels",
+          "type": "@Channels",
+          "conIdx": 0,
+          "connection": "required"
+        },
+        {
+          "name": "Bank",
+          "type": "@Bank",
+          "conIdx": 5,
+          "connection": "required"
+        },
+        {
+          "name": "Task ID",
+          "type": "uint32",
+          "conIdx": 7,
+          "connection": "required"
+        },
+        {
+          "name": "Mixer",
+          "type": "@Mixer",
+          "conIdx": 9,
+          "connection": "required"
+        },
+        {
+          "name": "Sound",
+          "type": "bool",
+          "conIdx": 1,
+          "connection": "recommended"
+        },
+        {
+          "name": "error in",
+          "type": "@Error",
+          "conIdx": 11,
+          "connection": "required"
+        }
+      ],
+      "outputs": [
+        {
+          "name": "Mixer out",
+          "type": "@Mixer",
+          "conIdx": 4,
+          "connection": "recommended"
+        },
+        {
+          "name": "Stop",
+          "type": "bool",
+          "conIdx": 6,
+          "connection": "recommended"
+        },
+        {
+          "name": "error out",
+          "type": "@Error",
+          "conIdx": 15,
+          "connection": "recommended"
+        }
+      ]
+    },
+    {
+      "path": "Source\\App\\Audio_Close.vi",
+      "builder": "app",
+      "purpose": "Audio_Close",
+      "calls": [],
+      "inputs": [
+        {
+          "name": "Task ID",
+          "type": "uint32",
+          "conIdx": 0,
+          "connection": "required"
+        },
+        {
+          "name": "error in",
+          "type": "@Error",
+          "conIdx": 11,
+          "connection": "required"
+        }
+      ],
+      "outputs": [
         {
           "name": "error out",
           "type": "@Error",

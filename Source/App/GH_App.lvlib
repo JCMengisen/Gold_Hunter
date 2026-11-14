@@ -7,6 +7,9 @@
 	<Property Name="NI.LV.All.SourceOnly" Type="Bool">true</Property>
 	<Item Name="App_Close.vi" Type="VI" URL="../App_Close.vi"/>
 	<Item Name="App_Init.vi" Type="VI" URL="../App_Init.vi"/>
+	<Item Name="Audio_Block.vi" Type="VI" URL="../Audio_Block.vi"/>
+	<Item Name="Audio_Close.vi" Type="VI" URL="../Audio_Close.vi"/>
+	<Item Name="Audio_Start.vi" Type="VI" URL="../Audio_Start.vi"/>
 	<Item Name="Engine_Tick.vi" Type="VI" URL="../Engine_Tick.vi"/>
 	<Item Name="Key_Send.vi" Type="VI" URL="../Key_Send.vi"/>
 	<Item Name="Render_Frame.vi" Type="VI" URL="../Render_Frame.vi"/>

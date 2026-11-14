@@ -262,8 +262,8 @@ Gold_Hunter\
 | M0 | Architektur, Pyramide mit 36 Räumen, Lösbarkeitsprüfung, Sprites, Hintergründe | erledigt |
 | M1 | Projekt, Räume laden, Raum mit Sprites zeichnen, Bildrate messen | erledigt, Bildaufbau muss neu (siehe 5) |
 | M2 | Neuer Bildaufbau; Claude: laufen, springen, Leiter, Seil, Stange, dünne Böden, Förderband, Sturz, Raumwechsel; `Main.vi` | erledigt |
-| M3 | Gold, Schlüssel, Türen, Fackel, Dunkelheit mit Lichtkreis, Schwundböden; Test der Lösung per Tastenfolge | offen |
-| M4 | Spinne, Schlange, Totenkopf, Leben und Extraleben | offen |
-| M5 | Schatzkammer, Levelwechsel, Phasen, HUD, Highscore | offen |
-| M6 | Töne (Sprung zuerst), Musik, Titel und Demo | offen |
+| M3 | Gold, Schlüssel, Türen, Fackel, Dunkelheit mit Lichtkreis, Schwundböden, HUD | gebaut (README_Meilenstein3-6.md) |
+| M4 | Spinne, Schlange, Totenkopf, Leben und Extraleben | gebaut |
+| M5 | Schatzkammer, Levelwechsel, Phasen, Highscore | gebaut |
+| M6 | Töne, Musik, Titel und Demo | gebaut, Ton nicht gehört |
 | M7 | Caraya-Tests, Feinschliff | offen |

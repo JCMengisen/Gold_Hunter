@@ -5,8 +5,22 @@
 	<Property Name="NI.Lib.SourceVersion" Type="Int">637566976</Property>
 	<Property Name="NI.Lib.Version" Type="Str">1.0.0.0</Property>
 	<Property Name="NI.LV.All.SourceOnly" Type="Bool">true</Property>
+	<Item Name="Demo_Input.vi" Type="VI" URL="../Demo_Input.vi"/>
+	<Item Name="Door_Open.vi" Type="VI" URL="../Door_Open.vi"/>
+	<Item Name="Enemies_Init.vi" Type="VI" URL="../Enemies_Init.vi"/>
+	<Item Name="Enemies_Step.vi" Type="VI" URL="../Enemies_Step.vi"/>
+	<Item Name="Game_New.vi" Type="VI" URL="../Game_New.vi"/>
+	<Item Name="Game_Play.vi" Type="VI" URL="../Game_Play.vi"/>
 	<Item Name="Game_Start.vi" Type="VI" URL="../Game_Start.vi"/>
 	<Item Name="Game_Step.vi" Type="VI" URL="../Game_Step.vi"/>
+	<Item Name="Highscore_Insert.vi" Type="VI" URL="../Highscore_Insert.vi"/>
+	<Item Name="Highscore_Load.vi" Type="VI" URL="../Highscore_Load.vi"/>
+	<Item Name="Highscore_Save.vi" Type="VI" URL="../Highscore_Save.vi"/>
+	<Item Name="Hit_Check.vi" Type="VI" URL="../Hit_Check.vi"/>
+	<Item Name="Items_Collect.vi" Type="VI" URL="../Items_Collect.vi"/>
+	<Item Name="Keys_Apply.vi" Type="VI" URL="../Keys_Apply.vi"/>
+	<Item Name="Level_Setup.vi" Type="VI" URL="../Level_Setup.vi"/>
 	<Item Name="Player_Move.vi" Type="VI" URL="../Player_Move.vi"/>
+	<Item Name="Respawn.vi" Type="VI" URL="../Respawn.vi"/>
 	<Item Name="Room_Change.vi" Type="VI" URL="../Room_Change.vi"/>
 </Library>

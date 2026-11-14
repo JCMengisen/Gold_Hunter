@@ -1,0 +1,33 @@
+<VI _name="Test_Setup.vi" description="Test helper: Game_Start, then a new game in Level; with Room &gt;= 0 Claude is put into that room at (X, Y) px (the room gets its tiles and enemies, the position is the restart point). Torch sets the torch, Keys the number of keys of each colour. Phase = phase to start in (2 = Playing).">
+  <Control _name="Level" type="int32" value="1" conIdx="0" connection="required" outputs="value:15001.v" uid="15001" uid_parent="root"/>
+  <Control _name="Room" type="int32" value="-1" conIdx="5" connection="required" outputs="value:15002.v" uid="15002" uid_parent="root"/>
+  <Control _name="X" type="int32" value="0" conIdx="7" connection="required" outputs="value:15003.v" uid="15003" uid_parent="root"/>
+  <Control _name="Y" type="int32" value="0" conIdx="9" connection="required" outputs="value:15004.v" uid="15004" uid_parent="root"/>
+  <Control _name="Torch" type="bool" value="false" conIdx="1" connection="required" outputs="value:15005.v" uid="15005" uid_parent="root"/>
+  <Control _name="Phase" type="int32" value="2" conIdx="2" connection="required" outputs="value:15006.v" uid="15006" uid_parent="root"/>
+  <Control _name="Keys" type="int32" value="0" conIdx="3" connection="required" outputs="value:15007.v" uid="15007" uid_parent="root"/>
+  <Control _name="error in" type="cluster{bool.status,int32.code,string.source}" value="[false,0,]" conIdx="11" connection="required" outputs="value:15008.v" uid="15008" uid_parent="root"/>
+  <Call target="Game_Start.vi" inputs="error in:15008.v" outputs="State:15009.o0,Rooms:15009.o1,error out:15009.o2" uid="15009" uid_parent="root"/>
+  <Constant type="bool" value="false" outputs="value:15010.v" uid="15010" uid_parent="root"/>
+  <Call target="Game_New.vi" inputs="State:15009.o0,Rooms:15009.o1,Demo:15010.v,error in:15009.o2" outputs="State out:15011.o0,error out:15011.o1" uid="15011" uid_parent="root"/>
+  <Call target="Level_Setup.vi" inputs="State:15011.o0,Rooms:15009.o1,Level:15001.v,error in:15011.o1" outputs="State out:15012.o0,error out:15012.o1" uid="15012" uid_parent="root"/>
+  <Node _name="Unbundle By Name" fields="World" inputs="input cluster:15012.o0" outputs="World:15013.o0" uid="15013" uid_parent="root"/>
+  <Node _name="Greater Or Equal To 0?" inputs="x:15002.v" outputs="x &gt;= 0?:15014.o0" uid="15014" uid_parent="root"/>
+  <Constant type="int32" value="0" outputs="value:15015.v" uid="15015" uid_parent="root"/>
+  <Node _name="Select" inputs="s:15014.o0,t:15002.v,f:15015.v" outputs="s? t\3Af:15016.o0" uid="15016" uid_parent="root"/>
+  <Node _name="Index Array" inputs="array:15013.o0,index:15016.o0" outputs="element:15017.o0" uid="15017" uid_parent="root"/>
+  <Node _name="Unbundle By Name" fields="Tiles" inputs="input cluster:15017.o0" outputs="Tiles:15018.o0" uid="15018" uid_parent="root"/>
+  <Call target="Enemies_Init.vi" inputs="Tiles:15018.o0,error in:15012.o1" outputs="Enemies:15019.o0,error out:15019.o1" uid="15019" uid_parent="root"/>
+  <Constant type="int32" value="10" outputs="value:15020.v" uid="15020" uid_parent="root"/>
+  <Node _name="Multiply" inputs="x:15003.v,y:15020.v" outputs="x*y:15021.o0" uid="15021" uid_parent="root"/>
+  <Constant type="int32" value="10" outputs="value:15022.v" uid="15022" uid_parent="root"/>
+  <Node _name="Multiply" inputs="x:15004.v,y:15022.v" outputs="x*y:15023.o0" uid="15023" uid_parent="root"/>
+  <Node _name="Bundle By Name" fields="Room,Tiles,Enemies,X10,Y10,StandY,EntryX10,EntryY10" inputs="Room:15002.v,Tiles:15018.o0,Enemies:15019.o0,X10:15021.o0,Y10:15023.o0,StandY:15004.v,EntryX10:15021.o0,EntryY10:15023.o0,input cluster:15012.o0" outputs="output cluster:15024.o0" uid="15024" uid_parent="root"/>
+  <Node _name="Select" inputs="s:15014.o0,t:15024.o0,f:15012.o0" outputs="s? t\3Af:15025.o0" uid="15025" uid_parent="root"/>
+  <Constant type="int32" value="0" outputs="value:15026.v" uid="15026" uid_parent="root"/>
+  <Constant type="int32" value="0" outputs="value:15027.v" uid="15027" uid_parent="root"/>
+  <Node _name="Bundle By Name" fields="Torch,Phase,PhaseTicks,Sound,KeyR,KeyB,KeyY" inputs="Torch:15005.v,Phase:15006.v,PhaseTicks:15026.v,Sound:15027.v,KeyR:15007.v,KeyB:15007.v,KeyY:15007.v,input cluster:15025.o0" outputs="output cluster:15028.o0" uid="15028" uid_parent="root"/>
+  <Indicator _name="State" type="cluster{uint32.Tick,int32.Phase,int32.PhaseTicks,int32.Level,int32.Room,int32.X10,int32.Y10,int32.VY10,int32.Mode,int32.Facing,int32.Run,int32.Vert,int32.StandY,int32.EntryX10,int32.EntryY10,int32.EntryMode,int32.Lives,int32.Score,int32.NextLife,int32.KeyR,int32.KeyB,int32.KeyY,bool.Torch,int32.FloorPhase,bool.Dead,bool.LevelStart,bool.Quit,int32.Sound,uint32.Seed,int32.DemoStep,array.2{uint8}.Tiles,array{cluster{string.ID,int32.Depth,int32.Column,array.2{uint8}.Tiles}}.World,array{cluster{int32.Kind,int32.X10,int32.Y10,int32.Dir,int32.Mode}}.Enemies,array{cluster{int32.Score,string.Name}}.Highscores,array{int32}.Name,int32.Cursor}" value="[0,0,0,1,0,0,0,0,0,0,0,0,0,0,0,0,4,0,10000,0,0,0,false,0,false,false,false,0,12345,0,[],[],[],[],[0,0,0],0]" conIdx="4" connection="recommended" inputs="value:15028.o0" uid="15029" uid_parent="root"/>
+  <Indicator _name="Rooms" type="array{cluster{string.ID,int32.Depth,int32.Column,array.2{uint8}.Tiles}}" value="[]" conIdx="6" connection="recommended" inputs="value:15009.o1" uid="15030" uid_parent="root"/>
+  <Indicator _name="error out" type="cluster{bool.status,int32.code,string.source}" value="[false,0,]" conIdx="15" connection="recommended" inputs="value:15019.o1" uid="15031" uid_parent="root"/>
+</VI>

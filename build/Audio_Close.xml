@@ -1,0 +1,6 @@
+<VI _name="GH_App.lvlib:Audio_Close.vi" description="Closes the sound channel after the audio loop has ended (error in = error of the audio loop; the error of the released sound queue is normal there).">
+  <Control _name="Task ID" type="uint32" value="0" conIdx="0" connection="required" outputs="value:1001.v" uid="1001" uid_parent="root"/>
+  <Control _name="error in" type="cluster{bool.status,int32.code,string.source}" value="[false,0,]" conIdx="11" connection="required" outputs="value:1002.v" uid="1002" uid_parent="root"/>
+  <Call target="Sound Output Clear.vi" inputs="error in (no error):1002.v,task ID:1001.v" outputs="error out:1003.o0" uid="1003" uid_parent="root"/>
+  <Indicator _name="error out" type="cluster{bool.status,int32.code,string.source}" value="[false,0,]" conIdx="15" connection="recommended" inputs="value:1003.o0" uid="1004" uid_parent="root"/>
+</VI>

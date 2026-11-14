@@ -1,0 +1,10 @@
+<VI _name="GH_Engine.lvlib:Demo_Input.vi" description="Key of the demo for one demo tick (Step). Outside the listed steps: no key (0).">
+  <Control _name="Step" type="int32" value="0" conIdx="0" connection="required" outputs="value:1001.v" uid="1001" uid_parent="root"/>
+  <Control _name="error in" type="cluster{bool.status,int32.code,string.source}" value="[false,0,]" conIdx="11" connection="required" outputs="value:1002.v" uid="1002" uid_parent="root"/>
+  <Constant _name="Demo steps" type="array{int32}" value="[0,202,203,300,400,616,690,849,850,920,921,1000,1001,1117,1118]" outputs="value:1003.v" uid="1003" uid_parent="root"/>
+  <Constant _name="Demo keys" type="array{uint16}" value="[4,12,2,10,3,11,4,12,2,10,4,12,3,11,2]" outputs="value:1004.v" uid="1004" uid_parent="root"/>
+  <Node _name="Search 1D Array" inputs="1D array:1003.v,element:1001.v,start index (0):" outputs="index of element:1005.o0" uid="1005" uid_parent="root"/>
+  <Node _name="Index Array" inputs="array:1004.v,index:1005.o0" outputs="element:1006.o0" uid="1006" uid_parent="root"/>
+  <Indicator _name="Key" type="uint16" value="0" conIdx="4" connection="recommended" inputs="value:1006.o0" uid="1007" uid_parent="root"/>
+  <Indicator _name="error out" type="cluster{bool.status,int32.code,string.source}" value="[false,0,]" conIdx="15" connection="recommended" inputs="value:1002.v" uid="1008" uid_parent="root"/>
+</VI>

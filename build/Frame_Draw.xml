@@ -1,151 +1,644 @@
-<VI _name="Frame_Draw.vi" description="Draws one frame for a picture control that never erases. New room: loads its background and draws the whole screen (HUD, room, objects, Claude). Otherwise: renews one block of 5 x 6 tiles around the last three positions of Claude (Block_Cut) with all objects and Claude. In both cases the result is composed invisibly into one pixmap and drawn in one go (no flicker, no seams). Memory keeps the drawn room, its background and the last positions.">
-  <Control _name="State" type="cluster{uint32.Tick,int32.Room,int32.X10,int32.Y10,int32.VY10,int32.Mode,int32.Facing,int32.Run,int32.Vert,int32.StandY,int32.EntryX10,int32.EntryY10,int32.EntryMode,int32.Lives,bool.Dead,bool.Quit,array.2{uint8}.Tiles}" value="[0,0,0,0,0,0,0,0,0,0,0,0,0,4,false,false,[]]" conIdx="0" connection="required" outputs="value:1001.v" uid="1001" uid_parent="root"/>
+<VI _name="GH_Render.lvlib:Frame_Draw.vi" description="Draws one frame for a picture control that never erases, as a list of pieces (image data with their screen rectangle). Full redraw (new room, level, message, floor phase or light mode): the HUD and the whole playfield, on the title the title card. Otherwise only: the piece around the last three positions of Claude, one piece per enemy, the piece where the light moved (dark room) and the HUD when a value changed. Memory keeps the room pictures, the composite of the dark room and the last positions. Picture = all pieces drawn in order.">
+  <Control _name="State" type="cluster{uint32.Tick,int32.Phase,int32.PhaseTicks,int32.Level,int32.Room,int32.X10,int32.Y10,int32.VY10,int32.Mode,int32.Facing,int32.Run,int32.Vert,int32.StandY,int32.EntryX10,int32.EntryY10,int32.EntryMode,int32.Lives,int32.Score,int32.NextLife,int32.KeyR,int32.KeyB,int32.KeyY,bool.Torch,int32.FloorPhase,bool.Dead,bool.LevelStart,bool.Quit,int32.Sound,uint32.Seed,int32.DemoStep,array.2{uint8}.Tiles,array{cluster{string.ID,int32.Depth,int32.Column,array.2{uint8}.Tiles}}.World,array{cluster{int32.Kind,int32.X10,int32.Y10,int32.Dir,int32.Mode}}.Enemies,array{cluster{int32.Score,string.Name}}.Highscores,array{int32}.Name,int32.Cursor}" value="[0,0,0,1,0,0,0,0,0,0,0,0,0,0,0,0,4,0,10000,0,0,0,false,0,false,false,false,0,12345,0,[],[],[],[],[0,0,0],0]" conIdx="0" connection="required" outputs="value:1001.v" uid="1001" uid_parent="root"/>
   <Control _name="Sprites" type="array{cluster{int32.image type,int32.image depth,array{uint8}.image,array{uint8}.mask,array{uint32}.colors,cluster{int16.left,int16.top,int16.right,int16.bottom}.Rectangle}}" value="[]" conIdx="5" connection="required" outputs="value:1002.v" uid="1002" uid_parent="root"/>
-  <Control _name="Rooms" type="array{cluster{string.ID,int32.Depth,int32.Column,array.2{uint8}.Tiles}}" value="[]" conIdx="7" connection="required" outputs="value:1003.v" uid="1003" uid_parent="root"/>
-  <Control _name="Hud" type="cluster{int32.image type,int32.image depth,array{uint8}.image,array{uint8}.mask,array{uint32}.colors,cluster{int16.left,int16.top,int16.right,int16.bottom}.Rectangle}" value="[0,0,[],[],[],[0,0,0,0]]" conIdx="9" connection="required" outputs="value:1004.v" uid="1004" uid_parent="root"/>
-  <Control _name="Memory" type="cluster{int32.Room,cluster{int32.image type,int32.image depth,array{uint8}.image,array{uint8}.mask,array{uint32}.colors,cluster{int16.left,int16.top,int16.right,int16.bottom}.Rectangle}.Background,int32.X1,int32.Y1,int32.X2,int32.Y2}" value="[-1,[0,0,[],[],[],[0,0,0,0]],0,0,0,0]" conIdx="1" connection="required" outputs="value:1005.v" uid="1005" uid_parent="root"/>
+  <Control _name="Hud" type="cluster{int32.image type,int32.image depth,array{uint8}.image,array{uint8}.mask,array{uint32}.colors,cluster{int16.left,int16.top,int16.right,int16.bottom}.Rectangle}" value="[0,0,[],[],[],[0,0,0,0]]" conIdx="7" connection="required" outputs="value:1003.v" uid="1003" uid_parent="root"/>
+  <Control _name="Title" type="cluster{int32.image type,int32.image depth,array{uint8}.image,array{uint8}.mask,array{uint32}.colors,cluster{int16.left,int16.top,int16.right,int16.bottom}.Rectangle}" value="[0,0,[],[],[],[0,0,0,0]]" conIdx="9" connection="required" outputs="value:1004.v" uid="1004" uid_parent="root"/>
+  <Control _name="Memory" type="cluster{int32.RoomKey,int32.Key,int32.NameKey,array.2{uint8}.Lit,array.2{uint8}.Dim,array.2{uint8}.Dark,array.2{uint8}.Comp,cluster{int32.image type,int32.image depth,array{uint8}.image,array{uint8}.mask,array{uint32}.colors,cluster{int16.left,int16.top,int16.right,int16.bottom}.Rectangle}.Template,int32.CX,int32.CY,int32.X1,int32.Y1,int32.X2,int32.Y2,array{cluster{int32.Kind,int32.X10,int32.Y10,int32.Dir,int32.Mode}}.Prev,int32.HudKey,int32.HudScore,int32.HudTime}" value="[-1,-1,-1,[],[],[],[],[0,0,[],[],[],[0,0,0,0]],-1,-1,0,0,0,0,[],-1,-1,-1]" conIdx="1" connection="required" outputs="value:1005.v" uid="1005" uid_parent="root"/>
   <Control _name="error in" type="cluster{bool.status,int32.code,string.source}" value="[false,0,]" conIdx="11" connection="required" outputs="value:1006.v" uid="1006" uid_parent="root"/>
-  <Node _name="Unbundle By Name" fields="Room,X10,Y10,VY10,Mode,Facing,Run,Tick,Tiles" inputs="input cluster:1001.v" outputs="Room:1007.o0,X10:1007.o1,Y10:1007.o2,VY10:1007.o3,Mode:1007.o4,Facing:1007.o5,Run:1007.o6,Tick:1007.o7,Tiles:1007.o8" uid="1007" uid_parent="root"/>
-  <Node _name="Unbundle By Name" fields="Room,Background,X1,Y1,X2,Y2" inputs="input cluster:1005.v" outputs="Room:1008.o0,Background:1008.o1,X1:1008.o2,Y1:1008.o3,X2:1008.o4,Y2:1008.o5" uid="1008" uid_parent="root"/>
-  <Constant type="int32" value="10" outputs="value:1009.v" uid="1009" uid_parent="root"/>
-  <Node _name="Quotient &amp; Remainder" inputs="x:1007.o1,y:1009.v" outputs="x-y*floor(x/y):1010.o0,floor(x/y):1010.o1" uid="1010" uid_parent="root"/>
-  <Constant type="int32" value="10" outputs="value:1011.v" uid="1011" uid_parent="root"/>
-  <Node _name="Quotient &amp; Remainder" inputs="x:1007.o2,y:1011.v" outputs="x-y*floor(x/y):1012.o0,floor(x/y):1012.o1" uid="1012" uid_parent="root"/>
-  <Node _name="Not Equal?" inputs="x:1007.o0,y:1008.o0" outputs="x != y?:1013.o0" uid="1013" uid_parent="root"/>
-  <Node _name="Build Array" inputs="element:1010.o1,element:1008.o2,element:1008.o4" outputs="appended array:1014.o0" uid="1014" uid_parent="root"/>
-  <Node _name="Build Array" inputs="element:1012.o1,element:1008.o3,element:1008.o5" outputs="appended array:1015.o0" uid="1015" uid_parent="root"/>
-  <Structure _name="Case Structure" selectin="1013.o0" uid="1016" uid_parent="root">
-    <Tunnel _id="In1" inputs="value:1003.v" uid="1017" uid_parent="1016"/>
-    <Tunnel _id="In2" inputs="value:1007.o0" uid="1018" uid_parent="1016"/>
-    <Tunnel _id="In3" inputs="value:1004.v" uid="1019" uid_parent="1016"/>
-    <Tunnel _id="In4" inputs="value:1008.o1" uid="1020" uid_parent="1016"/>
-    <Tunnel _id="In5" inputs="value:1006.v" uid="1021" uid_parent="1016"/>
-    <Tunnel _id="In6" inputs="value:1014.o0" uid="1022" uid_parent="1016"/>
-    <Tunnel _id="In7" inputs="value:1015.o0" uid="1023" uid_parent="1016"/>
-    <CaseFrame selector="True" selectout="" uid="1024" uid_parent="1016">
-      <Tunnel _id="In1" outputs="value:1025.v" uid="1025" uid_parent="1024"/>
-      <Tunnel _id="In2" outputs="value:1026.v" uid="1026" uid_parent="1024"/>
-      <Tunnel _id="In3" outputs="value:1027.v" uid="1027" uid_parent="1024"/>
-      <Tunnel _id="In4" outputs="value:1028.v" uid="1028" uid_parent="1024"/>
-      <Tunnel _id="In5" outputs="value:1029.v" uid="1029" uid_parent="1024"/>
-      <Tunnel _id="In6" outputs="value:1030.v" uid="1030" uid_parent="1024"/>
-      <Tunnel _id="In7" outputs="value:1031.v" uid="1031" uid_parent="1024"/>
-      <Node _name="Index Array" inputs="array:1025.v,index:1026.v" outputs="element:1032.o0" uid="1032" uid_parent="1024"/>
-      <Node _name="Unbundle By Name" fields="ID" inputs="input cluster:1032.o0" outputs="ID:1033.o0" uid="1033" uid_parent="1024"/>
-      <Constant type="string" value="room_0_" outputs="value:1034.v" uid="1034" uid_parent="1024"/>
-      <Constant type="string" value=".png" outputs="value:1035.v" uid="1035" uid_parent="1024"/>
-      <Node _name="Concatenate Strings" inputs="string:1034.v,string:1033.o0,string:1035.v" outputs="concatenated string:1036.o0" uid="1036" uid_parent="1024"/>
-      <Call target="Image_Load.vi" inputs="File name:1036.o0,error in:1029.v" outputs="Image:1037.o0,error out:1037.o1" uid="1037" uid_parent="1024"/>
-      <Call target="Draw Flattened Pixmap.vi" inputs="image data:1027.v,picture:" outputs="new picture:1038.o0" uid="1038" uid_parent="1024"/>
-      <Constant type="cluster{int32.X,int32.Y}" value="[0,80]" outputs="value:1039.v" uid="1039" uid_parent="1024"/>
-      <Call target="Image_Draw.vi" inputs="Picture:1038.o0,Image:1037.o0,Position:1039.v,error in:1037.o1" outputs="Picture out:1040.o0,error out:1040.o1" uid="1040" uid_parent="1024"/>
-      <Constant _name="Whole screen" type="cluster{int16.left,int16.top,int16.right,int16.bottom}" value="[0,0,1280,720]" outputs="value:1041.v" uid="1041" uid_parent="1024"/>
-      <Tunnel _id="Out1" inputs="value:1040.o0" uid="1042" uid_parent="1024"/>
-      <Tunnel _id="Out2" inputs="value:1040.o1" uid="1043" uid_parent="1024"/>
-      <Tunnel _id="Out3" inputs="value:1037.o0" uid="1044" uid_parent="1024"/>
-      <Tunnel _id="Out4" inputs="value:1041.v" uid="1045" uid_parent="1024"/>
+  <Node _name="Unbundle By Name" fields="Room,Level,Phase,PhaseTicks,X10,Y10,VY10,Mode,Facing,Run,Tick,Torch,FloorPhase,World,Enemies,Name,Cursor,Lives,KeyR,KeyB,KeyY,Score,LevelStart" inputs="input cluster:1001.v" outputs="Room:1007.o0,Level:1007.o1,Phase:1007.o2,PhaseTicks:1007.o3,X10:1007.o4,Y10:1007.o5,VY10:1007.o6,Mode:1007.o7,Facing:1007.o8,Run:1007.o9,Tick:1007.o10,Torch:1007.o11,FloorPhase:1007.o12,World:1007.o13,Enemies:1007.o14,Name:1007.o15,Cursor:1007.o16,Lives:1007.o17,KeyR:1007.o18,KeyB:1007.o19,KeyY:1007.o20,Score:1007.o21,LevelStart:1007.o22" uid="1007" uid_parent="root"/>
+  <Node _name="Unbundle By Name" fields="RoomKey,Key,NameKey,Lit,Dim,Dark,Comp,Template,CX,CY,X1,Y1,X2,Y2,Prev,HudKey,HudScore,HudTime" inputs="input cluster:1005.v" outputs="RoomKey:1008.o0,Key:1008.o1,NameKey:1008.o2,Lit:1008.o3,Dim:1008.o4,Dark:1008.o5,Comp:1008.o6,Template:1008.o7,CX:1008.o8,CY:1008.o9,X1:1008.o10,Y1:1008.o11,X2:1008.o12,Y2:1008.o13,Prev:1008.o14,HudKey:1008.o15,HudScore:1008.o16,HudTime:1008.o17" uid="1008" uid_parent="root"/>
+  <Constant type="int32" value="1" outputs="value:1009.v" uid="1009" uid_parent="root"/>
+  <Node _name="Subtract" inputs="x:1007.o1,y:1009.v" outputs="x-y:1010.o0" uid="1010" uid_parent="root"/>
+  <Constant type="int32" value="0" outputs="value:1011.v" uid="1011" uid_parent="root"/>
+  <Constant type="int32" value="2" outputs="value:1012.v" uid="1012" uid_parent="root"/>
+  <Node _name="Less?" inputs="x:1010.o0,y:1011.v" outputs="x &lt; y?:1013.o0" uid="1013" uid_parent="root"/>
+  <Node _name="Greater?" inputs="x:1010.o0,y:1012.v" outputs="x &gt; y?:1014.o0" uid="1014" uid_parent="root"/>
+  <Node _name="Select" inputs="s:1014.o0,t:1012.v,f:1010.o0" outputs="s? t\3Af:1015.o0" uid="1015" uid_parent="root"/>
+  <Node _name="Select" inputs="s:1013.o0,t:1011.v,f:1015.o0" outputs="s? t\3Af:1016.o0" uid="1016" uid_parent="root"/>
+  <Constant _name="Theme" type="array{int32}" value="[0,1,2]" outputs="value:1017.v" uid="1017" uid_parent="root"/>
+  <Node _name="Index Array" inputs="array:1017.v,index:1016.o0" outputs="element:1018.o0" uid="1018" uid_parent="root"/>
+  <Node _name="Index Array" inputs="array:1007.o13,index:1007.o0" outputs="element:1019.o0" uid="1019" uid_parent="root"/>
+  <Node _name="Unbundle By Name" fields="ID,Depth" inputs="input cluster:1019.o0" outputs="ID:1020.o0,Depth:1020.o1" uid="1020" uid_parent="root"/>
+  <Constant type="int32" value="0" outputs="value:1021.v" uid="1021" uid_parent="root"/>
+  <Node _name="Equal?" inputs="x:1007.o2,y:1021.v" outputs="x = y?:1022.o0" uid="1022" uid_parent="root"/>
+  <Constant _name="Dark from" type="array{int32}" value="[2,1,1]" outputs="value:1023.v" uid="1023" uid_parent="root"/>
+  <Node _name="Index Array" inputs="array:1023.v,index:1016.o0" outputs="element:1024.o0" uid="1024" uid_parent="root"/>
+  <Node _name="Greater Or Equal?" inputs="x:1020.o1,y:1024.o0" outputs="x &gt;= y?:1025.o0" uid="1025" uid_parent="root"/>
+  <Node _name="Not" inputs="x:1007.o11" outputs=".not. x?:1026.o0" uid="1026" uid_parent="root"/>
+  <Node _name="Not" inputs="x:1022.o0" outputs=".not. x?:1027.o0" uid="1027" uid_parent="root"/>
+  <Constant type="int32" value="36" outputs="value:1028.v" uid="1028" uid_parent="root"/>
+  <Node _name="Not Equal?" inputs="x:1007.o0,y:1028.v" outputs="x != y?:1029.o0" uid="1029" uid_parent="root"/>
+  <Node _name="And" inputs="x:1025.o0,y:1026.o0" outputs="x .and. y?:1030.o0" uid="1030" uid_parent="root"/>
+  <Node _name="And" inputs="x:1030.o0,y:1027.o0" outputs="x .and. y?:1031.o0" uid="1031" uid_parent="root"/>
+  <Node _name="And" inputs="x:1031.o0,y:1029.o0" outputs="x .and. y?:1032.o0" uid="1032" uid_parent="root"/>
+  <Constant type="int32" value="100" outputs="value:1033.v" uid="1033" uid_parent="root"/>
+  <Node _name="Multiply" inputs="x:1018.o0,y:1033.v" outputs="x*y:1034.o0" uid="1034" uid_parent="root"/>
+  <Node _name="Add" inputs="x:1007.o0,y:1034.o0" outputs="x+y:1035.o0" uid="1035" uid_parent="root"/>
+  <Node _name="Not Equal?" inputs="x:1035.o0,y:1008.o0" outputs="x != y?:1036.o0" uid="1036" uid_parent="root"/>
+  <Node _name="Not" inputs="x:1022.o0" outputs=".not. x?:1037.o0" uid="1037" uid_parent="root"/>
+  <Node _name="And" inputs="x:1036.o0,y:1037.o0" outputs="x .and. y?:1038.o0" uid="1038" uid_parent="root"/>
+  <Structure _name="Case Structure" selectin="1038.o0" uid="1039" uid_parent="root">
+    <Tunnel _id="In1" inputs="value:1020.o0" uid="1040" uid_parent="1039"/>
+    <Tunnel _id="In2" inputs="value:1018.o0" uid="1041" uid_parent="1039"/>
+    <Tunnel _id="In3" inputs="value:1008.o3" uid="1042" uid_parent="1039"/>
+    <Tunnel _id="In4" inputs="value:1008.o4" uid="1043" uid_parent="1039"/>
+    <Tunnel _id="In5" inputs="value:1008.o5" uid="1044" uid_parent="1039"/>
+    <Tunnel _id="In6" inputs="value:1008.o7" uid="1045" uid_parent="1039"/>
+    <Tunnel _id="In7" inputs="value:1006.v" uid="1046" uid_parent="1039"/>
+    <CaseFrame selector="True" selectout="" uid="1047" uid_parent="1039">
+      <Tunnel _id="In1" outputs="value:1048.v" uid="1048" uid_parent="1047"/>
+      <Tunnel _id="In2" outputs="value:1049.v" uid="1049" uid_parent="1047"/>
+      <Tunnel _id="In3" outputs="value:1050.v" uid="1050" uid_parent="1047"/>
+      <Tunnel _id="In4" outputs="value:1051.v" uid="1051" uid_parent="1047"/>
+      <Tunnel _id="In5" outputs="value:1052.v" uid="1052" uid_parent="1047"/>
+      <Tunnel _id="In6" outputs="value:1053.v" uid="1053" uid_parent="1047"/>
+      <Tunnel _id="In7" outputs="value:1054.v" uid="1054" uid_parent="1047"/>
+      <Call target="Room_Images.vi" inputs="Room ID:1048.v,Theme:1049.v,error in:1054.v" outputs="Lit:1055.o0,Dim:1055.o1,Dark:1055.o2,Template:1055.o3,error out:1055.o4" uid="1055" uid_parent="1047"/>
+      <Tunnel _id="Out1" inputs="value:1055.o0" uid="1056" uid_parent="1047"/>
+      <Tunnel _id="Out2" inputs="value:1055.o1" uid="1057" uid_parent="1047"/>
+      <Tunnel _id="Out3" inputs="value:1055.o2" uid="1058" uid_parent="1047"/>
+      <Tunnel _id="Out4" inputs="value:1055.o3" uid="1059" uid_parent="1047"/>
+      <Tunnel _id="Out5" inputs="value:1055.o4" uid="1060" uid_parent="1047"/>
     </CaseFrame>
-    <CaseFrame selector="False" selectout="" uid="1046" uid_parent="1016">
-      <Tunnel _id="In1" outputs="value:1047.v" uid="1047" uid_parent="1046"/>
-      <Tunnel _id="In2" outputs="value:1048.v" uid="1048" uid_parent="1046"/>
-      <Tunnel _id="In3" outputs="value:1049.v" uid="1049" uid_parent="1046"/>
-      <Tunnel _id="In4" outputs="value:1050.v" uid="1050" uid_parent="1046"/>
-      <Tunnel _id="In5" outputs="value:1051.v" uid="1051" uid_parent="1046"/>
-      <Tunnel _id="In6" outputs="value:1052.v" uid="1052" uid_parent="1046"/>
-      <Tunnel _id="In7" outputs="value:1053.v" uid="1053" uid_parent="1046"/>
-      <Constant type="int32" value="0" outputs="value:1054.v" uid="1054" uid_parent="1046"/>
-      <Node _name="Index Array" inputs="array:1052.v,index:1054.v" outputs="element:1055.o0" uid="1055" uid_parent="1046"/>
-      <Constant type="int32" value="1" outputs="value:1056.v" uid="1056" uid_parent="1046"/>
-      <Node _name="Index Array" inputs="array:1052.v,index:1056.v" outputs="element:1057.o0" uid="1057" uid_parent="1046"/>
-      <Constant type="int32" value="2" outputs="value:1058.v" uid="1058" uid_parent="1046"/>
-      <Node _name="Index Array" inputs="array:1052.v,index:1058.v" outputs="element:1059.o0" uid="1059" uid_parent="1046"/>
-      <Node _name="Less?" inputs="x:1057.o0,y:1055.o0" outputs="x &lt; y?:1060.o0" uid="1060" uid_parent="1046"/>
-      <Node _name="Select" inputs="s:1060.o0,t:1057.o0,f:1055.o0" outputs="s? t\3Af:1061.o0" uid="1061" uid_parent="1046"/>
-      <Node _name="Less?" inputs="x:1059.o0,y:1061.o0" outputs="x &lt; y?:1062.o0" uid="1062" uid_parent="1046"/>
-      <Node _name="Select" inputs="s:1062.o0,t:1059.o0,f:1061.o0" outputs="s? t\3Af:1063.o0" uid="1063" uid_parent="1046"/>
-      <Constant type="int32" value="32" outputs="value:1064.v" uid="1064" uid_parent="1046"/>
-      <Node _name="Quotient &amp; Remainder" inputs="x:1063.o0,y:1064.v" outputs="x-y*floor(x/y):1065.o0,floor(x/y):1065.o1" uid="1065" uid_parent="1046"/>
-      <Node _name="Decrement" inputs="x:1065.o1" outputs="x-1:1066.o0" uid="1066" uid_parent="1046"/>
-      <Constant type="int32" value="0" outputs="value:1067.v" uid="1067" uid_parent="1046"/>
-      <Node _name="Index Array" inputs="array:1053.v,index:1067.v" outputs="element:1068.o0" uid="1068" uid_parent="1046"/>
-      <Constant type="int32" value="1" outputs="value:1069.v" uid="1069" uid_parent="1046"/>
-      <Node _name="Index Array" inputs="array:1053.v,index:1069.v" outputs="element:1070.o0" uid="1070" uid_parent="1046"/>
-      <Constant type="int32" value="2" outputs="value:1071.v" uid="1071" uid_parent="1046"/>
-      <Node _name="Index Array" inputs="array:1053.v,index:1071.v" outputs="element:1072.o0" uid="1072" uid_parent="1046"/>
-      <Node _name="Less?" inputs="x:1070.o0,y:1068.o0" outputs="x &lt; y?:1073.o0" uid="1073" uid_parent="1046"/>
-      <Node _name="Select" inputs="s:1073.o0,t:1070.o0,f:1068.o0" outputs="s? t\3Af:1074.o0" uid="1074" uid_parent="1046"/>
-      <Node _name="Less?" inputs="x:1072.o0,y:1074.o0" outputs="x &lt; y?:1075.o0" uid="1075" uid_parent="1046"/>
-      <Node _name="Select" inputs="s:1075.o0,t:1072.o0,f:1074.o0" outputs="s? t\3Af:1076.o0" uid="1076" uid_parent="1046"/>
-      <Constant type="int32" value="32" outputs="value:1077.v" uid="1077" uid_parent="1046"/>
-      <Node _name="Quotient &amp; Remainder" inputs="x:1076.o0,y:1077.v" outputs="x-y*floor(x/y):1078.o0,floor(x/y):1078.o1" uid="1078" uid_parent="1046"/>
-      <Node _name="Decrement" inputs="x:1078.o1" outputs="x-1:1079.o0" uid="1079" uid_parent="1046"/>
-      <Constant type="int32" value="80" outputs="value:1080.v" uid="1080" uid_parent="1046"/>
-      <Constant type="int32" value="5" outputs="value:1081.v" uid="1081" uid_parent="1046"/>
-      <Constant type="int32" value="6" outputs="value:1082.v" uid="1082" uid_parent="1046"/>
-      <Call target="Block_Cut.vi" inputs="Image:1050.v,Column:1066.o0,Row:1079.o0,Offset Y:1080.v,Columns:1081.v,Rows:1082.v,error in:1051.v" outputs="Block:1083.o0,error out:1083.o1" uid="1083" uid_parent="1046"/>
-      <Call target="Draw Flattened Pixmap.vi" inputs="image data:1083.o0,picture:" outputs="new picture:1084.o0" uid="1084" uid_parent="1046"/>
-      <Node _name="Unbundle By Name" fields="Rectangle" inputs="input cluster:1083.o0" outputs="Rectangle:1085.o0" uid="1085" uid_parent="1046"/>
-      <Tunnel _id="Out1" inputs="value:1084.o0" uid="1086" uid_parent="1046"/>
-      <Tunnel _id="Out2" inputs="value:1083.o1" uid="1087" uid_parent="1046"/>
-      <Tunnel _id="Out3" inputs="value:1050.v" uid="1088" uid_parent="1046"/>
-      <Tunnel _id="Out4" inputs="value:1085.o0" uid="1089" uid_parent="1046"/>
+    <CaseFrame selector="False" selectout="" uid="1061" uid_parent="1039">
+      <Tunnel _id="In1" outputs="value:1062.v" uid="1062" uid_parent="1061"/>
+      <Tunnel _id="In2" outputs="value:1063.v" uid="1063" uid_parent="1061"/>
+      <Tunnel _id="In3" outputs="value:1064.v" uid="1064" uid_parent="1061"/>
+      <Tunnel _id="In4" outputs="value:1065.v" uid="1065" uid_parent="1061"/>
+      <Tunnel _id="In5" outputs="value:1066.v" uid="1066" uid_parent="1061"/>
+      <Tunnel _id="In6" outputs="value:1067.v" uid="1067" uid_parent="1061"/>
+      <Tunnel _id="In7" outputs="value:1068.v" uid="1068" uid_parent="1061"/>
+      <Tunnel _id="Out1" inputs="value:1064.v" uid="1069" uid_parent="1061"/>
+      <Tunnel _id="Out2" inputs="value:1065.v" uid="1070" uid_parent="1061"/>
+      <Tunnel _id="Out3" inputs="value:1066.v" uid="1071" uid_parent="1061"/>
+      <Tunnel _id="Out4" inputs="value:1067.v" uid="1072" uid_parent="1061"/>
+      <Tunnel _id="Out5" inputs="value:1068.v" uid="1073" uid_parent="1061"/>
     </CaseFrame>
-    <Tunnel _id="Out1" outputs="value:1090.v" uid="1090" uid_parent="1016"/>
-    <Tunnel _id="Out2" outputs="value:1091.v" uid="1091" uid_parent="1016"/>
-    <Tunnel _id="Out3" outputs="value:1092.v" uid="1092" uid_parent="1016"/>
-    <Tunnel _id="Out4" outputs="value:1093.v" uid="1093" uid_parent="1016"/>
+    <Tunnel _id="Out1" outputs="value:1074.v" uid="1074" uid_parent="1039"/>
+    <Tunnel _id="Out2" outputs="value:1075.v" uid="1075" uid_parent="1039"/>
+    <Tunnel _id="Out3" outputs="value:1076.v" uid="1076" uid_parent="1039"/>
+    <Tunnel _id="Out4" outputs="value:1077.v" uid="1077" uid_parent="1039"/>
+    <Tunnel _id="Out5" outputs="value:1078.v" uid="1078" uid_parent="1039"/>
   </Structure>
-  <Call target="Room_Draw.vi" inputs="Picture:1090.v,Sprites:1002.v,Tiles:1007.o8,error in:1091.v" outputs="Picture out:1094.o0,Count:,error out:1094.o1" uid="1094" uid_parent="root"/>
-  <Constant type="int32" value="7" outputs="value:1095.v" uid="1095" uid_parent="root"/>
-  <Node _name="Multiply" inputs="x:1007.o5,y:1095.v" outputs="x*y:1096.o0" uid="1096" uid_parent="root"/>
-  <Node _name="To Long Integer" inputs="number:1007.o7" outputs="32bit integer:1097.o0" uid="1097" uid_parent="root"/>
-  <Constant type="int32" value="6" outputs="value:1098.v" uid="1098" uid_parent="root"/>
-  <Node _name="Quotient &amp; Remainder" inputs="x:1097.o0,y:1098.v" outputs="x-y*floor(x/y):1099.o0,floor(x/y):1099.o1" uid="1099" uid_parent="root"/>
-  <Constant type="int32" value="4" outputs="value:1100.v" uid="1100" uid_parent="root"/>
-  <Node _name="Quotient &amp; Remainder" inputs="x:1099.o1,y:1100.v" outputs="x-y*floor(x/y):1101.o0,floor(x/y):1101.o1" uid="1101" uid_parent="root"/>
-  <Node _name="Increment" inputs="x:1101.o0" outputs="x+1:1102.o0" uid="1102" uid_parent="root"/>
-  <Constant type="int32" value="0" outputs="value:1103.v" uid="1103" uid_parent="root"/>
-  <Node _name="Not Equal?" inputs="x:1007.o6,y:1103.v" outputs="x != y?:1104.o0" uid="1104" uid_parent="root"/>
+  <Node _name="Select" inputs="s:1022.o0,t:1008.o0,f:1035.o0" outputs="s? t\3Af:1079.o0" uid="1079" uid_parent="root"/>
+  <Constant type="int32" value="10" outputs="value:1080.v" uid="1080" uid_parent="root"/>
+  <Node _name="Quotient &amp; Remainder" inputs="x:1007.o4,y:1080.v" outputs="x-y*floor(x/y):1081.o0,floor(x/y):1081.o1" uid="1081" uid_parent="root"/>
+  <Constant type="int32" value="10" outputs="value:1082.v" uid="1082" uid_parent="root"/>
+  <Node _name="Quotient &amp; Remainder" inputs="x:1007.o5,y:1082.v" outputs="x-y*floor(x/y):1083.o0,floor(x/y):1083.o1" uid="1083" uid_parent="root"/>
+  <Constant type="int32" value="16" outputs="value:1084.v" uid="1084" uid_parent="root"/>
+  <Node _name="Add" inputs="x:1081.o1,y:1084.v" outputs="x+y:1085.o0" uid="1085" uid_parent="root"/>
+  <Constant type="int32" value="32" outputs="value:1086.v" uid="1086" uid_parent="root"/>
+  <Node _name="Quotient &amp; Remainder" inputs="x:1085.o0,y:1086.v" outputs="x-y*floor(x/y):1087.o0,floor(x/y):1087.o1" uid="1087" uid_parent="root"/>
+  <Constant type="int32" value="24" outputs="value:1088.v" uid="1088" uid_parent="root"/>
+  <Node _name="Add" inputs="x:1083.o1,y:1088.v" outputs="x+y:1089.o0" uid="1089" uid_parent="root"/>
+  <Constant type="int32" value="32" outputs="value:1090.v" uid="1090" uid_parent="root"/>
+  <Node _name="Quotient &amp; Remainder" inputs="x:1089.o0,y:1090.v" outputs="x-y*floor(x/y):1091.o0,floor(x/y):1091.o1" uid="1091" uid_parent="root"/>
+  <Constant type="int32" value="7" outputs="value:1092.v" uid="1092" uid_parent="root"/>
+  <Node _name="Multiply" inputs="x:1007.o8,y:1092.v" outputs="x*y:1093.o0" uid="1093" uid_parent="root"/>
+  <Node _name="To Long Integer" inputs="number:1007.o10" outputs="32bit integer:1094.o0" uid="1094" uid_parent="root"/>
+  <Constant type="int32" value="6" outputs="value:1095.v" uid="1095" uid_parent="root"/>
+  <Node _name="Quotient &amp; Remainder" inputs="x:1094.o0,y:1095.v" outputs="x-y*floor(x/y):1096.o0,floor(x/y):1096.o1" uid="1096" uid_parent="root"/>
+  <Constant type="int32" value="4" outputs="value:1097.v" uid="1097" uid_parent="root"/>
+  <Node _name="Quotient &amp; Remainder" inputs="x:1096.o1,y:1097.v" outputs="x-y*floor(x/y):1098.o0,floor(x/y):1098.o1" uid="1098" uid_parent="root"/>
+  <Node _name="Increment" inputs="x:1098.o0" outputs="x+1:1099.o0" uid="1099" uid_parent="root"/>
+  <Constant type="int32" value="0" outputs="value:1100.v" uid="1100" uid_parent="root"/>
+  <Node _name="Not Equal?" inputs="x:1007.o9,y:1100.v" outputs="x != y?:1101.o0" uid="1101" uid_parent="root"/>
+  <Constant type="int32" value="0" outputs="value:1102.v" uid="1102" uid_parent="root"/>
+  <Node _name="Select" inputs="s:1101.o0,t:1099.o0,f:1102.v" outputs="s? t\3Af:1103.o0" uid="1103" uid_parent="root"/>
+  <Node _name="Add" inputs="x:1093.o0,y:1103.o0" outputs="x+y:1104.o0" uid="1104" uid_parent="root"/>
   <Constant type="int32" value="0" outputs="value:1105.v" uid="1105" uid_parent="root"/>
-  <Node _name="Select" inputs="s:1104.o0,t:1102.o0,f:1105.v" outputs="s? t\3Af:1106.o0" uid="1106" uid_parent="root"/>
-  <Node _name="Add" inputs="x:1096.o0,y:1106.o0" outputs="x+y:1107.o0" uid="1107" uid_parent="root"/>
-  <Constant type="int32" value="0" outputs="value:1108.v" uid="1108" uid_parent="root"/>
-  <Node _name="Less?" inputs="x:1007.o3,y:1108.v" outputs="x &lt; y?:1109.o0" uid="1109" uid_parent="root"/>
-  <Constant type="int32" value="5" outputs="value:1110.v" uid="1110" uid_parent="root"/>
-  <Constant type="int32" value="6" outputs="value:1111.v" uid="1111" uid_parent="root"/>
-  <Node _name="Select" inputs="s:1109.o0,t:1110.v,f:1111.v" outputs="s? t\3Af:1112.o0" uid="1112" uid_parent="root"/>
-  <Node _name="Add" inputs="x:1096.o0,y:1112.o0" outputs="x+y:1113.o0" uid="1113" uid_parent="root"/>
-  <Constant type="int32" value="14" outputs="value:1114.v" uid="1114" uid_parent="root"/>
-  <Constant type="int32" value="8" outputs="value:1115.v" uid="1115" uid_parent="root"/>
-  <Node _name="Quotient &amp; Remainder" inputs="x:1012.o1,y:1115.v" outputs="x-y*floor(x/y):1116.o0,floor(x/y):1116.o1" uid="1116" uid_parent="root"/>
-  <Constant type="int32" value="2" outputs="value:1117.v" uid="1117" uid_parent="root"/>
-  <Node _name="Quotient &amp; Remainder" inputs="x:1116.o1,y:1117.v" outputs="x-y*floor(x/y):1118.o0,floor(x/y):1118.o1" uid="1118" uid_parent="root"/>
-  <Node _name="Add" inputs="x:1114.v,y:1118.o0" outputs="x+y:1119.o0" uid="1119" uid_parent="root"/>
+  <Node _name="Less?" inputs="x:1007.o6,y:1105.v" outputs="x &lt; y?:1106.o0" uid="1106" uid_parent="root"/>
+  <Constant type="int32" value="5" outputs="value:1107.v" uid="1107" uid_parent="root"/>
+  <Constant type="int32" value="6" outputs="value:1108.v" uid="1108" uid_parent="root"/>
+  <Node _name="Select" inputs="s:1106.o0,t:1107.v,f:1108.v" outputs="s? t\3Af:1109.o0" uid="1109" uid_parent="root"/>
+  <Node _name="Add" inputs="x:1093.o0,y:1109.o0" outputs="x+y:1110.o0" uid="1110" uid_parent="root"/>
+  <Constant type="int32" value="14" outputs="value:1111.v" uid="1111" uid_parent="root"/>
+  <Constant type="int32" value="8" outputs="value:1112.v" uid="1112" uid_parent="root"/>
+  <Node _name="Quotient &amp; Remainder" inputs="x:1083.o1,y:1112.v" outputs="x-y*floor(x/y):1113.o0,floor(x/y):1113.o1" uid="1113" uid_parent="root"/>
+  <Constant type="int32" value="2" outputs="value:1114.v" uid="1114" uid_parent="root"/>
+  <Node _name="Quotient &amp; Remainder" inputs="x:1113.o1,y:1114.v" outputs="x-y*floor(x/y):1115.o0,floor(x/y):1115.o1" uid="1115" uid_parent="root"/>
+  <Node _name="Add" inputs="x:1111.v,y:1115.o0" outputs="x+y:1116.o0" uid="1116" uid_parent="root"/>
+  <Constant type="int32" value="0" outputs="value:1117.v" uid="1117" uid_parent="root"/>
+  <Node _name="Subtract" inputs="x:1116.o0,y:1117.v" outputs="x-y:1118.o0" uid="1118" uid_parent="root"/>
+  <Constant type="int32" value="0" outputs="value:1119.v" uid="1119" uid_parent="root"/>
   <Constant type="int32" value="0" outputs="value:1120.v" uid="1120" uid_parent="root"/>
-  <Node _name="Equal?" inputs="x:1007.o4,y:1120.v" outputs="x = y?:1121.o0" uid="1121" uid_parent="root"/>
+  <Node _name="Equal?" inputs="x:1007.o7,y:1120.v" outputs="x = y?:1121.o0" uid="1121" uid_parent="root"/>
   <Constant type="int32" value="1" outputs="value:1122.v" uid="1122" uid_parent="root"/>
-  <Node _name="Equal?" inputs="x:1007.o4,y:1122.v" outputs="x = y?:1123.o0" uid="1123" uid_parent="root"/>
+  <Node _name="Equal?" inputs="x:1007.o7,y:1122.v" outputs="x = y?:1123.o0" uid="1123" uid_parent="root"/>
   <Constant type="int32" value="2" outputs="value:1124.v" uid="1124" uid_parent="root"/>
-  <Node _name="Equal?" inputs="x:1007.o4,y:1124.v" outputs="x = y?:1125.o0" uid="1125" uid_parent="root"/>
+  <Node _name="Equal?" inputs="x:1007.o7,y:1124.v" outputs="x = y?:1125.o0" uid="1125" uid_parent="root"/>
   <Constant type="int32" value="16" outputs="value:1126.v" uid="1126" uid_parent="root"/>
-  <Node _name="Select" inputs="s:1125.o0,t:1113.o0,f:1126.v" outputs="s? t\3Af:1127.o0" uid="1127" uid_parent="root"/>
-  <Node _name="Select" inputs="s:1123.o0,t:1119.o0,f:1127.o0" outputs="s? t\3Af:1128.o0" uid="1128" uid_parent="root"/>
-  <Node _name="Select" inputs="s:1121.o0,t:1107.o0,f:1128.o0" outputs="s? t\3Af:1129.o0" uid="1129" uid_parent="root"/>
-  <Constant type="cluster{int32.X,int32.Y}" value="[0,0]" outputs="value:1130.v" uid="1130" uid_parent="root"/>
-  <Constant type="int32" value="80" outputs="value:1131.v" uid="1131" uid_parent="root"/>
-  <Node _name="Add" inputs="x:1012.o1,y:1131.v" outputs="x+y:1132.o0" uid="1132" uid_parent="root"/>
-  <Node _name="Bundle By Name" fields="X,Y" inputs="X:1010.o1,Y:1132.o0,input cluster:1130.v" outputs="output cluster:1133.o0" uid="1133" uid_parent="root"/>
-  <Constant type="int32" value="0" outputs="value:1134.v" uid="1134" uid_parent="root"/>
-  <Node _name="Add" inputs="x:1129.o0,y:1134.v" outputs="x+y:1135.o0" uid="1135" uid_parent="root"/>
-  <Call target="Sprite_Draw.vi" inputs="Picture:1094.o0,Sprites:1002.v,Index:1135.o0,Position:1133.o0,error in:1094.o1" outputs="Picture out:1136.o0,error out:1136.o1" uid="1136" uid_parent="root"/>
-  <Constant type="int32" value="24" outputs="value:1137.v" uid="1137" uid_parent="root"/>
-  <Call target="Picture to Pixmap.vi" inputs="Background Color:,depth:1137.v,rect:1093.v,picture:1136.o0" outputs="image data:1138.o0,new picture:" uid="1138" uid_parent="root"/>
-  <Node _name="Bundle By Name" fields="Rectangle" inputs="Rectangle:1093.v,input cluster:1138.o0" outputs="output cluster:1139.o0" uid="1139" uid_parent="root"/>
-  <Call target="Draw Flattened Pixmap.vi" inputs="image data:1139.o0,picture:" outputs="new picture:1140.o0" uid="1140" uid_parent="root"/>
-  <Node _name="Select" inputs="s:1013.o0,t:1010.o1,f:1008.o2" outputs="s? t\3Af:1141.o0" uid="1141" uid_parent="root"/>
-  <Node _name="Select" inputs="s:1013.o0,t:1012.o1,f:1008.o3" outputs="s? t\3Af:1142.o0" uid="1142" uid_parent="root"/>
-  <Node _name="Bundle By Name" fields="Room,Background,X1,Y1,X2,Y2" inputs="Room:1007.o0,Background:1092.v,X1:1010.o1,Y1:1012.o1,X2:1141.o0,Y2:1142.o0,input cluster:1005.v" outputs="output cluster:1143.o0" uid="1143" uid_parent="root"/>
-  <Indicator _name="Picture" type="picture" value="" conIdx="4" connection="recommended" inputs="value:1140.o0" uid="1144" uid_parent="root"/>
-  <Indicator _name="Memory out" type="cluster{int32.Room,cluster{int32.image type,int32.image depth,array{uint8}.image,array{uint8}.mask,array{uint32}.colors,cluster{int16.left,int16.top,int16.right,int16.bottom}.Rectangle}.Background,int32.X1,int32.Y1,int32.X2,int32.Y2}" value="[-1,[0,0,[],[],[],[0,0,0,0]],0,0,0,0]" conIdx="6" connection="recommended" inputs="value:1143.o0" uid="1145" uid_parent="root"/>
-  <Indicator _name="error out" type="cluster{bool.status,int32.code,string.source}" value="[false,0,]" conIdx="15" connection="recommended" inputs="value:1136.o1" uid="1146" uid_parent="root"/>
+  <Node _name="Select" inputs="s:1125.o0,t:1110.o0,f:1126.v" outputs="s? t\3Af:1127.o0" uid="1127" uid_parent="root"/>
+  <Node _name="Select" inputs="s:1123.o0,t:1118.o0,f:1127.o0" outputs="s? t\3Af:1128.o0" uid="1128" uid_parent="root"/>
+  <Node _name="Select" inputs="s:1121.o0,t:1104.o0,f:1128.o0" outputs="s? t\3Af:1129.o0" uid="1129" uid_parent="root"/>
+  <Node _name="Add" inputs="x:1119.v,y:1129.o0" outputs="x+y:1130.o0" uid="1130" uid_parent="root"/>
+  <Constant type="int32" value="4" outputs="value:1131.v" uid="1131" uid_parent="root"/>
+  <Node _name="Equal?" inputs="x:1007.o2,y:1131.v" outputs="x = y?:1132.o0" uid="1132" uid_parent="root"/>
+  <Constant type="int32" value="7" outputs="value:1133.v" uid="1133" uid_parent="root"/>
+  <Node _name="Equal?" inputs="x:1007.o2,y:1133.v" outputs="x = y?:1134.o0" uid="1134" uid_parent="root"/>
+  <Node _name="Or" inputs="x:1132.o0,y:1134.o0" outputs="x .or. y?:1135.o0" uid="1135" uid_parent="root"/>
+  <Constant type="int32" value="40" outputs="value:1136.v" uid="1136" uid_parent="root"/>
+  <Node _name="Less?" inputs="x:1007.o3,y:1136.v" outputs="x &lt; y?:1137.o0" uid="1137" uid_parent="root"/>
+  <Constant type="int32" value="4" outputs="value:1138.v" uid="1138" uid_parent="root"/>
+  <Node _name="Quotient &amp; Remainder" inputs="x:1007.o3,y:1138.v" outputs="x-y*floor(x/y):1139.o0,floor(x/y):1139.o1" uid="1139" uid_parent="root"/>
+  <Constant type="int32" value="2" outputs="value:1140.v" uid="1140" uid_parent="root"/>
+  <Node _name="Quotient &amp; Remainder" inputs="x:1139.o1,y:1140.v" outputs="x-y*floor(x/y):1141.o0,floor(x/y):1141.o1" uid="1141" uid_parent="root"/>
+  <Constant type="int32" value="0" outputs="value:1142.v" uid="1142" uid_parent="root"/>
+  <Node _name="Equal?" inputs="x:1141.o0,y:1142.v" outputs="x = y?:1143.o0" uid="1143" uid_parent="root"/>
+  <Node _name="And" inputs="x:1137.o0,y:1143.o0" outputs="x .and. y?:1144.o0" uid="1144" uid_parent="root"/>
+  <Constant type="int32" value="4" outputs="value:1145.v" uid="1145" uid_parent="root"/>
+  <Node _name="Equal?" inputs="x:1007.o2,y:1145.v" outputs="x = y?:1146.o0" uid="1146" uid_parent="root"/>
+  <Constant type="int32" value="40" outputs="value:1147.v" uid="1147" uid_parent="root"/>
+  <Node _name="Less?" inputs="x:1007.o3,y:1147.v" outputs="x &lt; y?:1148.o0" uid="1148" uid_parent="root"/>
+  <Node _name="And" inputs="x:1146.o0,y:1148.o0" outputs="x .and. y?:1149.o0" uid="1149" uid_parent="root"/>
+  <Constant type="int32" value="17" outputs="value:1150.v" uid="1150" uid_parent="root"/>
+  <Node _name="Select" inputs="s:1144.o0,t:1150.v,f:1130.o0" outputs="s? t\3Af:1151.o0" uid="1151" uid_parent="root"/>
+  <Constant type="int32" value="18" outputs="value:1152.v" uid="1152" uid_parent="root"/>
+  <Node _name="Select" inputs="s:1149.o0,t:1151.o0,f:1152.v" outputs="s? t\3Af:1153.o0" uid="1153" uid_parent="root"/>
+  <Constant type="int32" value="-1" outputs="value:1154.v" uid="1154" uid_parent="root"/>
+  <Node _name="Select" inputs="s:1135.o0,t:1153.o0,f:1130.o0" outputs="s? t\3Af:1155.o0" uid="1155" uid_parent="root"/>
+  <Node _name="Select" inputs="s:1022.o0,t:1154.v,f:1155.o0" outputs="s? t\3Af:1156.o0" uid="1156" uid_parent="root"/>
+  <Constant type="cluster{bool.Hide,int32.CX,int32.CY,int32.ClaudeIdx,int32.ClaudeX,int32.ClaudeY}" value="[false,0,0,-1,0,0]" outputs="value:1157.v" uid="1157" uid_parent="root"/>
+  <Constant type="int32" value="80" outputs="value:1158.v" uid="1158" uid_parent="root"/>
+  <Node _name="Add" inputs="x:1083.o1,y:1158.v" outputs="x+y:1159.o0" uid="1159" uid_parent="root"/>
+  <Node _name="Bundle By Name" fields="Hide,CX,CY,ClaudeIdx,ClaudeX,ClaudeY" inputs="Hide:1032.o0,CX:1087.o1,CY:1091.o1,ClaudeIdx:1156.o0,ClaudeX:1081.o1,ClaudeY:1159.o0,input cluster:1157.v" outputs="output cluster:1160.o0" uid="1160" uid_parent="root"/>
+  <Constant type="int32" value="10" outputs="value:1161.v" uid="1161" uid_parent="root"/>
+  <Node _name="Multiply" inputs="x:1007.o2,y:1161.v" outputs="x*y:1162.o0" uid="1162" uid_parent="root"/>
+  <Constant type="int32" value="480" outputs="value:1163.v" uid="1163" uid_parent="root"/>
+  <Node _name="Greater Or Equal?" inputs="x:1007.o3,y:1163.v" outputs="x &gt;= y?:1164.o0" uid="1164" uid_parent="root"/>
+  <Node _name="And" inputs="x:1022.o0,y:1164.o0" outputs="x .and. y?:1165.o0" uid="1165" uid_parent="root"/>
+  <Node _name="Boolean To (0\2C1)" inputs="Boolean:1165.o0" outputs="0\2C 1:1166.o0" uid="1166" uid_parent="root"/>
+  <Node _name="To Long Integer" inputs="number:1166.o0" outputs="32bit integer:1167.o0" uid="1167" uid_parent="root"/>
+  <Constant type="int32" value="5" outputs="value:1168.v" uid="1168" uid_parent="root"/>
+  <Node _name="Equal?" inputs="x:1007.o2,y:1168.v" outputs="x = y?:1169.o0" uid="1169" uid_parent="root"/>
+  <Constant type="int32" value="90" outputs="value:1170.v" uid="1170" uid_parent="root"/>
+  <Node _name="Less?" inputs="x:1007.o3,y:1170.v" outputs="x &lt; y?:1171.o0" uid="1171" uid_parent="root"/>
+  <Node _name="And" inputs="x:1169.o0,y:1171.o0" outputs="x .and. y?:1172.o0" uid="1172" uid_parent="root"/>
+  <Node _name="Boolean To (0\2C1)" inputs="Boolean:1172.o0" outputs="0\2C 1:1173.o0" uid="1173" uid_parent="root"/>
+  <Node _name="To Long Integer" inputs="number:1173.o0" outputs="32bit integer:1174.o0" uid="1174" uid_parent="root"/>
+  <Node _name="Add" inputs="x:1167.o0,y:1174.o0" outputs="x+y:1175.o0" uid="1175" uid_parent="root"/>
+  <Node _name="Add" inputs="x:1162.o0,y:1175.o0" outputs="x+y:1176.o0" uid="1176" uid_parent="root"/>
+  <Constant type="int32" value="10000" outputs="value:1177.v" uid="1177" uid_parent="root"/>
+  <Node _name="Multiply" inputs="x:1007.o12,y:1177.v" outputs="x*y:1178.o0" uid="1178" uid_parent="root"/>
+  <Node _name="Add" inputs="x:1035.o0,y:1178.o0" outputs="x+y:1179.o0" uid="1179" uid_parent="root"/>
+  <Node _name="Boolean To (0\2C1)" inputs="Boolean:1032.o0" outputs="0\2C 1:1180.o0" uid="1180" uid_parent="root"/>
+  <Node _name="To Long Integer" inputs="number:1180.o0" outputs="32bit integer:1181.o0" uid="1181" uid_parent="root"/>
+  <Constant type="int32" value="100000" outputs="value:1182.v" uid="1182" uid_parent="root"/>
+  <Node _name="Multiply" inputs="x:1181.o0,y:1182.v" outputs="x*y:1183.o0" uid="1183" uid_parent="root"/>
+  <Constant type="int32" value="1000000" outputs="value:1184.v" uid="1184" uid_parent="root"/>
+  <Node _name="Multiply" inputs="x:1176.o0,y:1184.v" outputs="x*y:1185.o0" uid="1185" uid_parent="root"/>
+  <Node _name="Add" inputs="x:1183.o0,y:1185.o0" outputs="x+y:1186.o0" uid="1186" uid_parent="root"/>
+  <Node _name="Add" inputs="x:1179.o0,y:1186.o0" outputs="x+y:1187.o0" uid="1187" uid_parent="root"/>
+  <Node _name="Boolean To (0\2C1)" inputs="Boolean:1007.o22" outputs="0\2C 1:1188.o0" uid="1188" uid_parent="root"/>
+  <Node _name="To Long Integer" inputs="number:1188.o0" outputs="32bit integer:1189.o0" uid="1189" uid_parent="root"/>
+  <Constant type="int32" value="7" outputs="value:1190.v" uid="1190" uid_parent="root"/>
+  <Node _name="Multiply" inputs="x:1189.o0,y:1190.v" outputs="x*y:1191.o0" uid="1191" uid_parent="root"/>
+  <Node _name="Add" inputs="x:1187.o0,y:1191.o0" outputs="x+y:1192.o0" uid="1192" uid_parent="root"/>
+  <Constant type="int32" value="0" outputs="value:1193.v" uid="1193" uid_parent="root"/>
+  <Structure _name="For Loop" count="1194i.v" maxin="" maxout="" uid="1194" uid_parent="root">
+    <Tunnel _id="In1" inputs="value:1007.o15" mode="index" outputs="value:1195.v" uid="1195" uid_parent="1194"/>
+    <ShiftReg uid="1196" uid_parent="1194">
+      <Left inputs="value:1193.v" outputs="value:1197.v" uid="1197" uid_parent="1196"/>
+      <Right inputs="value:1204.o0" outputs="value:1198.v" uid="1198" uid_parent="1196"/>
+    </ShiftReg>
+    <Constant type="int32" value="29" outputs="value:1199.v" uid="1199" uid_parent="1194"/>
+    <Node _name="Multiply" inputs="x:1194i.v,y:1199.v" outputs="x*y:1200.o0" uid="1200" uid_parent="1194"/>
+    <Constant type="int32" value="7" outputs="value:1201.v" uid="1201" uid_parent="1194"/>
+    <Node _name="Add" inputs="x:1200.o0,y:1201.v" outputs="x+y:1202.o0" uid="1202" uid_parent="1194"/>
+    <Node _name="Multiply" inputs="x:1195.v,y:1202.o0" outputs="x*y:1203.o0" uid="1203" uid_parent="1194"/>
+    <Node _name="Add" inputs="x:1197.v,y:1203.o0" outputs="x+y:1204.o0" uid="1204" uid_parent="1194"/>
+  </Structure>
+  <Constant type="int32" value="1000" outputs="value:1205.v" uid="1205" uid_parent="root"/>
+  <Node _name="Multiply" inputs="x:1007.o16,y:1205.v" outputs="x*y:1206.o0" uid="1206" uid_parent="root"/>
+  <Node _name="Add" inputs="x:1198.v,y:1206.o0" outputs="x+y:1207.o0" uid="1207" uid_parent="root"/>
+  <Node _name="Not Equal?" inputs="x:1192.o0,y:1008.o1" outputs="x != y?:1208.o0" uid="1208" uid_parent="root"/>
+  <Node _name="Not Equal?" inputs="x:1207.o0,y:1008.o2" outputs="x != y?:1209.o0" uid="1209" uid_parent="root"/>
+  <Node _name="Or" inputs="x:1208.o0,y:1209.o0" outputs="x .or. y?:1210.o0" uid="1210" uid_parent="root"/>
+  <Node _name="Or" inputs="x:1210.o0,y:1038.o0" outputs="x .or. y?:1211.o0" uid="1211" uid_parent="root"/>
+  <Constant type="int32" value="8" outputs="value:1212.v" uid="1212" uid_parent="root"/>
+  <Node _name="Multiply" inputs="x:1007.o18,y:1212.v" outputs="x*y:1213.o0" uid="1213" uid_parent="root"/>
+  <Node _name="Add" inputs="x:1007.o17,y:1213.o0" outputs="x+y:1214.o0" uid="1214" uid_parent="root"/>
+  <Constant type="int32" value="80" outputs="value:1215.v" uid="1215" uid_parent="root"/>
+  <Node _name="Multiply" inputs="x:1007.o19,y:1215.v" outputs="x*y:1216.o0" uid="1216" uid_parent="root"/>
+  <Constant type="int32" value="800" outputs="value:1217.v" uid="1217" uid_parent="root"/>
+  <Node _name="Multiply" inputs="x:1007.o20,y:1217.v" outputs="x*y:1218.o0" uid="1218" uid_parent="root"/>
+  <Node _name="Boolean To (0\2C1)" inputs="Boolean:1007.o11" outputs="0\2C 1:1219.o0" uid="1219" uid_parent="root"/>
+  <Node _name="To Long Integer" inputs="number:1219.o0" outputs="32bit integer:1220.o0" uid="1220" uid_parent="root"/>
+  <Constant type="int32" value="8000" outputs="value:1221.v" uid="1221" uid_parent="root"/>
+  <Node _name="Multiply" inputs="x:1220.o0,y:1221.v" outputs="x*y:1222.o0" uid="1222" uid_parent="root"/>
+  <Constant type="int32" value="16000" outputs="value:1223.v" uid="1223" uid_parent="root"/>
+  <Node _name="Multiply" inputs="x:1007.o1,y:1223.v" outputs="x*y:1224.o0" uid="1224" uid_parent="root"/>
+  <Node _name="Add" inputs="x:1222.o0,y:1224.o0" outputs="x+y:1225.o0" uid="1225" uid_parent="root"/>
+  <Node _name="Add" inputs="x:1218.o0,y:1225.o0" outputs="x+y:1226.o0" uid="1226" uid_parent="root"/>
+  <Node _name="Add" inputs="x:1216.o0,y:1226.o0" outputs="x+y:1227.o0" uid="1227" uid_parent="root"/>
+  <Node _name="Add" inputs="x:1214.o0,y:1227.o0" outputs="x+y:1228.o0" uid="1228" uid_parent="root"/>
+  <Constant _name="Treasure time" type="array{int32}" value="[900,900,780]" outputs="value:1229.v" uid="1229" uid_parent="root"/>
+  <Node _name="Index Array" inputs="array:1229.v,index:1016.o0" outputs="element:1230.o0" uid="1230" uid_parent="root"/>
+  <Constant type="int32" value="5" outputs="value:1231.v" uid="1231" uid_parent="root"/>
+  <Node _name="Equal?" inputs="x:1007.o2,y:1231.v" outputs="x = y?:1232.o0" uid="1232" uid_parent="root"/>
+  <Node _name="Subtract" inputs="x:1230.o0,y:1007.o3" outputs="x-y:1233.o0" uid="1233" uid_parent="root"/>
+  <Constant type="int32" value="0" outputs="value:1234.v" uid="1234" uid_parent="root"/>
+  <Node _name="Greater?" inputs="x:1233.o0,y:1234.v" outputs="x &gt; y?:1235.o0" uid="1235" uid_parent="root"/>
+  <Node _name="Select" inputs="s:1235.o0,t:1233.o0,f:1234.v" outputs="s? t\3Af:1236.o0" uid="1236" uid_parent="root"/>
+  <Constant type="int32" value="60" outputs="value:1237.v" uid="1237" uid_parent="root"/>
+  <Node _name="Quotient &amp; Remainder" inputs="x:1236.o0,y:1237.v" outputs="x-y*floor(x/y):1238.o0,floor(x/y):1238.o1" uid="1238" uid_parent="root"/>
+  <Constant type="int32" value="-1" outputs="value:1239.v" uid="1239" uid_parent="root"/>
+  <Node _name="Select" inputs="s:1232.o0,t:1238.o1,f:1239.v" outputs="s? t\3Af:1240.o0" uid="1240" uid_parent="root"/>
+  <Node _name="Not Equal?" inputs="x:1228.o0,y:1008.o15" outputs="x != y?:1241.o0" uid="1241" uid_parent="root"/>
+  <Node _name="Not Equal?" inputs="x:1007.o21,y:1008.o16" outputs="x != y?:1242.o0" uid="1242" uid_parent="root"/>
+  <Node _name="Not Equal?" inputs="x:1240.o0,y:1008.o17" outputs="x != y?:1243.o0" uid="1243" uid_parent="root"/>
+  <Node _name="Or" inputs="x:1211.o0,y:1241.o0" outputs="x .or. y?:1244.o0" uid="1244" uid_parent="root"/>
+  <Node _name="Or" inputs="x:1244.o0,y:1242.o0" outputs="x .or. y?:1245.o0" uid="1245" uid_parent="root"/>
+  <Node _name="Or" inputs="x:1245.o0,y:1243.o0" outputs="x .or. y?:1246.o0" uid="1246" uid_parent="root"/>
+  <Structure _name="Case Structure" selectin="1211.o0" uid="1247" uid_parent="root">
+    <Tunnel _id="In1" inputs="value:1074.v" uid="1248" uid_parent="1247"/>
+    <Tunnel _id="In2" inputs="value:1075.v" uid="1249" uid_parent="1247"/>
+    <Tunnel _id="In3" inputs="value:1076.v" uid="1250" uid_parent="1247"/>
+    <Tunnel _id="In4" inputs="value:1077.v" uid="1251" uid_parent="1247"/>
+    <Tunnel _id="In5" inputs="value:1002.v" uid="1252" uid_parent="1247"/>
+    <Tunnel _id="In6" inputs="value:1001.v" uid="1253" uid_parent="1247"/>
+    <Tunnel _id="In7" inputs="value:1160.o0" uid="1254" uid_parent="1247"/>
+    <Tunnel _id="In8" inputs="value:1003.v" uid="1255" uid_parent="1247"/>
+    <Tunnel _id="In9" inputs="value:1004.v" uid="1256" uid_parent="1247"/>
+    <Tunnel _id="In10" inputs="value:1032.o0" uid="1257" uid_parent="1247"/>
+    <Tunnel _id="In11" inputs="value:1087.o1" uid="1258" uid_parent="1247"/>
+    <Tunnel _id="In12" inputs="value:1091.o1" uid="1259" uid_parent="1247"/>
+    <Tunnel _id="In13" inputs="value:1022.o0" uid="1260" uid_parent="1247"/>
+    <Tunnel _id="In14" inputs="value:1078.v" uid="1261" uid_parent="1247"/>
+    <Tunnel _id="In15" inputs="value:1008.o8" uid="1262" uid_parent="1247"/>
+    <Tunnel _id="In16" inputs="value:1008.o9" uid="1263" uid_parent="1247"/>
+    <Tunnel _id="In17" inputs="value:1008.o6" uid="1264" uid_parent="1247"/>
+    <Tunnel _id="In18" inputs="value:1008.o10" uid="1265" uid_parent="1247"/>
+    <Tunnel _id="In19" inputs="value:1008.o11" uid="1266" uid_parent="1247"/>
+    <Tunnel _id="In20" inputs="value:1008.o12" uid="1267" uid_parent="1247"/>
+    <Tunnel _id="In21" inputs="value:1008.o13" uid="1268" uid_parent="1247"/>
+    <Tunnel _id="In22" inputs="value:1008.o14" uid="1269" uid_parent="1247"/>
+    <Tunnel _id="In23" inputs="value:1081.o1" uid="1270" uid_parent="1247"/>
+    <Tunnel _id="In24" inputs="value:1083.o1" uid="1271" uid_parent="1247"/>
+    <CaseFrame selector="True" selectout="" uid="1272" uid_parent="1247">
+      <Tunnel _id="In1" outputs="value:1273.v" uid="1273" uid_parent="1272"/>
+      <Tunnel _id="In2" outputs="value:1274.v" uid="1274" uid_parent="1272"/>
+      <Tunnel _id="In3" outputs="value:1275.v" uid="1275" uid_parent="1272"/>
+      <Tunnel _id="In4" outputs="value:1276.v" uid="1276" uid_parent="1272"/>
+      <Tunnel _id="In5" outputs="value:1277.v" uid="1277" uid_parent="1272"/>
+      <Tunnel _id="In6" outputs="value:1278.v" uid="1278" uid_parent="1272"/>
+      <Tunnel _id="In7" outputs="value:1279.v" uid="1279" uid_parent="1272"/>
+      <Tunnel _id="In8" outputs="value:1280.v" uid="1280" uid_parent="1272"/>
+      <Tunnel _id="In9" outputs="value:1281.v" uid="1281" uid_parent="1272"/>
+      <Tunnel _id="In10" outputs="value:1282.v" uid="1282" uid_parent="1272"/>
+      <Tunnel _id="In11" outputs="value:1283.v" uid="1283" uid_parent="1272"/>
+      <Tunnel _id="In12" outputs="value:1284.v" uid="1284" uid_parent="1272"/>
+      <Tunnel _id="In13" outputs="value:1285.v" uid="1285" uid_parent="1272"/>
+      <Tunnel _id="In14" outputs="value:1286.v" uid="1286" uid_parent="1272"/>
+      <Tunnel _id="In15" outputs="value:1287.v" uid="1287" uid_parent="1272"/>
+      <Tunnel _id="In16" outputs="value:1288.v" uid="1288" uid_parent="1272"/>
+      <Tunnel _id="In17" outputs="value:1289.v" uid="1289" uid_parent="1272"/>
+      <Tunnel _id="In18" outputs="value:1290.v" uid="1290" uid_parent="1272"/>
+      <Tunnel _id="In19" outputs="value:1291.v" uid="1291" uid_parent="1272"/>
+      <Tunnel _id="In20" outputs="value:1292.v" uid="1292" uid_parent="1272"/>
+      <Tunnel _id="In21" outputs="value:1293.v" uid="1293" uid_parent="1272"/>
+      <Tunnel _id="In22" outputs="value:1294.v" uid="1294" uid_parent="1272"/>
+      <Tunnel _id="In23" outputs="value:1295.v" uid="1295" uid_parent="1272"/>
+      <Tunnel _id="In24" outputs="value:1296.v" uid="1296" uid_parent="1272"/>
+      <Structure _name="Case Structure" selectin="1282.v" uid="1297" uid_parent="1272">
+        <Tunnel _id="In1" inputs="value:1275.v" uid="1298" uid_parent="1297"/>
+        <Tunnel _id="In2" inputs="value:1273.v" uid="1299" uid_parent="1297"/>
+        <Tunnel _id="In3" inputs="value:1274.v" uid="1300" uid_parent="1297"/>
+        <Tunnel _id="In4" inputs="value:1283.v" uid="1301" uid_parent="1297"/>
+        <Tunnel _id="In5" inputs="value:1284.v" uid="1302" uid_parent="1297"/>
+        <Tunnel _id="In6" inputs="value:1286.v" uid="1303" uid_parent="1297"/>
+        <CaseFrame selector="True" selectout="" uid="1304" uid_parent="1297">
+          <Tunnel _id="In1" outputs="value:1305.v" uid="1305" uid_parent="1304"/>
+          <Tunnel _id="In2" outputs="value:1306.v" uid="1306" uid_parent="1304"/>
+          <Tunnel _id="In3" outputs="value:1307.v" uid="1307" uid_parent="1304"/>
+          <Tunnel _id="In4" outputs="value:1308.v" uid="1308" uid_parent="1304"/>
+          <Tunnel _id="In5" outputs="value:1309.v" uid="1309" uid_parent="1304"/>
+          <Tunnel _id="In6" outputs="value:1310.v" uid="1310" uid_parent="1304"/>
+          <Constant type="int32" value="-100" outputs="value:1311.v" uid="1311" uid_parent="1304"/>
+          <Constant type="int32" value="-100" outputs="value:1312.v" uid="1312" uid_parent="1304"/>
+          <Call target="Light_Update.vi" inputs="Comp:1305.v,Lit:1306.v,Dim:1307.v,Dark:1305.v,Old CX:1311.v,Old CY:1312.v,CX:1308.v,CY:1309.v,error in:1310.v" outputs="Comp out:1313.o0,Rect:,error out:1313.o1" uid="1313" uid_parent="1304"/>
+          <Tunnel _id="Out1" inputs="value:1313.o0" uid="1314" uid_parent="1304"/>
+          <Tunnel _id="Out2" inputs="value:1313.o1" uid="1315" uid_parent="1304"/>
+        </CaseFrame>
+        <CaseFrame selector="False" selectout="" uid="1316" uid_parent="1297">
+          <Tunnel _id="In1" outputs="value:1317.v" uid="1317" uid_parent="1316"/>
+          <Tunnel _id="In2" outputs="value:1318.v" uid="1318" uid_parent="1316"/>
+          <Tunnel _id="In3" outputs="value:1319.v" uid="1319" uid_parent="1316"/>
+          <Tunnel _id="In4" outputs="value:1320.v" uid="1320" uid_parent="1316"/>
+          <Tunnel _id="In5" outputs="value:1321.v" uid="1321" uid_parent="1316"/>
+          <Tunnel _id="In6" outputs="value:1322.v" uid="1322" uid_parent="1316"/>
+          <Tunnel _id="Out1" inputs="value:1318.v" uid="1323" uid_parent="1316"/>
+          <Tunnel _id="Out2" inputs="value:1322.v" uid="1324" uid_parent="1316"/>
+        </CaseFrame>
+        <Tunnel _id="Out1" outputs="value:1325.v" uid="1325" uid_parent="1297"/>
+        <Tunnel _id="Out2" outputs="value:1326.v" uid="1326" uid_parent="1297"/>
+      </Structure>
+      <Structure _name="Case Structure" selectin="1285.v" uid="1327" uid_parent="1272">
+        <Tunnel _id="In1" inputs="value:1281.v" uid="1328" uid_parent="1327"/>
+        <Tunnel _id="In2" inputs="value:1277.v" uid="1329" uid_parent="1327"/>
+        <Tunnel _id="In3" inputs="value:1278.v" uid="1330" uid_parent="1327"/>
+        <Tunnel _id="In4" inputs="value:1326.v" uid="1331" uid_parent="1327"/>
+        <Tunnel _id="In5" inputs="value:1279.v" uid="1332" uid_parent="1327"/>
+        <Tunnel _id="In6" inputs="value:1280.v" uid="1333" uid_parent="1327"/>
+        <Tunnel _id="In7" inputs="value:1325.v" uid="1334" uid_parent="1327"/>
+        <Tunnel _id="In8" inputs="value:1276.v" uid="1335" uid_parent="1327"/>
+        <CaseFrame selector="True" selectout="" uid="1336" uid_parent="1327">
+          <Tunnel _id="In1" outputs="value:1337.v" uid="1337" uid_parent="1336"/>
+          <Tunnel _id="In2" outputs="value:1338.v" uid="1338" uid_parent="1336"/>
+          <Tunnel _id="In3" outputs="value:1339.v" uid="1339" uid_parent="1336"/>
+          <Tunnel _id="In4" outputs="value:1340.v" uid="1340" uid_parent="1336"/>
+          <Tunnel _id="In5" outputs="value:1341.v" uid="1341" uid_parent="1336"/>
+          <Tunnel _id="In6" outputs="value:1342.v" uid="1342" uid_parent="1336"/>
+          <Tunnel _id="In7" outputs="value:1343.v" uid="1343" uid_parent="1336"/>
+          <Tunnel _id="In8" outputs="value:1344.v" uid="1344" uid_parent="1336"/>
+          <Call target="Draw Flattened Pixmap.vi" inputs="image data:1337.v,picture:" outputs="new picture:1345.o0" uid="1345" uid_parent="1336"/>
+          <Constant type="cluster{int16.left,int16.top,int16.right,int16.bottom}" value="[0,0,1280,720]" outputs="value:1346.v" uid="1346" uid_parent="1336"/>
+          <Call target="Overlay_Draw.vi" inputs="Picture:1345.o0,Sprites:1338.v,State:1339.v,Clip:1346.v,error in:1340.v" outputs="Picture out:1347.o0,error out:1347.o1" uid="1347" uid_parent="1336"/>
+          <Constant type="int32" value="24" outputs="value:1348.v" uid="1348" uid_parent="1336"/>
+          <Constant type="cluster{int16.left,int16.top,int16.right,int16.bottom}" value="[0,0,1280,720]" outputs="value:1349.v" uid="1349" uid_parent="1336"/>
+          <Call target="Picture to Pixmap.vi" inputs="Background Color:,depth:1348.v,rect:1349.v,picture:1347.o0" outputs="image data:1350.o0,new picture:" uid="1350" uid_parent="1336"/>
+          <Constant type="cluster{int16.left,int16.top,int16.right,int16.bottom}" value="[0,0,1280,720]" outputs="value:1351.v" uid="1351" uid_parent="1336"/>
+          <Node _name="Bundle By Name" fields="Rectangle" inputs="Rectangle:1351.v,input cluster:1350.o0" outputs="output cluster:1352.o0" uid="1352" uid_parent="1336"/>
+          <Node _name="Build Array" inputs="element:1352.o0" outputs="appended array:1353.o0" uid="1353" uid_parent="1336"/>
+          <Tunnel _id="Out1" inputs="value:1353.o0" uid="1354" uid_parent="1336"/>
+          <Tunnel _id="Out2" inputs="value:1347.o1" uid="1355" uid_parent="1336"/>
+        </CaseFrame>
+        <CaseFrame selector="False" selectout="" uid="1356" uid_parent="1327">
+          <Tunnel _id="In1" outputs="value:1357.v" uid="1357" uid_parent="1356"/>
+          <Tunnel _id="In2" outputs="value:1358.v" uid="1358" uid_parent="1356"/>
+          <Tunnel _id="In3" outputs="value:1359.v" uid="1359" uid_parent="1356"/>
+          <Tunnel _id="In4" outputs="value:1360.v" uid="1360" uid_parent="1356"/>
+          <Tunnel _id="In5" outputs="value:1361.v" uid="1361" uid_parent="1356"/>
+          <Tunnel _id="In6" outputs="value:1362.v" uid="1362" uid_parent="1356"/>
+          <Tunnel _id="In7" outputs="value:1363.v" uid="1363" uid_parent="1356"/>
+          <Tunnel _id="In8" outputs="value:1364.v" uid="1364" uid_parent="1356"/>
+          <Constant type="cluster{int16.left,int16.top,int16.right,int16.bottom}" value="[0,0,40,20]" outputs="value:1365.v" uid="1365" uid_parent="1356"/>
+          <Call target="Piece_Compose.vi" inputs="Grid:1363.v,Template:1364.v,Rect:1365.v,Sprites:1358.v,State:1359.v,View:1361.v,error in:1360.v" outputs="Piece:1366.o0,error out:1366.o1" uid="1366" uid_parent="1356"/>
+          <Call target="Hud_Draw.vi" inputs="Sprites:1358.v,Hud:1362.v,State:1359.v,error in:1366.o1" outputs="Piece:1367.o0,error out:1367.o1" uid="1367" uid_parent="1356"/>
+          <Node _name="Build Array" inputs="element:1367.o0,element:1366.o0" outputs="appended array:1368.o0" uid="1368" uid_parent="1356"/>
+          <Tunnel _id="Out1" inputs="value:1368.o0" uid="1369" uid_parent="1356"/>
+          <Tunnel _id="Out2" inputs="value:1367.o1" uid="1370" uid_parent="1356"/>
+        </CaseFrame>
+        <Tunnel _id="Out1" outputs="value:1371.v" uid="1371" uid_parent="1327"/>
+        <Tunnel _id="Out2" outputs="value:1372.v" uid="1372" uid_parent="1327"/>
+      </Structure>
+      <Tunnel _id="Out1" inputs="value:1371.v" uid="1373" uid_parent="1272"/>
+      <Tunnel _id="Out2" inputs="value:1325.v" uid="1374" uid_parent="1272"/>
+      <Tunnel _id="Out3" inputs="value:1372.v" uid="1375" uid_parent="1272"/>
+    </CaseFrame>
+    <CaseFrame selector="False" selectout="" uid="1376" uid_parent="1247">
+      <Tunnel _id="In1" outputs="value:1377.v" uid="1377" uid_parent="1376"/>
+      <Tunnel _id="In2" outputs="value:1378.v" uid="1378" uid_parent="1376"/>
+      <Tunnel _id="In3" outputs="value:1379.v" uid="1379" uid_parent="1376"/>
+      <Tunnel _id="In4" outputs="value:1380.v" uid="1380" uid_parent="1376"/>
+      <Tunnel _id="In5" outputs="value:1381.v" uid="1381" uid_parent="1376"/>
+      <Tunnel _id="In6" outputs="value:1382.v" uid="1382" uid_parent="1376"/>
+      <Tunnel _id="In7" outputs="value:1383.v" uid="1383" uid_parent="1376"/>
+      <Tunnel _id="In8" outputs="value:1384.v" uid="1384" uid_parent="1376"/>
+      <Tunnel _id="In9" outputs="value:1385.v" uid="1385" uid_parent="1376"/>
+      <Tunnel _id="In10" outputs="value:1386.v" uid="1386" uid_parent="1376"/>
+      <Tunnel _id="In11" outputs="value:1387.v" uid="1387" uid_parent="1376"/>
+      <Tunnel _id="In12" outputs="value:1388.v" uid="1388" uid_parent="1376"/>
+      <Tunnel _id="In13" outputs="value:1389.v" uid="1389" uid_parent="1376"/>
+      <Tunnel _id="In14" outputs="value:1390.v" uid="1390" uid_parent="1376"/>
+      <Tunnel _id="In15" outputs="value:1391.v" uid="1391" uid_parent="1376"/>
+      <Tunnel _id="In16" outputs="value:1392.v" uid="1392" uid_parent="1376"/>
+      <Tunnel _id="In17" outputs="value:1393.v" uid="1393" uid_parent="1376"/>
+      <Tunnel _id="In18" outputs="value:1394.v" uid="1394" uid_parent="1376"/>
+      <Tunnel _id="In19" outputs="value:1395.v" uid="1395" uid_parent="1376"/>
+      <Tunnel _id="In20" outputs="value:1396.v" uid="1396" uid_parent="1376"/>
+      <Tunnel _id="In21" outputs="value:1397.v" uid="1397" uid_parent="1376"/>
+      <Tunnel _id="In22" outputs="value:1398.v" uid="1398" uid_parent="1376"/>
+      <Tunnel _id="In23" outputs="value:1399.v" uid="1399" uid_parent="1376"/>
+      <Tunnel _id="In24" outputs="value:1400.v" uid="1400" uid_parent="1376"/>
+      <Node _name="Not Equal?" inputs="x:1387.v,y:1391.v" outputs="x != y?:1401.o0" uid="1401" uid_parent="1376"/>
+      <Node _name="Not Equal?" inputs="x:1388.v,y:1392.v" outputs="x != y?:1402.o0" uid="1402" uid_parent="1376"/>
+      <Node _name="Or" inputs="x:1401.o0,y:1402.o0" outputs="x .or. y?:1403.o0" uid="1403" uid_parent="1376"/>
+      <Node _name="And" inputs="x:1386.v,y:1403.o0" outputs="x .and. y?:1404.o0" uid="1404" uid_parent="1376"/>
+      <Structure _name="Case Structure" selectin="1404.o0" uid="1405" uid_parent="1376">
+        <Tunnel _id="In1" inputs="value:1393.v" uid="1406" uid_parent="1405"/>
+        <Tunnel _id="In2" inputs="value:1377.v" uid="1407" uid_parent="1405"/>
+        <Tunnel _id="In3" inputs="value:1378.v" uid="1408" uid_parent="1405"/>
+        <Tunnel _id="In4" inputs="value:1379.v" uid="1409" uid_parent="1405"/>
+        <Tunnel _id="In5" inputs="value:1391.v" uid="1410" uid_parent="1405"/>
+        <Tunnel _id="In6" inputs="value:1392.v" uid="1411" uid_parent="1405"/>
+        <Tunnel _id="In7" inputs="value:1387.v" uid="1412" uid_parent="1405"/>
+        <Tunnel _id="In8" inputs="value:1388.v" uid="1413" uid_parent="1405"/>
+        <Tunnel _id="In9" inputs="value:1390.v" uid="1414" uid_parent="1405"/>
+        <Tunnel _id="In10" inputs="value:1386.v" uid="1415" uid_parent="1405"/>
+        <CaseFrame selector="True" selectout="" uid="1416" uid_parent="1405">
+          <Tunnel _id="In1" outputs="value:1417.v" uid="1417" uid_parent="1416"/>
+          <Tunnel _id="In2" outputs="value:1418.v" uid="1418" uid_parent="1416"/>
+          <Tunnel _id="In3" outputs="value:1419.v" uid="1419" uid_parent="1416"/>
+          <Tunnel _id="In4" outputs="value:1420.v" uid="1420" uid_parent="1416"/>
+          <Tunnel _id="In5" outputs="value:1421.v" uid="1421" uid_parent="1416"/>
+          <Tunnel _id="In6" outputs="value:1422.v" uid="1422" uid_parent="1416"/>
+          <Tunnel _id="In7" outputs="value:1423.v" uid="1423" uid_parent="1416"/>
+          <Tunnel _id="In8" outputs="value:1424.v" uid="1424" uid_parent="1416"/>
+          <Tunnel _id="In9" outputs="value:1425.v" uid="1425" uid_parent="1416"/>
+          <Tunnel _id="In10" outputs="value:1426.v" uid="1426" uid_parent="1416"/>
+          <Call target="Light_Update.vi" inputs="Comp:1417.v,Lit:1418.v,Dim:1419.v,Dark:1420.v,Old CX:1421.v,Old CY:1422.v,CX:1423.v,CY:1424.v,error in:1425.v" outputs="Comp out:1427.o0,Rect:1427.o1,error out:1427.o2" uid="1427" uid_parent="1416"/>
+          <Tunnel _id="Out1" inputs="value:1427.o0" uid="1428" uid_parent="1416"/>
+          <Tunnel _id="Out2" inputs="value:1427.o1" uid="1429" uid_parent="1416"/>
+          <Tunnel _id="Out3" inputs="value:1427.o2" uid="1430" uid_parent="1416"/>
+        </CaseFrame>
+        <CaseFrame selector="False" selectout="" uid="1431" uid_parent="1405">
+          <Tunnel _id="In1" outputs="value:1432.v" uid="1432" uid_parent="1431"/>
+          <Tunnel _id="In2" outputs="value:1433.v" uid="1433" uid_parent="1431"/>
+          <Tunnel _id="In3" outputs="value:1434.v" uid="1434" uid_parent="1431"/>
+          <Tunnel _id="In4" outputs="value:1435.v" uid="1435" uid_parent="1431"/>
+          <Tunnel _id="In5" outputs="value:1436.v" uid="1436" uid_parent="1431"/>
+          <Tunnel _id="In6" outputs="value:1437.v" uid="1437" uid_parent="1431"/>
+          <Tunnel _id="In7" outputs="value:1438.v" uid="1438" uid_parent="1431"/>
+          <Tunnel _id="In8" outputs="value:1439.v" uid="1439" uid_parent="1431"/>
+          <Tunnel _id="In9" outputs="value:1440.v" uid="1440" uid_parent="1431"/>
+          <Tunnel _id="In10" outputs="value:1441.v" uid="1441" uid_parent="1431"/>
+          <Node _name="Select" inputs="s:1441.v,t:1432.v,f:1433.v" outputs="s? t\3Af:1442.o0" uid="1442" uid_parent="1431"/>
+          <Constant type="cluster{int16.left,int16.top,int16.right,int16.bottom}" value="[0,0,0,0]" outputs="value:1443.v" uid="1443" uid_parent="1431"/>
+          <Tunnel _id="Out1" inputs="value:1442.o0" uid="1444" uid_parent="1431"/>
+          <Tunnel _id="Out2" inputs="value:1443.v" uid="1445" uid_parent="1431"/>
+          <Tunnel _id="Out3" inputs="value:1440.v" uid="1446" uid_parent="1431"/>
+        </CaseFrame>
+        <Tunnel _id="Out1" outputs="value:1447.v" uid="1447" uid_parent="1405"/>
+        <Tunnel _id="Out2" outputs="value:1448.v" uid="1448" uid_parent="1405"/>
+        <Tunnel _id="Out3" outputs="value:1449.v" uid="1449" uid_parent="1405"/>
+      </Structure>
+      <Node _name="Less?" inputs="x:1399.v,y:1394.v" outputs="x &lt; y?:1450.o0" uid="1450" uid_parent="1376"/>
+      <Node _name="Select" inputs="s:1450.o0,t:1399.v,f:1394.v" outputs="s? t\3Af:1451.o0" uid="1451" uid_parent="1376"/>
+      <Node _name="Less?" inputs="x:1451.o0,y:1396.v" outputs="x &lt; y?:1452.o0" uid="1452" uid_parent="1376"/>
+      <Node _name="Select" inputs="s:1452.o0,t:1451.o0,f:1396.v" outputs="s? t\3Af:1453.o0" uid="1453" uid_parent="1376"/>
+      <Node _name="Greater?" inputs="x:1399.v,y:1394.v" outputs="x &gt; y?:1454.o0" uid="1454" uid_parent="1376"/>
+      <Node _name="Select" inputs="s:1454.o0,t:1399.v,f:1394.v" outputs="s? t\3Af:1455.o0" uid="1455" uid_parent="1376"/>
+      <Node _name="Greater?" inputs="x:1455.o0,y:1396.v" outputs="x &gt; y?:1456.o0" uid="1456" uid_parent="1376"/>
+      <Node _name="Select" inputs="s:1456.o0,t:1455.o0,f:1396.v" outputs="s? t\3Af:1457.o0" uid="1457" uid_parent="1376"/>
+      <Node _name="Less?" inputs="x:1400.v,y:1395.v" outputs="x &lt; y?:1458.o0" uid="1458" uid_parent="1376"/>
+      <Node _name="Select" inputs="s:1458.o0,t:1400.v,f:1395.v" outputs="s? t\3Af:1459.o0" uid="1459" uid_parent="1376"/>
+      <Node _name="Less?" inputs="x:1459.o0,y:1397.v" outputs="x &lt; y?:1460.o0" uid="1460" uid_parent="1376"/>
+      <Node _name="Select" inputs="s:1460.o0,t:1459.o0,f:1397.v" outputs="s? t\3Af:1461.o0" uid="1461" uid_parent="1376"/>
+      <Node _name="Greater?" inputs="x:1400.v,y:1395.v" outputs="x &gt; y?:1462.o0" uid="1462" uid_parent="1376"/>
+      <Node _name="Select" inputs="s:1462.o0,t:1400.v,f:1395.v" outputs="s? t\3Af:1463.o0" uid="1463" uid_parent="1376"/>
+      <Node _name="Greater?" inputs="x:1463.o0,y:1397.v" outputs="x &gt; y?:1464.o0" uid="1464" uid_parent="1376"/>
+      <Node _name="Select" inputs="s:1464.o0,t:1463.o0,f:1397.v" outputs="s? t\3Af:1465.o0" uid="1465" uid_parent="1376"/>
+      <Constant type="cluster{int16.left,int16.top,int16.right,int16.bottom}" value="[0,0,0,0]" outputs="value:1466.v" uid="1466" uid_parent="1376"/>
+      <Constant type="int32" value="32" outputs="value:1467.v" uid="1467" uid_parent="1376"/>
+      <Node _name="Quotient &amp; Remainder" inputs="x:1453.o0,y:1467.v" outputs="x-y*floor(x/y):1468.o0,floor(x/y):1468.o1" uid="1468" uid_parent="1376"/>
+      <Constant type="int32" value="1" outputs="value:1469.v" uid="1469" uid_parent="1376"/>
+      <Node _name="Subtract" inputs="x:1468.o1,y:1469.v" outputs="x-y:1470.o0" uid="1470" uid_parent="1376"/>
+      <Node _name="To Word Integer" inputs="number:1470.o0" outputs="16bit integer:1471.o0" uid="1471" uid_parent="1376"/>
+      <Constant type="int32" value="32" outputs="value:1472.v" uid="1472" uid_parent="1376"/>
+      <Node _name="Quotient &amp; Remainder" inputs="x:1461.o0,y:1472.v" outputs="x-y*floor(x/y):1473.o0,floor(x/y):1473.o1" uid="1473" uid_parent="1376"/>
+      <Constant type="int32" value="1" outputs="value:1474.v" uid="1474" uid_parent="1376"/>
+      <Node _name="Subtract" inputs="x:1473.o1,y:1474.v" outputs="x-y:1475.o0" uid="1475" uid_parent="1376"/>
+      <Node _name="To Word Integer" inputs="number:1475.o0" outputs="16bit integer:1476.o0" uid="1476" uid_parent="1376"/>
+      <Constant type="int32" value="31" outputs="value:1477.v" uid="1477" uid_parent="1376"/>
+      <Node _name="Add" inputs="x:1457.o0,y:1477.v" outputs="x+y:1478.o0" uid="1478" uid_parent="1376"/>
+      <Constant type="int32" value="32" outputs="value:1479.v" uid="1479" uid_parent="1376"/>
+      <Node _name="Quotient &amp; Remainder" inputs="x:1478.o0,y:1479.v" outputs="x-y*floor(x/y):1480.o0,floor(x/y):1480.o1" uid="1480" uid_parent="1376"/>
+      <Constant type="int32" value="2" outputs="value:1481.v" uid="1481" uid_parent="1376"/>
+      <Node _name="Add" inputs="x:1480.o1,y:1481.v" outputs="x+y:1482.o0" uid="1482" uid_parent="1376"/>
+      <Node _name="To Word Integer" inputs="number:1482.o0" outputs="16bit integer:1483.o0" uid="1483" uid_parent="1376"/>
+      <Constant type="int32" value="47" outputs="value:1484.v" uid="1484" uid_parent="1376"/>
+      <Node _name="Add" inputs="x:1465.o0,y:1484.v" outputs="x+y:1485.o0" uid="1485" uid_parent="1376"/>
+      <Constant type="int32" value="32" outputs="value:1486.v" uid="1486" uid_parent="1376"/>
+      <Node _name="Quotient &amp; Remainder" inputs="x:1485.o0,y:1486.v" outputs="x-y*floor(x/y):1487.o0,floor(x/y):1487.o1" uid="1487" uid_parent="1376"/>
+      <Constant type="int32" value="2" outputs="value:1488.v" uid="1488" uid_parent="1376"/>
+      <Node _name="Add" inputs="x:1487.o1,y:1488.v" outputs="x+y:1489.o0" uid="1489" uid_parent="1376"/>
+      <Node _name="To Word Integer" inputs="number:1489.o0" outputs="16bit integer:1490.o0" uid="1490" uid_parent="1376"/>
+      <Node _name="Bundle By Name" fields="left,top,right,bottom" inputs="left:1471.o0,top:1476.o0,right:1483.o0,bottom:1490.o0,input cluster:1466.v" outputs="output cluster:1491.o0" uid="1491" uid_parent="1376"/>
+      <Node _name="Unbundle By Name" fields="Enemies" inputs="input cluster:1382.v" outputs="Enemies:1492.o0" uid="1492" uid_parent="1376"/>
+      <Structure _name="For Loop" count="1493i.v" maxin="" maxout="" uid="1493" uid_parent="1376">
+        <Tunnel _id="In1" inputs="value:1492.o0" mode="index" outputs="value:1494.v" uid="1494" uid_parent="1493"/>
+        <Tunnel _id="In2" inputs="value:1398.v" outputs="value:1495.v" uid="1495" uid_parent="1493"/>
+        <Node _name="Unbundle By Name" fields="X10,Y10" inputs="input cluster:1494.v" outputs="X10:1496.o0,Y10:1496.o1" uid="1496" uid_parent="1493"/>
+        <Node _name="Index Array" inputs="array:1495.v,index:1493i.v" outputs="element:1497.o0" uid="1497" uid_parent="1493"/>
+        <Node _name="Array Size" inputs="array:1495.v" outputs="size(s):1498.o0" uid="1498" uid_parent="1493"/>
+        <Node _name="To Long Integer" inputs="number:1498.o0" outputs="32bit integer:1499.o0" uid="1499" uid_parent="1493"/>
+        <Node _name="Less?" inputs="x:1493i.v,y:1499.o0" outputs="x &lt; y?:1500.o0" uid="1500" uid_parent="1493"/>
+        <Node _name="Unbundle By Name" fields="X10,Y10" inputs="input cluster:1497.o0" outputs="X10:1501.o0,Y10:1501.o1" uid="1501" uid_parent="1493"/>
+        <Node _name="Select" inputs="s:1500.o0,t:1501.o0,f:1496.o0" outputs="s? t\3Af:1502.o0" uid="1502" uid_parent="1493"/>
+        <Node _name="Select" inputs="s:1500.o0,t:1501.o1,f:1496.o1" outputs="s? t\3Af:1503.o0" uid="1503" uid_parent="1493"/>
+        <Constant type="int32" value="10" outputs="value:1504.v" uid="1504" uid_parent="1493"/>
+        <Node _name="Quotient &amp; Remainder" inputs="x:1496.o0,y:1504.v" outputs="x-y*floor(x/y):1505.o0,floor(x/y):1505.o1" uid="1505" uid_parent="1493"/>
+        <Constant type="int32" value="10" outputs="value:1506.v" uid="1506" uid_parent="1493"/>
+        <Node _name="Quotient &amp; Remainder" inputs="x:1502.o0,y:1506.v" outputs="x-y*floor(x/y):1507.o0,floor(x/y):1507.o1" uid="1507" uid_parent="1493"/>
+        <Node _name="Less?" inputs="x:1505.o1,y:1507.o1" outputs="x &lt; y?:1508.o0" uid="1508" uid_parent="1493"/>
+        <Node _name="Select" inputs="s:1508.o0,t:1505.o1,f:1507.o1" outputs="s? t\3Af:1509.o0" uid="1509" uid_parent="1493"/>
+        <Constant type="int32" value="10" outputs="value:1510.v" uid="1510" uid_parent="1493"/>
+        <Node _name="Quotient &amp; Remainder" inputs="x:1496.o0,y:1510.v" outputs="x-y*floor(x/y):1511.o0,floor(x/y):1511.o1" uid="1511" uid_parent="1493"/>
+        <Constant type="int32" value="10" outputs="value:1512.v" uid="1512" uid_parent="1493"/>
+        <Node _name="Quotient &amp; Remainder" inputs="x:1502.o0,y:1512.v" outputs="x-y*floor(x/y):1513.o0,floor(x/y):1513.o1" uid="1513" uid_parent="1493"/>
+        <Node _name="Greater?" inputs="x:1511.o1,y:1513.o1" outputs="x &gt; y?:1514.o0" uid="1514" uid_parent="1493"/>
+        <Node _name="Select" inputs="s:1514.o0,t:1511.o1,f:1513.o1" outputs="s? t\3Af:1515.o0" uid="1515" uid_parent="1493"/>
+        <Constant type="int32" value="10" outputs="value:1516.v" uid="1516" uid_parent="1493"/>
+        <Node _name="Quotient &amp; Remainder" inputs="x:1496.o1,y:1516.v" outputs="x-y*floor(x/y):1517.o0,floor(x/y):1517.o1" uid="1517" uid_parent="1493"/>
+        <Constant type="int32" value="10" outputs="value:1518.v" uid="1518" uid_parent="1493"/>
+        <Node _name="Quotient &amp; Remainder" inputs="x:1503.o0,y:1518.v" outputs="x-y*floor(x/y):1519.o0,floor(x/y):1519.o1" uid="1519" uid_parent="1493"/>
+        <Node _name="Less?" inputs="x:1517.o1,y:1519.o1" outputs="x &lt; y?:1520.o0" uid="1520" uid_parent="1493"/>
+        <Node _name="Select" inputs="s:1520.o0,t:1517.o1,f:1519.o1" outputs="s? t\3Af:1521.o0" uid="1521" uid_parent="1493"/>
+        <Constant type="int32" value="10" outputs="value:1522.v" uid="1522" uid_parent="1493"/>
+        <Node _name="Quotient &amp; Remainder" inputs="x:1496.o1,y:1522.v" outputs="x-y*floor(x/y):1523.o0,floor(x/y):1523.o1" uid="1523" uid_parent="1493"/>
+        <Constant type="int32" value="10" outputs="value:1524.v" uid="1524" uid_parent="1493"/>
+        <Node _name="Quotient &amp; Remainder" inputs="x:1503.o0,y:1524.v" outputs="x-y*floor(x/y):1525.o0,floor(x/y):1525.o1" uid="1525" uid_parent="1493"/>
+        <Node _name="Greater?" inputs="x:1523.o1,y:1525.o1" outputs="x &gt; y?:1526.o0" uid="1526" uid_parent="1493"/>
+        <Node _name="Select" inputs="s:1526.o0,t:1523.o1,f:1525.o1" outputs="s? t\3Af:1527.o0" uid="1527" uid_parent="1493"/>
+        <Constant type="cluster{int16.left,int16.top,int16.right,int16.bottom}" value="[0,0,0,0]" outputs="value:1528.v" uid="1528" uid_parent="1493"/>
+        <Constant type="int32" value="32" outputs="value:1529.v" uid="1529" uid_parent="1493"/>
+        <Node _name="Quotient &amp; Remainder" inputs="x:1509.o0,y:1529.v" outputs="x-y*floor(x/y):1530.o0,floor(x/y):1530.o1" uid="1530" uid_parent="1493"/>
+        <Node _name="To Word Integer" inputs="number:1530.o1" outputs="16bit integer:1531.o0" uid="1531" uid_parent="1493"/>
+        <Constant type="int32" value="32" outputs="value:1532.v" uid="1532" uid_parent="1493"/>
+        <Node _name="Quotient &amp; Remainder" inputs="x:1521.o0,y:1532.v" outputs="x-y*floor(x/y):1533.o0,floor(x/y):1533.o1" uid="1533" uid_parent="1493"/>
+        <Node _name="To Word Integer" inputs="number:1533.o1" outputs="16bit integer:1534.o0" uid="1534" uid_parent="1493"/>
+        <Constant type="int32" value="31" outputs="value:1535.v" uid="1535" uid_parent="1493"/>
+        <Node _name="Add" inputs="x:1515.o0,y:1535.v" outputs="x+y:1536.o0" uid="1536" uid_parent="1493"/>
+        <Constant type="int32" value="32" outputs="value:1537.v" uid="1537" uid_parent="1493"/>
+        <Node _name="Quotient &amp; Remainder" inputs="x:1536.o0,y:1537.v" outputs="x-y*floor(x/y):1538.o0,floor(x/y):1538.o1" uid="1538" uid_parent="1493"/>
+        <Node _name="Increment" inputs="x:1538.o1" outputs="x+1:1539.o0" uid="1539" uid_parent="1493"/>
+        <Node _name="To Word Integer" inputs="number:1539.o0" outputs="16bit integer:1540.o0" uid="1540" uid_parent="1493"/>
+        <Constant type="int32" value="31" outputs="value:1541.v" uid="1541" uid_parent="1493"/>
+        <Node _name="Add" inputs="x:1527.o0,y:1541.v" outputs="x+y:1542.o0" uid="1542" uid_parent="1493"/>
+        <Constant type="int32" value="32" outputs="value:1543.v" uid="1543" uid_parent="1493"/>
+        <Node _name="Quotient &amp; Remainder" inputs="x:1542.o0,y:1543.v" outputs="x-y*floor(x/y):1544.o0,floor(x/y):1544.o1" uid="1544" uid_parent="1493"/>
+        <Node _name="Increment" inputs="x:1544.o1" outputs="x+1:1545.o0" uid="1545" uid_parent="1493"/>
+        <Node _name="To Word Integer" inputs="number:1545.o0" outputs="16bit integer:1546.o0" uid="1546" uid_parent="1493"/>
+        <Node _name="Bundle By Name" fields="left,top,right,bottom" inputs="left:1531.o0,top:1534.o0,right:1540.o0,bottom:1546.o0,input cluster:1528.v" outputs="output cluster:1547.o0" uid="1547" uid_parent="1493"/>
+        <Tunnel _id="Out1" inputs="value:1547.o0" mode="index" outputs="value:1548.v" uid="1548" uid_parent="1493"/>
+      </Structure>
+      <Node _name="Build Array" inputs="element:1491.o0" outputs="appended array:1549.o0" uid="1549" uid_parent="1376"/>
+      <Node _name="Build Array" concat="true" inputs="array:1549.o0,element:1448.v" outputs="appended array:1550.o0" uid="1550" uid_parent="1376"/>
+      <Node _name="Select" inputs="s:1404.o0,t:1550.o0,f:1549.o0" outputs="s? t\3Af:1551.o0" uid="1551" uid_parent="1376"/>
+      <Node _name="Build Array" concat="true" inputs="array:1551.o0,array:1548.v" outputs="appended array:1552.o0" uid="1552" uid_parent="1376"/>
+      <Constant _name="No pieces on the title" type="array{cluster{int16.left,int16.top,int16.right,int16.bottom}}" value="[]" outputs="value:1553.v" uid="1553" uid_parent="1376"/>
+      <Node _name="Select" inputs="s:1389.v,t:1553.v,f:1552.o0" outputs="s? t\3Af:1554.o0" uid="1554" uid_parent="1376"/>
+      <Structure _name="For Loop" count="" maxin="" maxout="" uid="1555" uid_parent="1376">
+        <Tunnel _id="In1" inputs="value:1554.o0" mode="index" outputs="value:1556.v" uid="1556" uid_parent="1555"/>
+        <Tunnel _id="In2" inputs="value:1447.v" outputs="value:1557.v" uid="1557" uid_parent="1555"/>
+        <Tunnel _id="In3" inputs="value:1380.v" outputs="value:1558.v" uid="1558" uid_parent="1555"/>
+        <Tunnel _id="In4" inputs="value:1381.v" outputs="value:1559.v" uid="1559" uid_parent="1555"/>
+        <Tunnel _id="In5" inputs="value:1382.v" outputs="value:1560.v" uid="1560" uid_parent="1555"/>
+        <Tunnel _id="In6" inputs="value:1383.v" outputs="value:1561.v" uid="1561" uid_parent="1555"/>
+        <ShiftReg uid="1562" uid_parent="1555">
+          <Left inputs="value:1449.v" outputs="value:1563.v" uid="1563" uid_parent="1562"/>
+          <Right inputs="value:1565.o1" outputs="value:1564.v" uid="1564" uid_parent="1562"/>
+        </ShiftReg>
+        <Call target="Piece_Compose.vi" inputs="Grid:1557.v,Template:1558.v,Rect:1556.v,Sprites:1559.v,State:1560.v,View:1561.v,error in:1563.v" outputs="Piece:1565.o0,error out:1565.o1" uid="1565" uid_parent="1555"/>
+        <Tunnel _id="Out1" inputs="value:1565.o0" mode="index" outputs="value:1566.v" uid="1566" uid_parent="1555"/>
+      </Structure>
+      <Tunnel _id="Out1" inputs="value:1566.v" uid="1567" uid_parent="1376"/>
+      <Tunnel _id="Out2" inputs="value:1447.v" uid="1568" uid_parent="1376"/>
+      <Tunnel _id="Out3" inputs="value:1564.v" uid="1569" uid_parent="1376"/>
+    </CaseFrame>
+    <Tunnel _id="Out1" outputs="value:1570.v" uid="1570" uid_parent="1247"/>
+    <Tunnel _id="Out2" outputs="value:1571.v" uid="1571" uid_parent="1247"/>
+    <Tunnel _id="Out3" outputs="value:1572.v" uid="1572" uid_parent="1247"/>
+  </Structure>
+  <Node _name="Not" inputs="x:1211.o0" outputs=".not. x?:1573.o0" uid="1573" uid_parent="root"/>
+  <Node _name="Not" inputs="x:1022.o0" outputs=".not. x?:1574.o0" uid="1574" uid_parent="root"/>
+  <Node _name="And" inputs="x:1246.o0,y:1573.o0" outputs="x .and. y?:1575.o0" uid="1575" uid_parent="root"/>
+  <Node _name="And" inputs="x:1575.o0,y:1574.o0" outputs="x .and. y?:1576.o0" uid="1576" uid_parent="root"/>
+  <Structure _name="Case Structure" selectin="1576.o0" uid="1577" uid_parent="root">
+    <Tunnel _id="In1" inputs="value:1570.v" uid="1578" uid_parent="1577"/>
+    <Tunnel _id="In2" inputs="value:1002.v" uid="1579" uid_parent="1577"/>
+    <Tunnel _id="In3" inputs="value:1003.v" uid="1580" uid_parent="1577"/>
+    <Tunnel _id="In4" inputs="value:1001.v" uid="1581" uid_parent="1577"/>
+    <Tunnel _id="In5" inputs="value:1572.v" uid="1582" uid_parent="1577"/>
+    <CaseFrame selector="True" selectout="" uid="1583" uid_parent="1577">
+      <Tunnel _id="In1" outputs="value:1584.v" uid="1584" uid_parent="1583"/>
+      <Tunnel _id="In2" outputs="value:1585.v" uid="1585" uid_parent="1583"/>
+      <Tunnel _id="In3" outputs="value:1586.v" uid="1586" uid_parent="1583"/>
+      <Tunnel _id="In4" outputs="value:1587.v" uid="1587" uid_parent="1583"/>
+      <Tunnel _id="In5" outputs="value:1588.v" uid="1588" uid_parent="1583"/>
+      <Call target="Hud_Draw.vi" inputs="Sprites:1585.v,Hud:1586.v,State:1587.v,error in:1588.v" outputs="Piece:1589.o0,error out:1589.o1" uid="1589" uid_parent="1583"/>
+      <Node _name="Build Array" concat="true" inputs="array:1584.v,element:1589.o0" outputs="appended array:1590.o0" uid="1590" uid_parent="1583"/>
+      <Tunnel _id="Out1" inputs="value:1590.o0" uid="1591" uid_parent="1583"/>
+      <Tunnel _id="Out2" inputs="value:1589.o1" uid="1592" uid_parent="1583"/>
+    </CaseFrame>
+    <CaseFrame selector="False" selectout="" uid="1593" uid_parent="1577">
+      <Tunnel _id="In1" outputs="value:1594.v" uid="1594" uid_parent="1593"/>
+      <Tunnel _id="In2" outputs="value:1595.v" uid="1595" uid_parent="1593"/>
+      <Tunnel _id="In3" outputs="value:1596.v" uid="1596" uid_parent="1593"/>
+      <Tunnel _id="In4" outputs="value:1597.v" uid="1597" uid_parent="1593"/>
+      <Tunnel _id="In5" outputs="value:1598.v" uid="1598" uid_parent="1593"/>
+      <Tunnel _id="Out1" inputs="value:1594.v" uid="1599" uid_parent="1593"/>
+      <Tunnel _id="Out2" inputs="value:1598.v" uid="1600" uid_parent="1593"/>
+    </CaseFrame>
+    <Tunnel _id="Out1" outputs="value:1601.v" uid="1601" uid_parent="1577"/>
+    <Tunnel _id="Out2" outputs="value:1602.v" uid="1602" uid_parent="1577"/>
+  </Structure>
+  <Constant _name="No pixels" type="cluster{int32.image type,int32.image depth,array{uint8}.image,array{uint8}.mask,array{uint32}.colors,cluster{int16.left,int16.top,int16.right,int16.bottom}.Rectangle}" value="[0,0,[],[],[],[0,0,0,0]]" outputs="value:1603.v" uid="1603" uid_parent="root"/>
+  <Call target="Draw Flattened Pixmap.vi" inputs="image data:1603.v,picture:" outputs="new picture:1604.o0" uid="1604" uid_parent="root"/>
+  <Structure _name="For Loop" count="" maxin="" maxout="" uid="1605" uid_parent="root">
+    <Tunnel _id="In1" inputs="value:1601.v" mode="index" outputs="value:1606.v" uid="1606" uid_parent="1605"/>
+    <ShiftReg uid="1607" uid_parent="1605">
+      <Left inputs="value:1604.o0" outputs="value:1608.v" uid="1608" uid_parent="1607"/>
+      <Right inputs="value:1610.o0" outputs="value:1609.v" uid="1609" uid_parent="1607"/>
+    </ShiftReg>
+    <Call target="Draw Flattened Pixmap.vi" inputs="image data:1606.v,picture:1608.v" outputs="new picture:1610.o0" uid="1610" uid_parent="1605"/>
+  </Structure>
+  <Node _name="Select" inputs="s:1211.o0,t:1081.o1,f:1008.o10" outputs="s? t\3Af:1611.o0" uid="1611" uid_parent="root"/>
+  <Node _name="Select" inputs="s:1211.o0,t:1083.o1,f:1008.o11" outputs="s? t\3Af:1612.o0" uid="1612" uid_parent="root"/>
+  <Node _name="Bundle By Name" fields="RoomKey,Key,NameKey,Lit,Dim,Dark,Comp,Template,CX,CY,X1,Y1,X2,Y2,Prev,HudKey,HudScore,HudTime" inputs="RoomKey:1079.o0,Key:1192.o0,NameKey:1207.o0,Lit:1074.v,Dim:1075.v,Dark:1076.v,Comp:1571.v,Template:1077.v,CX:1087.o1,CY:1091.o1,X1:1081.o1,Y1:1083.o1,X2:1611.o0,Y2:1612.o0,Prev:1007.o14,HudKey:1228.o0,HudScore:1007.o21,HudTime:1240.o0,input cluster:1005.v" outputs="output cluster:1613.o0" uid="1613" uid_parent="root"/>
+  <Indicator _name="Picture" type="picture" value="" conIdx="4" connection="recommended" inputs="value:1609.v" uid="1614" uid_parent="root"/>
+  <Indicator _name="Pieces" type="array{cluster{int32.image type,int32.image depth,array{uint8}.image,array{uint8}.mask,array{uint32}.colors,cluster{int16.left,int16.top,int16.right,int16.bottom}.Rectangle}}" value="[]" conIdx="6" connection="recommended" inputs="value:1601.v" uid="1615" uid_parent="root"/>
+  <Indicator _name="Memory out" type="cluster{int32.RoomKey,int32.Key,int32.NameKey,array.2{uint8}.Lit,array.2{uint8}.Dim,array.2{uint8}.Dark,array.2{uint8}.Comp,cluster{int32.image type,int32.image depth,array{uint8}.image,array{uint8}.mask,array{uint32}.colors,cluster{int16.left,int16.top,int16.right,int16.bottom}.Rectangle}.Template,int32.CX,int32.CY,int32.X1,int32.Y1,int32.X2,int32.Y2,array{cluster{int32.Kind,int32.X10,int32.Y10,int32.Dir,int32.Mode}}.Prev,int32.HudKey,int32.HudScore,int32.HudTime}" value="[-1,-1,-1,[],[],[],[],[0,0,[],[],[],[0,0,0,0]],-1,-1,0,0,0,0,[],-1,-1,-1]" conIdx="8" connection="recommended" inputs="value:1613.o0" uid="1616" uid_parent="root"/>
+  <Indicator _name="error out" type="cluster{bool.status,int32.code,string.source}" value="[false,0,]" conIdx="15" connection="recommended" inputs="value:1602.v" uid="1617" uid_parent="root"/>
 </VI>

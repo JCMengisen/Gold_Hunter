@@ -1,0 +1,13 @@
+<VI _name="GH_App.lvlib:Audio_Start.vi" description="Loads all sounds (Sound_Bank_Load) and opens a continuous sound channel (22050 Hz, mono, 16 bit, buffer 2048 samples). Also returns the empty mixer state.">
+  <Control _name="error in" type="cluster{bool.status,int32.code,string.source}" value="[false,0,]" conIdx="11" connection="required" outputs="value:1001.v" uid="1001" uid_parent="root"/>
+  <Call target="Sound_Bank_Load.vi" inputs="error in:1001.v" outputs="Bank:1002.o0,error out:1002.o1" uid="1002" uid_parent="root"/>
+  <Constant _name="continuous" type="int32" value="1" outputs="value:1003.v" uid="1003" uid_parent="root"/>
+  <Constant _name="Buffer" type="int32" value="2048" outputs="value:1004.v" uid="1004" uid_parent="root"/>
+  <Constant _name="Sound format" type="cluster{double.sample rate (S/s),int32.number of channels,int32.bits per sample}" value="[22050,1,16]" outputs="value:1005.v" uid="1005" uid_parent="root"/>
+  <Call target="Sound Output Configure.vi" inputs="error in (no error):1002.o1,sample mode:1003.v,number of samples/ch:1004.v,sound format:1005.v" outputs="error out:1006.o0,task ID:1006.o1" uid="1006" uid_parent="root"/>
+  <Indicator _name="Bank" type="array{cluster{array{double}.Y}}" value="[]" conIdx="4" connection="recommended" inputs="value:1002.o0" uid="1007" uid_parent="root"/>
+  <Indicator _name="Task ID" type="uint32" value="0" conIdx="6" connection="recommended" inputs="value:1006.o1" uid="1008" uid_parent="root"/>
+  <Constant _name="Empty mixer" type="cluster{array{double}.Current,int32.Position,int32.Priority,bool.Music,int32.MusicPos}" value="[[],0,99,false,0]" outputs="value:1009.v" uid="1009" uid_parent="root"/>
+  <Indicator _name="Mixer" type="cluster{array{double}.Current,int32.Position,int32.Priority,bool.Music,int32.MusicPos}" value="[[],0,99,false,0]" conIdx="8" connection="recommended" inputs="value:1009.v" uid="1010" uid_parent="root"/>
+  <Indicator _name="error out" type="cluster{bool.status,int32.code,string.source}" value="[false,0,]" conIdx="15" connection="recommended" inputs="value:1006.o0" uid="1011" uid_parent="root"/>
+</VI>

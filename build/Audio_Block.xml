@@ -1,0 +1,40 @@
+<VI _name="GH_App.lvlib:Audio_Block.vi" description="One audio block: collects all sound bits from the sound queue, mixes 512 samples with Sound_Mix and writes them to the sound channel. Writing waits for room in the buffer - this paces the audio loop. Stop on an error (queue released = end of the game).">
+  <Control _name="Channels" type="cluster{ref{Queue}{uint16}.Keys,ref{Notifier}{cluster{uint32.Tick,int32.Phase,int32.PhaseTicks,int32.Level,int32.Room,int32.X10,int32.Y10,int32.VY10,int32.Mode,int32.Facing,int32.Run,int32.Vert,int32.StandY,int32.EntryX10,int32.EntryY10,int32.EntryMode,int32.Lives,int32.Score,int32.NextLife,int32.KeyR,int32.KeyB,int32.KeyY,bool.Torch,int32.FloorPhase,bool.Dead,bool.LevelStart,bool.Quit,int32.Sound,uint32.Seed,int32.DemoStep,array.2{uint8}.Tiles,array{cluster{string.ID,int32.Depth,int32.Column,array.2{uint8}.Tiles}}.World,array{cluster{int32.Kind,int32.X10,int32.Y10,int32.Dir,int32.Mode}}.Enemies,array{cluster{int32.Score,string.Name}}.Highscores,array{int32}.Name,int32.Cursor}}.Frames,ref{Queue}{int32}.Sounds}" value="[,,]" conIdx="0" connection="required" outputs="value:1001.v" uid="1001" uid_parent="root"/>
+  <Control _name="Bank" type="array{cluster{array{double}.Y}}" value="[]" conIdx="5" connection="required" outputs="value:1002.v" uid="1002" uid_parent="root"/>
+  <Control _name="Task ID" type="uint32" value="0" conIdx="7" connection="required" outputs="value:1003.v" uid="1003" uid_parent="root"/>
+  <Control _name="Mixer" type="cluster{array{double}.Current,int32.Position,int32.Priority,bool.Music,int32.MusicPos}" value="[[],0,99,false,0]" conIdx="9" connection="required" outputs="value:1004.v" uid="1004" uid_parent="root"/>
+  <Control _name="Sound" type="bool" value="true" conIdx="1" connection="recommended" outputs="value:1005.v" uid="1005" uid_parent="root"/>
+  <Control _name="error in" type="cluster{bool.status,int32.code,string.source}" value="[false,0,]" conIdx="11" connection="required" outputs="value:1006.v" uid="1006" uid_parent="root"/>
+  <Node _name="Unbundle By Name" fields="Sounds" inputs="input cluster:1001.v" outputs="Sounds:1007.o0" uid="1007" uid_parent="root"/>
+  <Node _name="Flush Queue" inputs="queue:1007.o0,error in (no error):1006.v" outputs="queue out:,remaining elements:1008.o0,error out:1008.o1" uid="1008" uid_parent="root"/>
+  <Constant type="int32" value="0" outputs="value:1009.v" uid="1009" uid_parent="root"/>
+  <Structure _name="For Loop" count="" maxin="" maxout="" uid="1010" uid_parent="root">
+    <Tunnel _id="In1" inputs="value:1008.o0" mode="index" outputs="value:1011.v" uid="1011" uid_parent="1010"/>
+    <ShiftReg uid="1012" uid_parent="1010">
+      <Left inputs="value:1009.v" outputs="value:1013.v" uid="1013" uid_parent="1012"/>
+      <Right inputs="value:1015.o0" outputs="value:1014.v" uid="1014" uid_parent="1012"/>
+    </ShiftReg>
+    <Node _name="Or" inputs="x:1013.v,y:1011.v" outputs="x .or. y?:1015.o0" uid="1015" uid_parent="1010"/>
+  </Structure>
+  <Constant type="int32" value="0" outputs="value:1016.v" uid="1016" uid_parent="root"/>
+  <Node _name="Select" inputs="s:1005.v,t:1014.v,f:1016.v" outputs="s? t\3Af:1017.o0" uid="1017" uid_parent="root"/>
+  <Node _name="Unbundle By Name" fields="Current,Position,Priority,Music,MusicPos" inputs="input cluster:1004.v" outputs="Current:1018.o0,Position:1018.o1,Priority:1018.o2,Music:1018.o3,MusicPos:1018.o4" uid="1018" uid_parent="root"/>
+  <Node _name="Array Size" inputs="array:1008.o0" outputs="size(s):1019.o0" uid="1019" uid_parent="root"/>
+  <Node _name="To Long Integer" inputs="number:1019.o0" outputs="32bit integer:1020.o0" uid="1020" uid_parent="root"/>
+  <Constant type="int32" value="0" outputs="value:1021.v" uid="1021" uid_parent="root"/>
+  <Node _name="Greater?" inputs="x:1020.o0,y:1021.v" outputs="x &gt; y?:1022.o0" uid="1022" uid_parent="root"/>
+  <Constant type="int32" value="4096" outputs="value:1023.v" uid="1023" uid_parent="root"/>
+  <Node _name="And" inputs="x:1014.v,y:1023.v" outputs="x .and. y?:1024.o0" uid="1024" uid_parent="root"/>
+  <Node _name="Not Equal To 0?" inputs="x:1024.o0" outputs="x != 0?:1025.o0" uid="1025" uid_parent="root"/>
+  <Node _name="Select" inputs="s:1022.o0,t:1025.o0,f:1018.o3" outputs="s? t\3Af:1026.o0" uid="1026" uid_parent="root"/>
+  <Node _name="And" inputs="x:1005.v,y:1026.o0" outputs="x .and. y?:1027.o0" uid="1027" uid_parent="root"/>
+  <Call target="Sound_Mix.vi" inputs="Sounds:1017.o0,Bank:1002.v,Current:1018.o0,Position:1018.o1,Priority:1018.o2,Music on:1027.o0,Music Position:1018.o4,error in:1008.o1" outputs="Block:1028.o0,Current out:1028.o1,Position out:1028.o2,Priority out:1028.o3,Music Position out:1028.o4,error out:1028.o5" uid="1028" uid_parent="root"/>
+  <Constant _name="dt" type="double" value="4.5351473922902495e-05" outputs="value:1029.v" uid="1029" uid_parent="root"/>
+  <Node _name="Build Waveform" fields="dt,Y" inputs="dt:1029.v,Y:1028.o0" outputs="output waveform:1030.o0" uid="1030" uid_parent="root"/>
+  <Call target="Sound Output Write (DBL Single).vi" inputs="task ID:1003.v,error in (no error):1028.o5,data:1030.o0" outputs="error out:1031.o0,task ID out:" uid="1031" uid_parent="root"/>
+  <Node _name="Bundle By Name" fields="Current,Position,Priority,Music,MusicPos" inputs="Current:1028.o1,Position:1028.o2,Priority:1028.o3,Music:1027.o0,MusicPos:1028.o4,input cluster:1004.v" outputs="output cluster:1032.o0" uid="1032" uid_parent="root"/>
+  <Indicator _name="Mixer out" type="cluster{array{double}.Current,int32.Position,int32.Priority,bool.Music,int32.MusicPos}" value="[[],0,99,false,0]" conIdx="4" connection="recommended" inputs="value:1032.o0" uid="1033" uid_parent="root"/>
+  <Node _name="Unbundle By Name" fields="status" inputs="input cluster:1031.o0" outputs="status:1034.o0" uid="1034" uid_parent="root"/>
+  <Indicator _name="Stop" type="bool" value="false" conIdx="6" connection="recommended" inputs="value:1034.o0" uid="1035" uid_parent="root"/>
+  <Indicator _name="error out" type="cluster{bool.status,int32.code,string.source}" value="[false,0,]" conIdx="15" connection="recommended" inputs="value:1031.o0" uid="1036" uid_parent="root"/>
+</VI>

@@ -1,0 +1,16 @@
+<VI _name="GH_Engine.lvlib:Highscore_Insert.vi" description="Inserts Score and Name into the list, sorts it (best first) and keeps the best 5.">
+  <Control _name="Table" type="array{cluster{int32.Score,string.Name}}" value="[]" conIdx="0" connection="required" outputs="value:1001.v" uid="1001" uid_parent="root"/>
+  <Control _name="Score" type="int32" value="0" conIdx="5" connection="required" outputs="value:1002.v" uid="1002" uid_parent="root"/>
+  <Control _name="Name" type="string" value="" conIdx="7" connection="required" outputs="value:1003.v" uid="1003" uid_parent="root"/>
+  <Control _name="error in" type="cluster{bool.status,int32.code,string.source}" value="[false,0,]" conIdx="11" connection="required" outputs="value:1004.v" uid="1004" uid_parent="root"/>
+  <Constant type="cluster{int32.Score,string.Name}" value="[0,]" outputs="value:1005.v" uid="1005" uid_parent="root"/>
+  <Node _name="Bundle By Name" fields="Score,Name" inputs="Score:1002.v,Name:1003.v,input cluster:1005.v" outputs="output cluster:1006.o0" uid="1006" uid_parent="root"/>
+  <Node _name="Build Array" concat="true" inputs="array:1001.v,element:1006.o0" outputs="appended array:1007.o0" uid="1007" uid_parent="root"/>
+  <Node _name="Sort 1D Array" inputs="array:1007.o0" outputs="sorted array:1008.o0" uid="1008" uid_parent="root"/>
+  <Node _name="Reverse 1D Array" inputs="array:1008.o0" outputs="reversed array:1009.o0" uid="1009" uid_parent="root"/>
+  <Constant type="int32" value="0" outputs="value:1010.v" uid="1010" uid_parent="root"/>
+  <Constant type="int32" value="5" outputs="value:1011.v" uid="1011" uid_parent="root"/>
+  <Node _name="Array Subset" inputs="array:1009.o0,index:1010.v,length:1011.v" outputs="subarray:1012.o0" uid="1012" uid_parent="root"/>
+  <Indicator _name="Table out" type="array{cluster{int32.Score,string.Name}}" value="[]" conIdx="4" connection="recommended" inputs="value:1012.o0" uid="1013" uid_parent="root"/>
+  <Indicator _name="error out" type="cluster{bool.status,int32.code,string.source}" value="[false,0,]" conIdx="15" connection="recommended" inputs="value:1004.v" uid="1014" uid_parent="root"/>
+</VI>

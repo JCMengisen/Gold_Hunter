@@ -1,0 +1,27 @@
+<VI _name="GH_Engine.lvlib:Game_New.vi" description="Starts a new game: 4 lives, score 0, next extra life at 10000, level 1 (Level_Setup). Tick starts at 0 (same rhythm of the vanishing floors every time). Demo: the same game, but in phase Demo with a fixed random seed.">
+  <Control _name="State" type="cluster{uint32.Tick,int32.Phase,int32.PhaseTicks,int32.Level,int32.Room,int32.X10,int32.Y10,int32.VY10,int32.Mode,int32.Facing,int32.Run,int32.Vert,int32.StandY,int32.EntryX10,int32.EntryY10,int32.EntryMode,int32.Lives,int32.Score,int32.NextLife,int32.KeyR,int32.KeyB,int32.KeyY,bool.Torch,int32.FloorPhase,bool.Dead,bool.LevelStart,bool.Quit,int32.Sound,uint32.Seed,int32.DemoStep,array.2{uint8}.Tiles,array{cluster{string.ID,int32.Depth,int32.Column,array.2{uint8}.Tiles}}.World,array{cluster{int32.Kind,int32.X10,int32.Y10,int32.Dir,int32.Mode}}.Enemies,array{cluster{int32.Score,string.Name}}.Highscores,array{int32}.Name,int32.Cursor}" value="[0,0,0,1,0,0,0,0,0,0,0,0,0,0,0,0,4,0,10000,0,0,0,false,0,false,false,false,0,12345,0,[],[],[],[],[0,0,0],0]" conIdx="0" connection="required" outputs="value:1001.v" uid="1001" uid_parent="root"/>
+  <Control _name="Rooms" type="array{cluster{string.ID,int32.Depth,int32.Column,array.2{uint8}.Tiles}}" value="[]" conIdx="5" connection="required" outputs="value:1002.v" uid="1002" uid_parent="root"/>
+  <Control _name="Demo" type="bool" value="false" conIdx="7" connection="recommended" outputs="value:1003.v" uid="1003" uid_parent="root"/>
+  <Control _name="error in" type="cluster{bool.status,int32.code,string.source}" value="[false,0,]" conIdx="11" connection="required" outputs="value:1004.v" uid="1004" uid_parent="root"/>
+  <Constant type="int32" value="4" outputs="value:1005.v" uid="1005" uid_parent="root"/>
+  <Constant type="int32" value="0" outputs="value:1006.v" uid="1006" uid_parent="root"/>
+  <Constant type="int32" value="10000" outputs="value:1007.v" uid="1007" uid_parent="root"/>
+  <Constant type="int32" value="0" outputs="value:1008.v" uid="1008" uid_parent="root"/>
+  <Constant type="uint32" value="0" outputs="value:1009.v" uid="1009" uid_parent="root"/>
+  <Node _name="Bundle By Name" fields="Lives,Score,NextLife,DemoStep,Tick" inputs="Lives:1005.v,Score:1006.v,NextLife:1007.v,DemoStep:1008.v,Tick:1009.v,input cluster:1001.v" outputs="output cluster:1010.o0" uid="1010" uid_parent="root"/>
+  <Constant type="int32" value="1" outputs="value:1011.v" uid="1011" uid_parent="root"/>
+  <Call target="Level_Setup.vi" inputs="State:1010.o0,Rooms:1002.v,Level:1011.v,error in:1004.v" outputs="State out:1012.o0,error out:1012.o1" uid="1012" uid_parent="root"/>
+  <Node _name="Unbundle By Name" fields="Seed,Sound" inputs="input cluster:1012.o0" outputs="Seed:1013.o0,Sound:1013.o1" uid="1013" uid_parent="root"/>
+  <Constant type="int32" value="9" outputs="value:1014.v" uid="1014" uid_parent="root"/>
+  <Constant type="int32" value="1" outputs="value:1015.v" uid="1015" uid_parent="root"/>
+  <Node _name="Select" inputs="s:1003.v,t:1014.v,f:1015.v" outputs="s? t\3Af:1016.o0" uid="1016" uid_parent="root"/>
+  <Constant type="uint32" value="4242" outputs="value:1017.v" uid="1017" uid_parent="root"/>
+  <Node _name="Select" inputs="s:1003.v,t:1017.v,f:1013.o0" outputs="s? t\3Af:1018.o0" uid="1018" uid_parent="root"/>
+  <Constant type="int32" value="0" outputs="value:1019.v" uid="1019" uid_parent="root"/>
+  <Constant type="int32" value="512" outputs="value:1020.v" uid="1020" uid_parent="root"/>
+  <Node _name="Or" inputs="x:1013.o1,y:1020.v" outputs="x .or. y?:1021.o0" uid="1021" uid_parent="root"/>
+  <Node _name="Select" inputs="s:1003.v,t:1019.v,f:1021.o0" outputs="s? t\3Af:1022.o0" uid="1022" uid_parent="root"/>
+  <Node _name="Bundle By Name" fields="Phase,Seed,Sound" inputs="Phase:1016.o0,Seed:1018.o0,Sound:1022.o0,input cluster:1012.o0" outputs="output cluster:1023.o0" uid="1023" uid_parent="root"/>
+  <Indicator _name="State out" type="cluster{uint32.Tick,int32.Phase,int32.PhaseTicks,int32.Level,int32.Room,int32.X10,int32.Y10,int32.VY10,int32.Mode,int32.Facing,int32.Run,int32.Vert,int32.StandY,int32.EntryX10,int32.EntryY10,int32.EntryMode,int32.Lives,int32.Score,int32.NextLife,int32.KeyR,int32.KeyB,int32.KeyY,bool.Torch,int32.FloorPhase,bool.Dead,bool.LevelStart,bool.Quit,int32.Sound,uint32.Seed,int32.DemoStep,array.2{uint8}.Tiles,array{cluster{string.ID,int32.Depth,int32.Column,array.2{uint8}.Tiles}}.World,array{cluster{int32.Kind,int32.X10,int32.Y10,int32.Dir,int32.Mode}}.Enemies,array{cluster{int32.Score,string.Name}}.Highscores,array{int32}.Name,int32.Cursor}" value="[0,0,0,1,0,0,0,0,0,0,0,0,0,0,0,0,4,0,10000,0,0,0,false,0,false,false,false,0,12345,0,[],[],[],[],[0,0,0],0]" conIdx="4" connection="recommended" inputs="value:1023.o0" uid="1024" uid_parent="root"/>
+  <Indicator _name="error out" type="cluster{bool.status,int32.code,string.source}" value="[false,0,]" conIdx="15" connection="recommended" inputs="value:1012.o1" uid="1025" uid_parent="root"/>
+</VI>

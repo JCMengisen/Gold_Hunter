@@ -443,6 +443,24 @@ for k in range(4):
 for k in range(4):
     frames['belt_l_%d' % k] = belt(k, False)
 frames['life'] = life_icon()
+
+
+def box(w, h):
+    """Kasten fuer Einblendungen: dunkel mit goldenem Rahmen (Pixel-Art)"""
+    im = Image.new('RGBA', (w, h), (12, 8, 18, 255))
+    d = ImageDraw.Draw(im)
+    d.rectangle([0, 0, w - 1, h - 1], outline=(0, 0, 0, 255))
+    d.rectangle([1, 1, w - 2, h - 2], outline=rgb('#C8961E') + (255,))
+    d.line([2, 2, w - 3, 2], fill=rgb('#FFE860') + (255,))
+    d.rectangle([3, 3, w - 4, h - 4], outline=rgb('#3A2A12') + (255,))
+    for x, y in ((2, 2), (w - 3, 2), (2, h - 3), (w - 3, h - 3)):
+        d.point([x, y], fill=(255, 255, 255, 255))
+    return im
+
+
+frames['box_small'] = box(160, 28)
+frames['box_wide'] = box(240, 28)
+frames['box_big'] = box(280, 150)
 for pts in ('100', '500', '1000'):
     frames['pop_' + pts] = label(pts, rgb('#FFE860'))
 for i, ch in enumerate(CHARSET):

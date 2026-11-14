@@ -1,0 +1,46 @@
+<VI _name="GH_Engine.lvlib:Keys_Apply.vi" description="Applies a key to the movement wishes: Left/Right set Run, ReleaseL/ReleaseR stop only the matching direction, Release stops, Up/Down set Vert, ReleaseV stops climbing.">
+  <Control _name="State" type="cluster{uint32.Tick,int32.Phase,int32.PhaseTicks,int32.Level,int32.Room,int32.X10,int32.Y10,int32.VY10,int32.Mode,int32.Facing,int32.Run,int32.Vert,int32.StandY,int32.EntryX10,int32.EntryY10,int32.EntryMode,int32.Lives,int32.Score,int32.NextLife,int32.KeyR,int32.KeyB,int32.KeyY,bool.Torch,int32.FloorPhase,bool.Dead,bool.LevelStart,bool.Quit,int32.Sound,uint32.Seed,int32.DemoStep,array.2{uint8}.Tiles,array{cluster{string.ID,int32.Depth,int32.Column,array.2{uint8}.Tiles}}.World,array{cluster{int32.Kind,int32.X10,int32.Y10,int32.Dir,int32.Mode}}.Enemies,array{cluster{int32.Score,string.Name}}.Highscores,array{int32}.Name,int32.Cursor}" value="[0,0,0,1,0,0,0,0,0,0,0,0,0,0,0,0,4,0,10000,0,0,0,false,0,false,false,false,0,12345,0,[],[],[],[],[0,0,0],0]" conIdx="0" connection="required" outputs="value:1001.v" uid="1001" uid_parent="root"/>
+  <Control _name="Key" type="uint16" value="0" conIdx="5" connection="recommended" outputs="value:1002.v" uid="1002" uid_parent="root"/>
+  <Control _name="error in" type="cluster{bool.status,int32.code,string.source}" value="[false,0,]" conIdx="11" connection="required" outputs="value:1003.v" uid="1003" uid_parent="root"/>
+  <Node _name="To Long Integer" inputs="number:1002.v" outputs="32bit integer:1004.o0" uid="1004" uid_parent="root"/>
+  <Node _name="Unbundle By Name" fields="Run,Vert" inputs="input cluster:1001.v" outputs="Run:1005.o0,Vert:1005.o1" uid="1005" uid_parent="root"/>
+  <Constant type="int32" value="9" outputs="value:1006.v" uid="1006" uid_parent="root"/>
+  <Node _name="Equal?" inputs="x:1004.o0,y:1006.v" outputs="x = y?:1007.o0" uid="1007" uid_parent="root"/>
+  <Constant type="int32" value="11" outputs="value:1008.v" uid="1008" uid_parent="root"/>
+  <Node _name="Equal?" inputs="x:1004.o0,y:1008.v" outputs="x = y?:1009.o0" uid="1009" uid_parent="root"/>
+  <Constant type="int32" value="-1" outputs="value:1010.v" uid="1010" uid_parent="root"/>
+  <Node _name="Equal?" inputs="x:1005.o0,y:1010.v" outputs="x = y?:1011.o0" uid="1011" uid_parent="root"/>
+  <Node _name="And" inputs="x:1009.o0,y:1011.o0" outputs="x .and. y?:1012.o0" uid="1012" uid_parent="root"/>
+  <Constant type="int32" value="12" outputs="value:1013.v" uid="1013" uid_parent="root"/>
+  <Node _name="Equal?" inputs="x:1004.o0,y:1013.v" outputs="x = y?:1014.o0" uid="1014" uid_parent="root"/>
+  <Constant type="int32" value="1" outputs="value:1015.v" uid="1015" uid_parent="root"/>
+  <Node _name="Equal?" inputs="x:1005.o0,y:1015.v" outputs="x = y?:1016.o0" uid="1016" uid_parent="root"/>
+  <Node _name="And" inputs="x:1014.o0,y:1016.o0" outputs="x .and. y?:1017.o0" uid="1017" uid_parent="root"/>
+  <Node _name="Or" inputs="x:1007.o0,y:1012.o0" outputs="x .or. y?:1018.o0" uid="1018" uid_parent="root"/>
+  <Node _name="Or" inputs="x:1018.o0,y:1017.o0" outputs="x .or. y?:1019.o0" uid="1019" uid_parent="root"/>
+  <Constant type="int32" value="3" outputs="value:1020.v" uid="1020" uid_parent="root"/>
+  <Node _name="Equal?" inputs="x:1004.o0,y:1020.v" outputs="x = y?:1021.o0" uid="1021" uid_parent="root"/>
+  <Constant type="int32" value="-1" outputs="value:1022.v" uid="1022" uid_parent="root"/>
+  <Constant type="int32" value="4" outputs="value:1023.v" uid="1023" uid_parent="root"/>
+  <Node _name="Equal?" inputs="x:1004.o0,y:1023.v" outputs="x = y?:1024.o0" uid="1024" uid_parent="root"/>
+  <Constant type="int32" value="1" outputs="value:1025.v" uid="1025" uid_parent="root"/>
+  <Constant type="int32" value="0" outputs="value:1026.v" uid="1026" uid_parent="root"/>
+  <Node _name="Select" inputs="s:1019.o0,t:1026.v,f:1005.o0" outputs="s? t\3Af:1027.o0" uid="1027" uid_parent="root"/>
+  <Node _name="Select" inputs="s:1024.o0,t:1025.v,f:1027.o0" outputs="s? t\3Af:1028.o0" uid="1028" uid_parent="root"/>
+  <Node _name="Select" inputs="s:1021.o0,t:1022.v,f:1028.o0" outputs="s? t\3Af:1029.o0" uid="1029" uid_parent="root"/>
+  <Constant type="int32" value="1" outputs="value:1030.v" uid="1030" uid_parent="root"/>
+  <Node _name="Equal?" inputs="x:1004.o0,y:1030.v" outputs="x = y?:1031.o0" uid="1031" uid_parent="root"/>
+  <Constant type="int32" value="-1" outputs="value:1032.v" uid="1032" uid_parent="root"/>
+  <Constant type="int32" value="2" outputs="value:1033.v" uid="1033" uid_parent="root"/>
+  <Node _name="Equal?" inputs="x:1004.o0,y:1033.v" outputs="x = y?:1034.o0" uid="1034" uid_parent="root"/>
+  <Constant type="int32" value="1" outputs="value:1035.v" uid="1035" uid_parent="root"/>
+  <Constant type="int32" value="10" outputs="value:1036.v" uid="1036" uid_parent="root"/>
+  <Node _name="Equal?" inputs="x:1004.o0,y:1036.v" outputs="x = y?:1037.o0" uid="1037" uid_parent="root"/>
+  <Constant type="int32" value="0" outputs="value:1038.v" uid="1038" uid_parent="root"/>
+  <Node _name="Select" inputs="s:1037.o0,t:1038.v,f:1005.o1" outputs="s? t\3Af:1039.o0" uid="1039" uid_parent="root"/>
+  <Node _name="Select" inputs="s:1034.o0,t:1035.v,f:1039.o0" outputs="s? t\3Af:1040.o0" uid="1040" uid_parent="root"/>
+  <Node _name="Select" inputs="s:1031.o0,t:1032.v,f:1040.o0" outputs="s? t\3Af:1041.o0" uid="1041" uid_parent="root"/>
+  <Node _name="Bundle By Name" fields="Run,Vert" inputs="Run:1029.o0,Vert:1041.o0,input cluster:1001.v" outputs="output cluster:1042.o0" uid="1042" uid_parent="root"/>
+  <Indicator _name="State out" type="cluster{uint32.Tick,int32.Phase,int32.PhaseTicks,int32.Level,int32.Room,int32.X10,int32.Y10,int32.VY10,int32.Mode,int32.Facing,int32.Run,int32.Vert,int32.StandY,int32.EntryX10,int32.EntryY10,int32.EntryMode,int32.Lives,int32.Score,int32.NextLife,int32.KeyR,int32.KeyB,int32.KeyY,bool.Torch,int32.FloorPhase,bool.Dead,bool.LevelStart,bool.Quit,int32.Sound,uint32.Seed,int32.DemoStep,array.2{uint8}.Tiles,array{cluster{string.ID,int32.Depth,int32.Column,array.2{uint8}.Tiles}}.World,array{cluster{int32.Kind,int32.X10,int32.Y10,int32.Dir,int32.Mode}}.Enemies,array{cluster{int32.Score,string.Name}}.Highscores,array{int32}.Name,int32.Cursor}" value="[0,0,0,1,0,0,0,0,0,0,0,0,0,0,0,0,4,0,10000,0,0,0,false,0,false,false,false,0,12345,0,[],[],[],[],[0,0,0],0]" conIdx="4" connection="recommended" inputs="value:1042.o0" uid="1043" uid_parent="root"/>
+  <Indicator _name="error out" type="cluster{bool.status,int32.code,string.source}" value="[false,0,]" conIdx="15" connection="recommended" inputs="value:1003.v" uid="1044" uid_parent="root"/>
+</VI>

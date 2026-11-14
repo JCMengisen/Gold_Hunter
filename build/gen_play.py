@@ -695,7 +695,12 @@ def game_step():
     c = d.i32c
     k = d.i32(key)
     tick, quit_, phase = d.unb(st, ['Tick', 'Quit'] + ['Phase'])
-    st1 = d.bun(st, [('Tick', d.inc(tick)), ('Sound', c(0)), ('Quit', d.or_(quit_, d.eq(k, c(IN['Quit']))))])
+    # Cheat (Z U L U): Marke in DemoStep setzen, Bestaetigung mit dem Ton fuer ein neues Leben
+    in_game = anyb(d, *[d.eq(phase, c(PH[p])) for p in ('Ready', 'Playing', 'Paused', 'Dying', 'Treasure', 'LevelDone')])
+    cheat_key = d.and_(d.eq(k, c(IN['Cheat'])), in_game)
+    step0, = d.unb(st, ['DemoStep'])
+    st1 = d.bun(st, [('Tick', d.inc(tick)), ('Sound', d.sel(cheat_key, c(SND['life']), c(0))), ('Quit', d.or_(quit_, d.eq(k, c(IN['Quit'])))),
+                     ('DemoStep', d.sel(cheat_key, c(CHEAT_MARK), step0))])
 
     def to(s, ph, sound=0, extra=()):
         pairs = [('Phase', c(PH[ph])), ('PhaseTicks', c(0))] + list(extra)
@@ -770,10 +775,11 @@ def game_step():
     def f_dying(i):
         s, kk, rm, err = i
         pt = ticks(s)
-        lives, = d.unb(s, ['Lives'])
-        rs = d.call('Respawn.vi', [('State', d.bun(s, [('Lives', d.sub(lives, c(1)))])), ('error in', err)], ['State out', 'error out'])
+        lives, mark = d.unb(s, ['Lives', 'DemoStep'])
+        cheat = d.eq(mark, c(CHEAT_MARK))      # Cheat: Sterben kostet kein Leben
+        rs = d.call('Respawn.vi', [('State', d.bun(s, [('Lives', d.sub(lives, d.sel(cheat, c(0), c(1))))])), ('error in', err)], ['State out', 'error out'])
         done = ge(d, pt, c(DYING_TICKS))
-        over = le(d, lives, c(1))
+        over = d.and_(le(d, lives, c(1)), d.not_(cheat))
         gameover = to(d.bun(s, [('Lives', c(0))]), 'GameOver', SND['gameover'])
         again = to(rs['State out'], 'Ready', SND['ready'])
         return [d.sel(done, d.sel(over, gameover, again), d.bun(s, [('PhaseTicks', pt)])), rs['error out']]
@@ -837,7 +843,10 @@ def game_step():
     out, err = d.case(phase, [st1, k, rooms, e], frames, 2)
     ph2, snd2 = d.unb(out, ['Phase', 'Sound'])
     music = anyb(d, *[d.eq(ph2, c(PH[p])) for p in MUSIC_PHASES])
-    out2 = d.bun(out, [('Sound', d.or_(snd2, d.sel(music, c(SND['music']), c(0))))])
+    # Cheat: alle Raeume hell - die Fackel bleibt, auch in neuen Leveln
+    mark2, torch2 = d.unb(out, ['DemoStep', 'Torch'])
+    cheat_on = d.and_(d.eq(mark2, c(CHEAT_MARK)), d.ne(ph2, c(PH['Demo'])))
+    out2 = d.bun(out, [('Sound', d.or_(snd2, d.sel(music, c(SND['music']), c(0)))), ('Torch', d.or_(torch2, cheat_on))])
     d.indic('State out', STATE, STATE_V, out2, 4)
     d.err_out(err)
     d.write()
@@ -1788,11 +1797,13 @@ def window_setup():
 def key_send():
     d = Doc('Key_Send.vi', 'Translates a key (ScanCode = physical key, independent of the keyboard layout) into a game key and puts it into '
             'the key queue. Pressed: arrows, Space = Jump, Enter/N = Start, Esc/P = Pause; released: arrows = ReleaseL/ReleaseR/ReleaseV. '
-            'The Stop button sends Quit. Quit out: the game ends (Stop, or Esc on the title screen - read from the last game state).')
+            'The Stop button sends Quit. Quit out: the game ends (Stop, or Esc on the title screen - read from the last game state). '
+            'History = the last four pressed ScanCodes (8 bit each); Z U L U in a row sends the key Cheat.')
     k = d.ctrl('Channels', CHANNELS, '[,,]', 0)
     sc = d.ctrl('ScanCode', 'int32', '-1', 5)
     up = d.ctrl('Released', 'bool', 'false', 7, 'recommended')
     quit_ = d.ctrl('Quit', 'bool', 'false', 9, 'recommended')
+    hist = d.ctrl('History', 'int32', '0', 1, 'recommended')
     e = d.err_in()
 
     def lookup(tbl, name):
@@ -1802,6 +1813,16 @@ def key_send():
         return d.idx(keys, ix)
 
     t = d.sel(up, lookup(KEYS_UP, 'released'), lookup(KEYS_DOWN, 'pressed'))
+    # Cheat-Folge: bei jedem Druck die ScanCode-Geschichte um 8 Bit schieben
+    # wie in Pauls Hoehenflug: Umschalttasten zaehlen nicht, Z auf QWERTZ (ScanCode 21) gilt wie Z auf QWERTY (44)
+    mods = d.const('array{int32}', '[' + ','.join(map(str, CHEAT_IGNORE)) + ']', 'Shift Ctrl Alt Caps')
+    is_mod = ge(d, d.node('Search 1D Array', [('1D array', mods), ('element', sc), ('start index (0)', '')], ['index of element'])['index of element'], d.i32c(0))
+    pressed = allb(d, d.not_(up), d.not_(quit_), ge(d, sc, d.i32c(0)), d.not_(is_mod))
+    z = d.sel(d.eq(sc, d.i32c(21)), d.i32c(44), sc)
+    h1 = d.sel(pressed, d.or_(d.mul(d.and_(hist, d.i32c(0xFFFFFF)), d.i32c(256)), d.and_(z, d.i32c(255))), hist)
+    code = (CHEAT_CODE[0] << 24) | (CHEAT_CODE[1] << 16) | (CHEAT_CODE[2] << 8) | CHEAT_CODE[3]
+    cheat = d.and_(pressed, d.eq(h1, d.i32c(code)))
+    t = d.sel(cheat, d.const(KEY, str(IN['Cheat'])), t)
     t = d.sel(quit_, d.const(KEY, str(IN['Quit'])), t)
     q, nt = d.unb(k, ['Keys', 'Frames'])
     # letzter Spielzustand (ohne zu warten); kam seit dem letzten Aufruf keiner, gilt er nicht als Titel
@@ -1812,6 +1833,7 @@ def key_send():
     title = d.and_(d.eq(phase, d.i32c(PH['Title'])), d.not_(gs['timed out?']))
     leave = d.or_(d.eq(t, d.const(KEY, str(IN['Quit']))), d.and_(d.eq(t, d.const(KEY, str(IN['Pause']))), title))
     d.indic('Quit out', 'bool', 'false', d.or_(leave, status(d, enq['error out'])), 4)
+    d.indic('History out', 'int32', '0', d.sel(cheat, d.i32c(0), h1), 6)
     d.err_out(enq['error out'])
     d.write()
 
@@ -2043,8 +2065,9 @@ def contract():
         (AP, 'App_Init', [], [E], [o('Channels', '@Channels', 4), EO]),
         (AP, 'App_Close', [], [i('Channels', '@Channels', 0), E], [EO]),
         (AP, 'Window_Setup', [], [i('VI', 'ref{LV.VI}', 0), E], [EO]),
-        (AP, 'Key_Send', [], [i('Channels', '@Channels', 0), i('ScanCode', 'int32', 5), i('Released', 'bool', 7, 'recommended'), i('Quit', 'bool', 9, 'recommended'), E],
-         [o('Quit out', 'bool', 4), EO]),
+        (AP, 'Key_Send', [], [i('Channels', '@Channels', 0), i('ScanCode', 'int32', 5), i('Released', 'bool', 7, 'recommended'), i('Quit', 'bool', 9, 'recommended'),
+                                 i('History', 'int32', 1, 'recommended'), E],
+         [o('Quit out', 'bool', 4), o('History out', 'int32', 6), EO]),
         (AP, 'Engine_Tick', [EN + 'Game_Step.vi'], [i('Channels', '@Channels', 0), i('State', S, 5), i('Rooms', RO, 7), E],
          [o('State out', S, 4), o('Stop', 'bool', 6), EO]),
         (AP, 'Frame_Pace', [], [i('Start ms', 'uint32', 0), i('Count', 'int32', 1), E], [o('Start out', 'uint32', 4), o('Count out', 'int32', 6), EO]),

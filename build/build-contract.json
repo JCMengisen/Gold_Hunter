@@ -2166,6 +2166,12 @@
           "connection": "recommended"
         },
         {
+          "name": "History",
+          "type": "int32",
+          "conIdx": 1,
+          "connection": "recommended"
+        },
+        {
           "name": "error in",
           "type": "@Error",
           "conIdx": 11,
@@ -2177,6 +2183,12 @@
           "name": "Quit out",
           "type": "bool",
           "conIdx": 4,
+          "connection": "recommended"
+        },
+        {
+          "name": "History out",
+          "type": "int32",
+          "conIdx": 6,
           "connection": "recommended"
         },
         {

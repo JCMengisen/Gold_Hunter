@@ -6,7 +6,7 @@ from gh_lib import *
 desc = ('Gold Hunter. Start: App_Init (queues, notifier), Game_Start (world, highscores), sprites, HUD and title pictures, Window_Setup, '
         'Audio_Start. Four loops: keys (Key Down / Key Up by ScanCode and the Stop button -> Key_Send -> queue), game (Engine_Tick 60 times per '
         'second, Frame_Pace -> notifier and sound queue), picture (Render_Frame -> Screen) and sound (Audio_Block). End: Esc on the title screen or Stop. '
-        'Keys: arrows = walk, climb, choose letters; Space = jump; Enter = start; Esc/P = pause.')
+        'Keys: arrows = walk, climb, choose letters; Space = jump; Enter = start; Esc/P = pause; Z U L U = cheat (all rooms lit, endless lives).')
 SPRITE_LOADER = 'Blit_Load.vi' if FULL_BLIT else 'SpriteAtlas_Load.vi'
 xml = f"""<VI _name="Main.vi" description="{esc(desc)}">
   <Constant _name="no error" type="{ERR}" value="{ERR_V}" outputs="value:4010.v" uid="4010" uid_parent="root"/>
@@ -23,9 +23,14 @@ xml = f"""<VI _name="Main.vi" description="{esc(desc)}">
   <Constant _name="Nothing drawn yet" type="{RMEM}" value="{RMEM_V}" outputs="value:18.v" uid="18" uid_parent="root"/>
   <Constant _name="Start ms" type="uint32" value="0" outputs="value:19.v" uid="19" uid_parent="root"/>
   <Constant _name="Tick count" type="int32" value="0" outputs="value:23.v" uid="23" uid_parent="root"/>
+  <Constant _name="No keys yet" type="int32" value="0" outputs="value:24.v" uid="24" uid_parent="root"/>
 
   <Structure _name="While Loop" count="" uid="100" uid_parent="root" label="Keys">
     <Tunnel _id="In1" inputs="value:11.k" outputs="value:101.v" uid="101" uid_parent="100"/>
+    <ShiftReg uid="102" uid_parent="100">
+      <Left inputs="value:24.v" outputs="value:103.v" uid="103" uid_parent="102"/>
+      <Right inputs="value:150.h" outputs="value:" uid="104" uid_parent="102"/>
+    </ShiftReg>
     <Structure _name="Event Structure" uid="110" uid_parent="100">
       <CaseFrame selector=" Key Down " uid="111" uid_parent="110">
         <Node _name="Event Data Node" fields="ScanCode" outputs="ScanCode:112.sc" uid="112" uid_parent="111"/>
@@ -57,7 +62,7 @@ xml = f"""<VI _name="Main.vi" description="{esc(desc)}">
       <Tunnel _id="Out3" outputs="value:143.quit" uid="143" uid_parent="110"/>
     </Structure>
     <Constant _name="no error" type="{ERR}" value="{ERR_V}" outputs="value:145.v" uid="145" uid_parent="100"/>
-    <Call target="Key_Send.vi" inputs="Channels:101.v,ScanCode:141.sc,Released:142.up,Quit:143.quit,error in:145.v" outputs="Quit out:150.q,error out:" uid="150" uid_parent="100"/>
+    <Call target="Key_Send.vi" inputs="Channels:101.v,ScanCode:141.sc,Released:142.up,Quit:143.quit,History:103.v,error in:145.v" outputs="Quit out:150.q,History out:150.h,error out:" uid="150" uid_parent="100"/>
     <Condition inputs="value:150.q" value="stop" uid="151" uid_parent="100"/>
   </Structure>
 

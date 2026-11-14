@@ -42,7 +42,7 @@ ROOM_SPRITE = {k: v for k, v in TILE_SPRITE.items() if k not in (T['P'], T['S'],
 ENEMY_CODES = (T['S'], T['K'])                                       # 19..21 = Spinne, Schlange, Totenkopf
 
 # Eingabe (Queue UI -> Engine), als uint16
-KEYS = ['None', 'Up', 'Down', 'Left', 'Right', 'Quit', 'Pause', 'Start', 'Jump', 'Release', 'ReleaseV', 'ReleaseL', 'ReleaseR']
+KEYS = ['None', 'Up', 'Down', 'Left', 'Right', 'Quit', 'Pause', 'Start', 'Jump', 'Release', 'ReleaseV', 'ReleaseL', 'ReleaseR', 'Cheat']
 IN = {n: i for i, n in enumerate(KEYS)}
 KEY = 'uint16'
 # Tasten (ScanCode = physische Taste): gedrueckt / losgelassen. Esc/P = Pause (im Titel: beenden), Enter/N = Start.
@@ -359,3 +359,10 @@ FRAME, FRAME_V = 'array.2{uint8}', '[]'
 BSPR = 'cluster{array.2{uint8}.Pix,array.2{uint8}.Mask}'
 BSPRITES = f'array{{{BSPR}}}'
 SPRITES_USED = BSPRITES if FULL_BLIT else SPRITES
+
+# Cheat: Z U L U (ScanCodes) nacheinander -> Taste Cheat; Marke im Feld DemoStep (nur in der Demo gebraucht, Game_New loescht sie)
+# Wirkung: alle Raeume hell (Fackel bleibt), Sterben kostet kein Leben
+CHEAT_CODE = [44, 22, 38, 22]
+CHEAT_MARK = -1
+# Cheat: diese ScanCodes zaehlen nicht (Shift links/rechts, Caps Lock, Ctrl, Alt)
+CHEAT_IGNORE = [42, 54, 58, 29, 56]

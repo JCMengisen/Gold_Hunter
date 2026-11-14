@@ -1,3 +1,4 @@
+import re
 # Gold Hunter - AIXML-Quellen fuer Spiel (Engine), Bildaufbau (Render), Ton (Audio), App und den Build-Contract.
 # Grund-VIs (Dateien, Kacheln, Bilder) stehen in gen_game.py.
 # Aufruf: python gen_play.py [funktion ...]     ohne Argument: alle
@@ -39,6 +40,10 @@ def counter(d, n): return d.node('Initialize Array', [('element', d.i32c(0)), ('
 def lvl_index(d, level): return clampv(d, d.sub(level, d.i32c(1)), d.i32c(0), d.i32c(2))
 def w16(d, v): return d.node('To Word Integer', [('number', v)], ['16bit integer'])['16bit integer']
 def size(d, arr): return d.i32(d.node('Array Size', [('array', arr)], ['size(s)'])['size(s)'])
+
+
+# gen_blit.py setzt BLIT = True fuer die Blit-Varianten der Zeichen-VIs
+BLIT = False
 
 
 def condition(d, loop_uid, net):
@@ -547,7 +552,10 @@ def game_play():
     pm = d.call('Player_Move.vi', [('State', d.bun(st, [('FloorPhase', phase)])), ('Jump', jump), ('error in', e)], ['State out', 'error out'])
     mode, vy, snd = d.unb(pm['State out'], ['Mode', 'VY10', 'Sound'])
     jumped = allb(d, jump, d.eq(mode, c(2)), d.eq(vy, c(JUMP10)))
-    s1 = d.bun(pm['State out'], [('Sound', d.or_(snd, d.sel(jumped, c(SND['jump']), c(0))))])
+    # Rutschgeraeusch: beim Aufspringen auf die Stange und dann alle SLIDE_EVERY Ticks, solange Claude rutscht
+    mode0, = d.unb(st, ['Mode'])
+    sliding = d.and_(d.eq(mode, c(3)), d.or_(d.ne(mode0, c(3)), d.eq(d.qr(d.i32(tick), c(SLIDE_EVERY))[0], c(0))))
+    s1 = d.bun(pm['State out'], [('Sound', d.or_(d.or_(snd, d.sel(jumped, c(SND['jump']), c(0))), d.sel(sliding, c(SND['slide']), c(0))))])
     ic = d.call('Items_Collect.vi', [('State', s1), ('error in', pm['error out'])], ['State out', 'error out'])
     do = d.call('Door_Open.vi', [('State', ic['State out']), ('error in', ic['error out'])], ['State out', '-Opened', 'error out'])
     es = d.call('Enemies_Step.vi', [('State', do['State out']), ('error in', do['error out'])], ['State out', 'error out'])
@@ -566,9 +574,10 @@ def game_play():
 
 
 # Demo: Tastenfolge im Startraum (mit sim_player.py abgestimmt)
-DEMO_EVENTS = [(0, 'Right'), (202, 'ReleaseR'), (203, 'Down'), (300, 'ReleaseV'), (400, 'Left'), (616, 'ReleaseL'), (690, 'Right'),
-               (849, 'ReleaseR'), (850, 'Down'), (920, 'ReleaseV'), (921, 'Right'), (1000, 'ReleaseR'), (1001, 'Left'), (1117, 'ReleaseL'),
-               (1118, 'Down')]
+# Demo-Tastenfolge fuer WALK10 = 30 / BELT10 = 20 (umgerechnet mit retime_demo.py, gleicher Weg, Pausen fuer die Schwundboeden)
+DEMO_EVENTS = [(0, 'Right'), (236, 'ReleaseR'), (237, 'Down'), (301, 'ReleaseV'), (363, 'Left'), (615, 'ReleaseL'), (639, 'Right'),
+               (825, 'ReleaseR'), (826, 'Down'), (890, 'ReleaseV'), (891, 'Right'), (983, 'ReleaseR'), (984, 'Left'), (1120, 'ReleaseL'),
+               (1121, 'Down')]
 
 
 def demo_input():
@@ -729,8 +738,14 @@ def game_step():
         ka = d.call('Keys_Apply.vi', [('State', s), ('Key', u16(kk)), ('error in', err)], ['State out', 'error out'])
         pt = ticks(s)
         go = ge(d, pt, c(READY_TICKS))
-        wait = d.bun(ka['State out'], [('PhaseTicks', pt)])
-        play = to(ka['State out'], 'Playing', extra=[('LevelStart', d.const('bool', 'false'))])
+        # Levelbeginn: Claude klettert am Seil von oben herunter und steht am Ende der Phase auf der oberen Plattform
+        intro, ex10, ey10, x10, y10, md = d.unb(ka['State out'], ['LevelStart', 'EntryX10', 'EntryY10', 'X10', 'Y10', 'Mode'])
+        yint = maxv(d, d.sub(ey10, d.mul(d.sub(c(READY_TICKS), pt), c(CLIMB10))), c(0))
+        wait = d.bun(ka['State out'], [('PhaseTicks', pt), ('X10', d.sel(intro, ex10, x10)), ('Y10', d.sel(intro, yint, y10)),
+                                       ('Mode', d.sel(intro, d.sel(d.lt(yint, ey10), c(1), c(0)), md)), ('VY10', c(0))])
+        landed = d.bun(ka['State out'], [('X10', d.sel(intro, ex10, x10)), ('Y10', d.sel(intro, ey10, y10)), ('Mode', d.sel(intro, c(0), md)),
+                                         ('StandY', d.sel(intro, d.qr(ey10, c(10))[1], d.unb(ka['State out'], ['StandY'])[0]))])
+        play = to(landed, 'Playing', extra=[('LevelStart', d.const('bool', 'false'))])
         return [d.sel(go, play, wait), ka['error out']]
 
     def u16(v): return d.node('To Unsigned Word Integer', [('number', v)], ['unsigned 16bit integer'])['unsigned 16bit integer']
@@ -809,7 +824,8 @@ def game_step():
         done = is_('Start')
         # gespeichert wird nur beim Bestaetigen (Case, damit die Datei nicht jeden Tick geschrieben wird)
         err2, = d.case(done, [hi['Table out'], hi['error out']], [
-            ('True', lambda j: [d.call('Highscore_Save.vi', [('Table', j[0]), ('error in', j[1])], ['error out'])['error out']]),
+            # ein Fehler beim Speichern darf das Spiel nicht anhalten (die Liste bleibt im Speicher)
+            ('True', lambda j: [(d.call('Highscore_Save.vi', [('Table', j[0]), ('error in', j[1])], ['-error out']), j[1])[1]]),
             ('False', lambda j: [j[1]]),
         ], 1)
         saved = to(d.bun(s, [('Highscores', hi['Table out'])]), 'Title')
@@ -984,9 +1000,13 @@ def room_draw():
 
     def draw(i):
         picture, sprites, index, err, rr, cc, top = i
-        (rect,) = d.unb(d.idx(sprites, index), ['Rectangle'])
-        tt, bt = d.unb(rect, ['top', 'bottom'])
-        h = d.i32(d.sub(bt, tt))
+        if BLIT:                        # Blit-Sprites: Hoehe = Zeilen der Pixel
+            (pixa,) = d.unb(d.idx(sprites, index), ['Pix'])
+            h = d.i32(d.idx(d.node('Array Size', [('array', pixa)], ['size(s)'])['size(s)'], c(0)))
+        else:
+            (rect,) = d.unb(d.idx(sprites, index), ['Rectangle'])
+            tt, bt = d.unb(rect, ['top', 'bottom'])
+            h = d.i32(d.sub(bt, tt))
         y0 = d.add2(d.mul(rr, c(TILE)), c(HUD_H))
         y = d.sel(d.eq(top, c(1)), y0, d.sub(d.add2(y0, c(TILE)), h))
         pos = d.bun(d.const(POS, '[0,0]'), [('X', d.mul(cc, c(TILE))), ('Y', y)])
@@ -1074,16 +1094,10 @@ def fmt(d, f, *vals):
     return d.node('Format Into String', ins, ['resulting string', '-error out'])['resulting string']
 
 
-def hud_draw():
-    d = Doc('Hud_Draw.vi', f'Draws the HUD ({W} x {HUD_H} px) as one piece of image data: lives (at most {MAX_LIVES} heads), keys with '
-            'their number, the torch, level, gold (score) and in the treasure room the seconds left.')
-    spr = d.ctrl('Sprites', SPRITES, '[]', 0)
-    hud = d.ctrl('Hud', IMG, IMG_V, 5)
-    st = d.ctrl('State', STATE, STATE_V, 7)
-    e = d.err_in()
+def hud_ops(d, pic, spr, st, e):
+    """Zeichenbefehle des HUD (Leben, Schluessel, Fackel, Level, Gold, Zeit) auf pic; das HUD-Bild selbst zeichnet der Aufrufer."""
     c = d.i32c
     lives, k1, k2, k3, torch, level, score, phase, pt = d.unb(st, ['Lives', 'KeyR', 'KeyB', 'KeyY', 'Torch', 'Level', 'Score', 'Phase', 'PhaseTicks'])
-    pic = d.call('Draw Flattened Pixmap.vi', [('image data', hud), ('picture', '')], ['new picture'])['new picture']
 
     def sprite(p, err, ix, x, y):
         r = d.call('Sprite_Draw.vi', [('Picture', p), ('Sprites', spr), ('Index', ix), ('Position', d.bun(d.const(POS, '[0,0]'), [('X', x), ('Y', y)])),
@@ -1119,6 +1133,19 @@ def hud_draw():
     in_t = d.eq(phase, c(PH['Treasure']))
     tstr = d.sel(in_t, fmt(d, '%02d', secs), d.const('string', ''))
     pic, err = text(pic, err, tstr, 1156, 30)
+    return pic, err
+
+
+def hud_draw():
+    d = Doc('Hud_Draw.vi', f'Draws the HUD ({W} x {HUD_H} px) as one piece of image data: lives (at most {MAX_LIVES} heads), keys with '
+            'their number, the torch, level, gold (score) and in the treasure room the seconds left.')
+    spr = d.ctrl('Sprites', SPRITES, '[]', 0)
+    hud = d.ctrl('Hud', IMG, IMG_V, 5)
+    st = d.ctrl('State', STATE, STATE_V, 7)
+    e = d.err_in()
+    c = d.i32c
+    pic = d.call('Draw Flattened Pixmap.vi', [('image data', hud), ('picture', '')], ['new picture'])['new picture']
+    pic, err = hud_ops(d, pic, spr, st, e)
     pm = d.call('Picture to Pixmap.vi', [('Background Color', ''), ('depth', c(24)), ('rect', d.const(RECT, f'[0,0,{W},{HUD_H}]')), ('picture', pic)],
                 ['image data', '-new picture'])['image data']
     d.indic('Piece', IMG, IMG_V, d.bun(pm, [('Rectangle', d.const(RECT, f'[0,0,{W},{HUD_H}]'))]), 4)
@@ -1146,7 +1173,8 @@ def overlay_draw():
     def frame(box, lines, ys):
         def body(i):
             boxv = [c(v) for v in box]
-            nets = [S(l) if isinstance(l, str) else l for l in lines]
+            # Text = Konstante, Netzname (z. B. '1092.o0') = schon berechneter Text
+            nets = [l if re.fullmatch(r'\d+\.\w+', l) else S(l) for l in lines]
             larr = d.node('Build Array', [('element', l) for l in nets], ['appended array'])['appended array'] if lines else d.const(LINES, '[]')
             yarr = table(d, ys, 'Line y') if ys else d.const(YS, '[]')
             return boxv + [larr, yarr]
@@ -1269,7 +1297,134 @@ def piece_compose():
     d.write()
 
 
+def scene_draw():
+    d = Doc('Scene_Draw.vi', 'Draws the WHOLE screen as one picture of draw commands (like Pauls Hoehenflug, without rastering): on the '
+            'title the title card and the overlay; otherwise the HUD picture with its values, the room raster (Grid, lit or the dark '
+            'composite) and on it the objects (Room_Draw), the enemies, Claude and the message of the phase.')
+    grid = d.ctrl('Grid', GRID, '[]', 0)
+    tmpl = d.ctrl('Template', IMG, IMG_V, 5)
+    spr = d.ctrl('Sprites', SPRITES, '[]', 7)
+    st = d.ctrl('State', STATE, STATE_V, 9)
+    view = d.ctrl('View', VIEW, VIEW_V, 1)
+    hud = d.ctrl('Hud', IMG, IMG_V, 2)
+    title = d.ctrl('Title', IMG, IMG_V, 3)
+    e = d.err_in()
+    c = d.i32c
+    phase, = d.unb(st, ['Phase'])
+    is_title = d.eq(phase, c(PH['Title']))
+    full = d.const(RECT, f'[0,0,{W},{H}]', 'Whole screen')
+
+    def f_title(i):
+        p0 = d.call('Draw Flattened Pixmap.vi', [('image data', i[0]), ('picture', '')], ['new picture'])['new picture']
+        ov = d.call('Overlay_Draw.vi', [('Picture', p0), ('Sprites', i[1]), ('State', i[2]), ('Clip', i[3]), ('error in', i[4])],
+                    ['Picture out', 'error out'])
+        return [ov['Picture out'], ov['error out']]
+
+    def f_game(i):
+        _, sp, s, clip, err, g, tp, vw, hd = i
+        p0 = d.call('Draw Flattened Pixmap.vi', [('image data', hd), ('picture', '')], ['new picture'])['new picture']
+        p1, err1 = hud_ops(d, p0, sp, s, err)
+        gb = d.call('Grid_Block.vi', [('Grid', g), ('Template', tp), ('Rect', d.const(RECT, f'[0,0,{COLS},{ROWS}]')), ('error in', err1)],
+                    ['Block', 'error out'])
+        p2 = d.call('Draw Flattened Pixmap.vi', [('image data', gb['Block']), ('picture', p1)], ['new picture'])['new picture']
+        tiles, enemies, tick, fphase = d.unb(s, ['Tiles', 'Enemies', 'Tick', 'FloorPhase'])
+        rd = d.call('Room_Draw.vi', [('Picture', p2), ('Sprites', sp), ('Tiles', tiles), ('Region', d.const(RECT, f'[0,0,{COLS},{ROWS}]')),
+                                     ('FloorPhase', fphase), ('View', vw), ('error in', gb['error out'])], ['Picture out', 'error out'])
+        ed = d.call('Enemies_Draw.vi', [('Picture', rd['Picture out']), ('Sprites', sp), ('Enemies', enemies), ('Tick', tick), ('View', vw),
+                                        ('error in', rd['error out'])], ['Picture out', 'error out'])
+        cix, cxp, cyp = d.unb(vw, ['ClaudeIdx', 'ClaudeX', 'ClaudeY'])
+        cpos = d.bun(d.const(POS, '[0,0]'), [('X', cxp), ('Y', d.sel(ge(d, cix, c(0)), cyp, c(-2000)))])
+        cd = d.call('Sprite_Draw.vi', [('Picture', ed['Picture out']), ('Sprites', sp), ('Index', maxv(d, cix, c(0))), ('Position', cpos),
+                                       ('error in', ed['error out'])], ['Picture out', 'error out'])
+        ov = d.call('Overlay_Draw.vi', [('Picture', cd['Picture out']), ('Sprites', sp), ('State', s), ('Clip', clip), ('error in', cd['error out'])],
+                    ['Picture out', 'error out'])
+        return [ov['Picture out'], ov['error out']]
+
+    pic, err = d.case(is_title, [title, spr, st, full, e, grid, tmpl, view, hud],
+                      [('True', f_title), ('False', f_game)], 2)
+    d.indic('Picture', 'picture', '', pic, 4)
+    d.err_out(err)
+    d.write()
+
+
+def frame_draw_full():
+    d = Doc('Frame_Draw.vi', 'Draws one frame: the WHOLE screen every frame (Scene_Draw, like Pauls Hoehenflug) - every update of the '
+            'picture control is complete, so nothing can stay behind and LabVIEW may skip frames without harm. Memory keeps the room '
+            'pictures (loaded on a new room or level) and the composite of a dark room, whose light circle Light_Update moves '
+            'incrementally. Pieces stays empty (kept for the interface).')
+    st = d.ctrl('State', STATE, STATE_V, 0)
+    spr = d.ctrl('Sprites', SPRITES_USED, '[]', 5)
+    hud = d.ctrl('Hud', IMG, IMG_V, 7)
+    title = d.ctrl('Title', IMG, IMG_V, 9)
+    mem = d.ctrl('Memory', RMEM, RMEM_V, 1)
+    e = d.err_in()
+    c = d.i32c
+    room, level, phase, pt, x10, y10, vy, mode, facing, run, tick, torch, world = d.unb(
+        st, ['Room', 'Level', 'Phase', 'PhaseTicks', 'X10', 'Y10', 'VY10', 'Mode', 'Facing', 'Run', 'Tick', 'Torch', 'World'])
+    m_roomkey, m_lit, m_dim, m_dark, m_comp, m_tmpl, m_cx, m_cy = d.unb(mem, ['RoomKey', 'Lit', 'Dim', 'Dark', 'Comp', 'Template', 'CX', 'CY'])
+    li = lvl_index(d, level)
+    theme = d.idx(table(d, LV_THEME, 'Theme'), li)
+    rid, depth = d.unb(d.idx(world, room), ['ID', 'Depth'])
+    is_title = d.eq(phase, c(PH['Title']))
+    dark = allb(d, ge(d, depth, d.idx(table(d, LV_DARK, 'Dark from'), li)), d.not_(torch), d.not_(is_title), d.ne(room, c(TREASURE_IDX)))
+    roomkey = d.add2(room, d.mul(theme, c(100)))
+    load = d.and_(d.ne(roomkey, m_roomkey), d.not_(is_title))
+    lit, dim, drk, tmpl, err = d.case(load, [rid, theme, m_lit, m_dim, m_dark, m_tmpl, e], [
+        ('True', lambda i: (lambda r: [r['Lit'], r['Dim'], r['Dark'], r['Template'], r['error out']])(
+            d.call('Room_Images.vi', [('Room ID', i[0]), ('Theme', i[1]), ('error in', i[6])], ['Lit', 'Dim', 'Dark', 'Template', 'error out']))),
+        ('False', lambda i: [i[2], i[3], i[4], i[5], i[6]]),
+    ], 5)
+    x, y = px(d, x10), px(d, y10)
+    cxt, cyt = d.qr(d.add2(x, c(16)), c(TILE))[1], d.qr(d.add2(y, c(24)), c(TILE))[1]
+    # Lichtkreis im dunklen Raum: nur neu rechnen, wenn der Raum neu ist oder Claude die Kachel wechselt
+    moved = anyb(d, load, d.ne(cxt, m_cx), d.ne(cyt, m_cy))
+    comp, err2 = d.case(d.and_(dark, moved), [m_comp, lit, dim, drk, m_cx, m_cy, cxt, cyt, err, load], [
+        ('True', lambda q: (lambda r: [r['Comp out'], r['error out']])(
+            d.call('Light_Update.vi', [('Comp', d.sel(q[9], q[3], q[0])), ('Lit', q[1]), ('Dim', q[2]), ('Dark', q[3]),
+                                       ('Old CX', d.sel(q[9], d.i32c(-100), q[4])), ('Old CY', d.sel(q[9], d.i32c(-100), q[5])),
+                                       ('CX', q[6]), ('CY', q[7]), ('error in', q[8])], ['Comp out', '-Rect', 'error out']))),
+        ('False', lambda q: [q[0], q[8]]),
+    ], 2)
+    grid = d.sel(dark, comp, lit)
+    # Bild von Claude (wie bisher)
+    side = d.mul(facing, c(SPR_SIDE_STEP))
+    walk = d.inc(d.qr(d.qr(d.i32(tick), c(6))[1], c(4))[0])
+    on_ground = d.add2(side, d.sel(d.ne(run, c(0)), walk, c(0)))
+    in_air = d.add2(side, d.sel(d.lt(vy, c(0)), c(5), c(6)))
+    climbing = d.sub(d.add2(c(SPR['claude_climb_0']), d.qr(d.qr(y, c(8))[1], c(2))[0]), c(SPR['claude_r_stand']))
+    normal = d.add2(c(SPR['claude_r_stand']), d.sel(d.eq(mode, c(0)), on_ground, d.sel(d.eq(mode, c(1)), climbing,
+                                                                                        d.sel(d.eq(mode, c(2)), in_air, c(SPR['claude_slide'] - SPR['claude_r_stand'])))))
+    dying = anyb(d, d.eq(phase, c(PH['Dying'])), d.eq(phase, c(PH['GameOver'])))
+    flash = d.and_(d.lt(pt, c(40)), d.eq(d.qr(d.qr(pt, c(4))[1], c(2))[0], c(0)))
+    dead_ix = d.sel(d.and_(d.eq(phase, c(PH['Dying'])), d.lt(pt, c(40))), d.sel(flash, c(SPR['claude_dead_0']), normal), c(SPR['claude_dead_1']))
+    cix = d.sel(is_title, c(-1), d.sel(dying, dead_ix, normal))
+    view = d.bun(d.const(VIEW, VIEW_V), [('Hide', dark), ('CX', cxt), ('CY', cyt), ('ClaudeIdx', cix), ('ClaudeX', x), ('ClaudeY', d.add2(y, c(HUD_H)))])
+    if FULL_BLIT:
+        # das ganze Bild entsteht als Pixel-Array (Scene_Blit) und wird mit EINEM Draw Flattened Pixmap gezeichnet
+        sb = d.call('Scene_Blit.vi', [('Grid', grid), ('Sprites', spr), ('State', st), ('View', view), ('Hud', hud), ('Title', title),
+                                      ('error in', err2)], ['Picture', 'error out'])
+        flat = d.node('Reshape Array', [('array', sb['Picture']), ('dimension size', c(H * W * 3))], ['output array'])['output array']
+        img = d.bun(title, [('image', flat), ('mask', d.const('array{uint8}', '[]')), ('Rectangle', d.const(RECT, f'[0,0,{W},{H}]'))])
+        one = d.call('Draw Flattened Pixmap.vi', [('image data', img), ('picture', '')], ['new picture'])['new picture']
+        sd = {'error out': sb['error out']}
+    else:
+        sd = d.call('Scene_Draw.vi', [('Grid', grid), ('Template', tmpl), ('Sprites', spr), ('State', st), ('View', view), ('Hud', hud), ('Title', title),
+                                      ('error in', err2)], ['Picture', 'error out'])
+        # EIN Raster des ganzen Bildschirms, dann EIN Zeichenbefehl: der Bildschirm wechselt in einem Zug (kein Flackern)
+        pm = d.call('Picture to Pixmap.vi', [('Background Color', ''), ('depth', c(24)), ('rect', d.const(RECT, f'[0,0,{W},{H}]')), ('picture', sd['Picture'])],
+                    ['image data', '-new picture'])['image data']
+        one = d.call('Draw Flattened Pixmap.vi', [('image data', pm), ('picture', '')], ['new picture'])['new picture']
+    mem2 = d.bun(mem, [('RoomKey', d.sel(is_title, m_roomkey, roomkey)), ('Lit', lit), ('Dim', dim), ('Dark', drk), ('Comp', comp), ('Template', tmpl),
+                       ('CX', d.sel(dark, cxt, c(-100))), ('CY', d.sel(dark, cyt, c(-100)))])
+    d.indic('Picture', 'picture', '', one, 4)
+    d.indic('Pieces', PIECES, '[]', d.const(PIECES, '[]', 'No pieces'), 6)
+    d.indic('Memory out', RMEM, RMEM_V, mem2, 8)
+    d.err_out(sd['error out'])
+    d.write()
+
 def frame_draw():
+    if FULL_EVERY_FRAME:
+        return frame_draw_full()
     d = Doc('Frame_Draw.vi', 'Draws one frame for a picture control that never erases, as a list of pieces (image data with their screen '
             'rectangle). Full redraw (new room, level, message, floor phase or light mode): the HUD and the whole playfield, on the title '
             'the title card. Otherwise only: the piece around the last three positions of Claude, one piece per enemy, the piece where the '
@@ -1286,8 +1441,8 @@ def frame_draw():
      lstart) = d.unb(st, ['Room', 'Level', 'Phase', 'PhaseTicks', 'X10', 'Y10', 'VY10', 'Mode', 'Facing', 'Run', 'Tick', 'Torch', 'FloorPhase',
                           'World', 'Enemies', 'Name', 'Cursor', 'Lives', 'KeyR', 'KeyB', 'KeyY', 'Score', 'LevelStart'])
     (m_roomkey, m_key, m_namekey, m_lit, m_dim, m_dark, m_comp, m_tmpl, m_cx, m_cy, m_x1, m_y1, m_x2, m_y2, m_prev, m_hudkey, m_hudscore,
-     m_hudtime) = d.unb(mem, ['RoomKey', 'Key', 'NameKey', 'Lit', 'Dim', 'Dark', 'Comp', 'Template', 'CX', 'CY', 'X1', 'Y1', 'X2', 'Y2', 'Prev',
-                               'HudKey', 'HudScore', 'HudTime'])
+     m_hudtime, m_full) = d.unb(mem, ['RoomKey', 'Key', 'NameKey', 'Lit', 'Dim', 'Dark', 'Comp', 'Template', 'CX', 'CY', 'X1', 'Y1', 'X2', 'Y2', 'Prev',
+                               'HudKey', 'HudScore', 'HudTime', 'Full'])
     li = lvl_index(d, level)
     theme = d.idx(table(d, LV_THEME, 'Theme'), li)
     here = d.idx(world, room)
@@ -1322,6 +1477,9 @@ def frame_draw():
                                            d.i32(d.b01(d.and_(d.eq(phase, c(PH['Treasure'])), d.lt(pt, c(TREASURE_MSG)))))))
     key = d.add2(d.add2(roomkey, d.mul(fphase, c(10000))), d.add2(d.mul(d.i32(d.b01(dark)), c(100000)), d.mul(ov, c(1000000))))
     key = d.add2(key, d.mul(d.i32(d.b01(lstart)), c(7)))
+    # alle 120 Ticks (2 s) volle Neuzeichnung: LabVIEW malt das Bild bei jedem Neuzeichnen des Fensters (Klick, Verdecken)
+    # nur aus dem letzten Wert - also nur aus den letzten Stuecken. So heilt der Bildschirm nach spaetestens 2 s.
+    key = d.add2(key, d.mul(d.qr(d.qr(d.i32(tick), c(REFRESH_TICKS))[1], c(2))[0], c(3)))
     zero_n = c(0)
     lp = d.begin('For Loop', 'count="@i.v" maxin="" maxout=""')
     i = f'{lp}i.v'
@@ -1330,12 +1488,25 @@ def frame_draw():
     n2 = d.add2(n_l, d.mul(lt_, d.add2(d.mul(i, c(29)), c(7))))
     d.end()
     namekey = d.add2(close_reg(d, n_r, n2), d.mul(cur, c(1000)))
-    full = anyb(d, d.ne(key, m_key), d.ne(namekey, m_namekey), load)
+    # LabVIEW malt Anzeigen asynchron: kommt ein neuer Wert, bevor der alte gemalt ist, faellt der alte weg. Darum wird
+    # eine volle Neuzeichnung in REPEAT_FULL weiteren Bildern wiederholt. Der Zaehler steckt im Feld Key (Bits ab 2^28).
+    k_base, k_cnt = d.qr(m_key, c(1 << 28))
+    new_full = anyb(d, d.ne(key, k_base), d.ne(namekey, m_namekey), load)
+    if FULL_EVERY_FRAME:                # wie Pauls Spiel: jedes Bild ist der ganze Bildschirm
+        new_full = d.or_(new_full, d.const('bool', 'true'))
+    full = d.or_(new_full, d.gt(k_cnt, c(0)))
+    cnt2 = d.sel(new_full, c(REPEAT_FULL), maxv(d, d.sub(k_cnt, c(1)), c(0)))
+    key_mem = d.add2(key, d.mul(cnt2, c(1 << 28)))
     hudkey = d.add2(d.add2(lives, d.mul(k1, c(8))), d.add2(d.mul(k2, c(80)), d.add2(d.mul(k3, c(800)), d.add2(
         d.mul(d.i32(d.b01(torch)), c(8000)), d.mul(level, c(16000))))))
     tlimit = d.idx(table(d, LV_TREASURE, 'Treasure time'), li)
     hudtime = d.sel(d.eq(phase, c(PH['Treasure'])), d.qr(maxv(d, d.sub(tlimit, pt), c(0)), c(60))[1], c(-1))
-    hud_changed = anyb(d, full, d.ne(hudkey, m_hudkey), d.ne(score, m_hudscore), d.ne(hudtime, m_hudtime))
+    # HUD ebenso: nach einer Aenderung REPEAT_FULL weitere Bilder lang mitschicken (Zaehler in HudKey ab 2^28)
+    h_base, h_cnt = d.qr(m_hudkey, c(1 << 28))
+    hud_new = anyb(d, full, d.ne(hudkey, h_base), d.ne(score, m_hudscore), d.ne(hudtime, m_hudtime))
+    hud_changed = d.or_(hud_new, d.gt(h_cnt, c(0)))
+    hcnt2 = d.sel(hud_new, c(REPEAT_FULL), maxv(d, d.sub(h_cnt, c(1)), c(0)))
+    hudkey_mem = d.add2(hudkey, d.mul(hcnt2, c(1 << 28)))
 
     def f_full(j):
         lit_, dim_, drk_, tmpl_, sp, s, vw, hd, tt, dk, ccx, ccy, ist, err = j
@@ -1420,18 +1591,24 @@ def frame_draw():
         return [pieces, comp, err3]
 
     # Werte aus dem Gedaechtnis, die f_part braucht, als Tunnel in die Case-Struktur
-    ins = [lit, dim, drk, tmpl, spr, st, view, hud, title, dark, cxt, cyt, is_title, err, m_cx, m_cy, m_comp, m_x1, m_y1, m_x2, m_y2, m_prev, x, y]
+    ins = [lit, dim, drk, tmpl, spr, st, view, hud, title, dark, cxt, cyt, is_title, err, m_cx, m_cy, m_comp, m_x1, m_y1, m_x2, m_y2, m_prev, x, y, m_full]
 
     def wrap(fn):
         def body(i):
-            global m_cx_t, m_cy_t, m_comp_t, m_x1_t, m_y1_t, m_x2_t, m_y2_t, m_prev_t, m_xc_t, m_yc_t
-            m_cx_t, m_cy_t, m_comp_t, m_x1_t, m_y1_t, m_x2_t, m_y2_t, m_prev_t, m_xc_t, m_yc_t = i[14:]
+            global m_cx_t, m_cy_t, m_comp_t, m_x1_t, m_y1_t, m_x2_t, m_y2_t, m_prev_t, m_xc_t, m_yc_t, m_full_t
+            m_cx_t, m_cy_t, m_comp_t, m_x1_t, m_y1_t, m_x2_t, m_y2_t, m_prev_t, m_xc_t, m_yc_t, m_full_t = i[14:]
             return fn(i[:14])
         return body
 
-    pieces, comp, err2 = d.case(full, ins, [('True', wrap(f_full)), ('False', wrap(f_part))], 3)
+    def f_repeat(j):
+        return [m_full_t, m_comp_t, j[13]]
+
+    # 0 = nur Stuecke, 1 = neue volle Neuzeichnung, 2 = Wiederholung der letzten (aus dem Gedaechtnis, kostet fast nichts)
+    mode_ = d.sel(new_full, c(1), d.sel(full, c(2), c(0)))
+    pieces, comp, err2 = d.case(mode_, ins, [('1', wrap(f_full)), ('2', wrap(f_repeat)), ('Default', wrap(f_part))], 3)
+    full_mem = d.const(PIECES, '[]', 'No full picture kept') if FULL_EVERY_FRAME else d.sel(new_full, pieces, d.sel(full, m_full, d.const(PIECES, '[]', 'No full picture kept')))
     # HUD nur bei einer Aenderung (bei voller Neuzeichnung ist er schon dabei)
-    hud_part = allb(d, hud_changed, d.not_(full), d.not_(is_title))
+    hud_part = allb(d, hud_changed, d.not_(new_full), d.not_(is_title))
     pieces2, err3 = d.case(hud_part, [pieces, spr, hud, st, err2], [
         ('True', lambda q: (lambda r: [d.node('Build Array', [('array', q[0]), ('element', r['Piece'])], ['appended array'], extra='concat="true"')['appended array'],
                                        r['error out']])(
@@ -1446,9 +1623,9 @@ def frame_draw():
     p2 = d.call('Draw Flattened Pixmap.vi', [('image data', pc), ('picture', p_l)], ['new picture'])['new picture']
     d.end()
     picture = close_reg(d, p_r, p2)
-    mem2 = d.bun(mem, [('RoomKey', roomkey2), ('Key', key), ('NameKey', namekey), ('Lit', lit), ('Dim', dim), ('Dark', drk), ('Comp', comp),
+    mem2 = d.bun(mem, [('RoomKey', roomkey2), ('Key', key_mem),('NameKey', namekey), ('Lit', lit), ('Dim', dim), ('Dark', drk), ('Comp', comp),
                        ('Template', tmpl), ('CX', cxt), ('CY', cyt), ('X1', x), ('Y1', y), ('X2', d.sel(full, x, m_x1)), ('Y2', d.sel(full, y, m_y1)),
-                       ('Prev', enemies), ('HudKey', hudkey), ('HudScore', score), ('HudTime', hudtime)])
+                       ('Prev', enemies), ('HudKey', hudkey_mem),('HudScore', score), ('HudTime', hudtime), ('Full', full_mem)])
     d.indic('Picture', 'picture', '', picture, 4)
     d.indic('Pieces', PIECES, '[]', pieces2, 6)
     d.indic('Memory out', RMEM, RMEM_V, mem2, 8)
@@ -1659,11 +1836,33 @@ def engine_tick():
     d.write()
 
 
+def frame_pace():
+    d = Doc('Frame_Pace.vi', f'Paces the game loop at exactly {FPS} ticks per second (the screen refresh rate): waits until Start + '
+            f'(Count + 1) * 1000 / {FPS} ms. Count <= 0 starts the clock now; more than 50 ms behind (a hitch) restarts it, so the game never races '
+            'to catch up.')
+    start = d.ctrl('Start ms', 'uint32', '0', 0)
+    cnt = d.ctrl('Count', 'int32', '0', 1)
+    e = d.err_in()
+    c = d.i32c
+    now = d.node('Tick Count (ms)', [], ['millisecond timer value'])['millisecond timer value']
+    first = d.lt(cnt, c(1))
+    st = d.sel(first, now, start)
+    n1 = d.inc(cnt)
+    off = d.qr(d.mul(n1, c(1000)), c(FPS))[1]
+    w = d.add2(d.i32(d.sub(st, now)), off)
+    behind = d.lt(w, c(-50))
+    wt = d.sel(d.lt(w, c(0)), c(0), w)
+    d.node('Wait (ms)', [('milliseconds to wait', wt)], ['-millisecond timer value'])
+    d.indic('Start out', 'uint32', '0', d.sel(behind, now, st), 4)
+    d.indic('Count out', 'int32', '0', d.sel(behind, c(0), n1), 6)
+    d.err_out(e)
+    d.write()
+
 def render_frame():
     d = Doc('Render_Frame.vi', 'One frame: waits (at most 200 ms) for the next game state and draws it with Frame_Draw. Without a new state '
             'nothing is drawn and Memory stays. FPS from the time since the last frame. Stop on Quit or on an error.')
     k = d.ctrl('Channels', CHANNELS, '[,,]', 0)
-    spr = d.ctrl('Sprites', SPRITES, '[]', 5)
+    spr = d.ctrl('Sprites', SPRITES_USED, '[]', 5)
     hud = d.ctrl('Hud', IMG, IMG_V, 7)
     title = d.ctrl('Title', IMG, IMG_V, 9)
     mem = d.ctrl('Memory', RMEM, RMEM_V, 1)
@@ -1756,9 +1955,9 @@ def audio_close():
 
 ENGINE = (player_move, enemies_init, room_change, items_collect, door_open, enemies_step, hit_check, respawn, level_setup, game_new,
           keys_apply, game_play, demo_input, highscore_load, highscore_save, highscore_insert, game_start, game_step)
-RENDER = (room_images, light_update, grid_block, room_draw, enemies_draw, glyphs_draw, hud_draw, overlay_draw, piece_compose, frame_draw)
+RENDER = (room_images, light_update, grid_block, room_draw, enemies_draw, glyphs_draw, hud_draw, overlay_draw, piece_compose, scene_draw, frame_draw)
 AUDIO = (sound_bank_load, sound_mix)
-APP = (app_init, app_close, window_setup, key_send, engine_tick, render_frame, audio_start, audio_block, audio_close)
+APP = (app_init, app_close, window_setup, key_send, engine_tick, frame_pace, render_frame, audio_start, audio_block, audio_close)
 ALL = {f.__name__: f for f in ENGINE + RENDER + AUDIO + APP}
 
 
@@ -1827,7 +2026,11 @@ def contract():
         (RE, 'Piece_Compose', [RE + n + '.vi' for n in ('Grid_Block', 'Room_Draw', 'Enemies_Draw', 'Sprite_Draw', 'Overlay_Draw')],
          [i('Grid', '@Grid', 0), i('Template', '@ImageData', 5), i('Rect', '@Rect', 7), i('Sprites', '@Sprites', 9), i('State', S, 1), i('View', '@View', 2), E],
          [o('Piece', '@ImageData', 4), EO]),
-        (RE, 'Frame_Draw', [RE + n + '.vi' for n in ('Room_Images', 'Light_Update', 'Overlay_Draw', 'Piece_Compose', 'Hud_Draw')],
+        (RE, 'Scene_Draw', [RE + n + '.vi' for n in ('Grid_Block', 'Room_Draw', 'Enemies_Draw', 'Sprite_Draw', 'Glyphs_Draw', 'Overlay_Draw')],
+         [i('Grid', '@Grid', 0), i('Template', '@ImageData', 5), i('Sprites', '@Sprites', 7), i('State', S, 9), i('View', '@View', 1),
+          i('Hud', '@ImageData', 2), i('Title', '@ImageData', 3), E],
+         [o('Picture', 'picture', 4), EO]),
+        (RE, 'Frame_Draw', [RE + n + '.vi' for n in ('Room_Images', 'Light_Update', 'Scene_Draw')],
          [i('State', S, 0), i('Sprites', '@Sprites', 5), i('Hud', '@ImageData', 7), i('Title', '@ImageData', 9), i('Memory', '@RenderMemory', 1), E],
          [o('Picture', 'picture', 4), o('Pieces', '@Pieces', 6), o('Memory out', '@RenderMemory', 8), EO]),
         # Audio
@@ -1844,6 +2047,7 @@ def contract():
          [o('Quit out', 'bool', 4), EO]),
         (AP, 'Engine_Tick', [EN + 'Game_Step.vi'], [i('Channels', '@Channels', 0), i('State', S, 5), i('Rooms', RO, 7), E],
          [o('State out', S, 4), o('Stop', 'bool', 6), EO]),
+        (AP, 'Frame_Pace', [], [i('Start ms', 'uint32', 0), i('Count', 'int32', 1), E], [o('Start out', 'uint32', 4), o('Count out', 'int32', 6), EO]),
         (AP, 'Render_Frame', [RE + 'Frame_Draw.vi'], [i('Channels', '@Channels', 0), i('Sprites', '@Sprites', 5), i('Hud', '@ImageData', 7),
                                                      i('Title', '@ImageData', 9), i('Memory', '@RenderMemory', 1), i('Last ms', 'uint32', 2, 'recommended'), E],
          [o('Picture', 'picture', 4), o('Memory out', '@RenderMemory', 6), o('FPS', 'double', 8), o('Now ms', 'uint32', 10), o('Stop', 'bool', 13), EO]),

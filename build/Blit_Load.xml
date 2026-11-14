@@ -1,0 +1,50 @@
+<VI _name="GH_Render.lvlib:Blit_Load.vi" description="Loads all sprites as raw pixels for Sprite_Blit: Resources\Sprites\sprites_blit.txt (Width;Height;Offset per sprite, order of sprites.txt) and sprites.bin (per sprite Height*Width*3 bytes RGB, then as many mask bytes, 255 = visible). Written by build\make_blit.py.">
+  <Control _name="error in" type="cluster{bool.status,int32.code,string.source}" value="[false,0,]" conIdx="11" connection="required" outputs="value:1001.v" uid="1001" uid_parent="root"/>
+  <Constant type="string" value="sprites_blit.txt" outputs="value:1002.v" uid="1002" uid_parent="root"/>
+  <Constant type="string" value="Sprites" outputs="value:1003.v" uid="1003" uid_parent="root"/>
+  <Call target="Resource_Path.vi" inputs="File name:1002.v,Subfolder:1003.v,error in:1001.v" outputs="Path:1004.o0,error out:1004.o1" uid="1004" uid_parent="root"/>
+  <Node _name="Read from Text File" convertEol="true" inputs="file (use dialog):1004.o0,count:,error in:1004.o1,prompt (Open existing file):" outputs="refnum out:,text:1005.o0,cancelled:,error out:1005.o1" uid="1005" uid_parent="root"/>
+  <Constant type="string" value="%s" outputs="value:1006.v" uid="1006" uid_parent="root"/>
+  <Constant type="array.2{string}" value="[]" outputs="value:1007.v" uid="1007" uid_parent="root"/>
+  <Constant type="string" value=";" outputs="value:1008.v" uid="1008" uid_parent="root"/>
+  <Node _name="Spreadsheet String To Array" inputs="format string:1006.v,spreadsheet string:1005.o0,array type (2D Dbl):1007.v,delimiter (Tab):1008.v" outputs="array:1009.o0" uid="1009" uid_parent="root"/>
+  <Constant type="string" value="sprites.bin" outputs="value:1010.v" uid="1010" uid_parent="root"/>
+  <Constant type="string" value="Sprites" outputs="value:1011.v" uid="1011" uid_parent="root"/>
+  <Call target="Resource_Path.vi" inputs="File name:1010.v,Subfolder:1011.v,error in:1005.o1" outputs="Path:1012.o0,error out:1012.o1" uid="1012" uid_parent="root"/>
+  <Constant type="int32" value="-1" outputs="value:1013.v" uid="1013" uid_parent="root"/>
+  <Constant _name="Bytes" type="uint8" value="0" outputs="value:1014.v" uid="1014" uid_parent="root"/>
+  <Node _name="Read from Binary File" inputs="file (use dialog):1012.o0,count:1013.v,byte order (0\3Abig-endian\2C network order):,error in:1012.o1,prompt (Open existing file):,data type:1014.v" outputs="refnum out:,data:1015.o0,cancelled:,error out:1015.o1" uid="1015" uid_parent="root"/>
+  <Structure _name="For Loop" count="" maxin="" maxout="" uid="1016" uid_parent="root">
+    <Tunnel _id="In1" inputs="value:1009.o0" mode="index" outputs="value:1017.v" uid="1017" uid_parent="1016"/>
+    <Tunnel _id="In2" inputs="value:1015.o0" outputs="value:1018.v" uid="1018" uid_parent="1016"/>
+    <Constant type="int32" value="0" outputs="value:1019.v" uid="1019" uid_parent="1016"/>
+    <Node _name="Index Array" inputs="array:1017.v,index:1019.v" outputs="element:1020.o0" uid="1020" uid_parent="1016"/>
+    <Constant type="int32" value="0" outputs="value:1021.v" uid="1021" uid_parent="1016"/>
+    <Node _name="Decimal String To Number" inputs="string:1020.o0,offset:,default (0L):1021.v" outputs="offset past number:,number:1022.o0" uid="1022" uid_parent="1016"/>
+    <Constant type="int32" value="1" outputs="value:1023.v" uid="1023" uid_parent="1016"/>
+    <Node _name="Index Array" inputs="array:1017.v,index:1023.v" outputs="element:1024.o0" uid="1024" uid_parent="1016"/>
+    <Constant type="int32" value="0" outputs="value:1025.v" uid="1025" uid_parent="1016"/>
+    <Node _name="Decimal String To Number" inputs="string:1024.o0,offset:,default (0L):1025.v" outputs="offset past number:,number:1026.o0" uid="1026" uid_parent="1016"/>
+    <Constant type="int32" value="2" outputs="value:1027.v" uid="1027" uid_parent="1016"/>
+    <Node _name="Index Array" inputs="array:1017.v,index:1027.v" outputs="element:1028.o0" uid="1028" uid_parent="1016"/>
+    <Constant type="int32" value="0" outputs="value:1029.v" uid="1029" uid_parent="1016"/>
+    <Node _name="Decimal String To Number" inputs="string:1028.o0,offset:,default (0L):1029.v" outputs="offset past number:,number:1030.o0" uid="1030" uid_parent="1016"/>
+    <Node _name="Multiply" inputs="x:1022.o0,y:1026.o0" outputs="x*y:1031.o0" uid="1031" uid_parent="1016"/>
+    <Constant type="int32" value="3" outputs="value:1032.v" uid="1032" uid_parent="1016"/>
+    <Node _name="Multiply" inputs="x:1031.o0,y:1032.v" outputs="x*y:1033.o0" uid="1033" uid_parent="1016"/>
+    <Node _name="Array Subset" inputs="array:1018.v,index:1030.o0,length:1033.o0" outputs="subarray:1034.o0" uid="1034" uid_parent="1016"/>
+    <Node _name="Add" inputs="x:1030.o0,y:1033.o0" outputs="x+y:1035.o0" uid="1035" uid_parent="1016"/>
+    <Node _name="Array Subset" inputs="array:1018.v,index:1035.o0,length:1033.o0" outputs="subarray:1036.o0" uid="1036" uid_parent="1016"/>
+    <Constant type="int32" value="3" outputs="value:1037.v" uid="1037" uid_parent="1016"/>
+    <Node _name="Multiply" inputs="x:1022.o0,y:1037.v" outputs="x*y:1038.o0" uid="1038" uid_parent="1016"/>
+    <Node _name="Reshape Array" inputs="array:1034.o0,dimension size:1026.o0,dimension size:1038.o0" outputs="output array:1039.o0" uid="1039" uid_parent="1016"/>
+    <Constant type="int32" value="3" outputs="value:1040.v" uid="1040" uid_parent="1016"/>
+    <Node _name="Multiply" inputs="x:1022.o0,y:1040.v" outputs="x*y:1041.o0" uid="1041" uid_parent="1016"/>
+    <Node _name="Reshape Array" inputs="array:1036.o0,dimension size:1026.o0,dimension size:1041.o0" outputs="output array:1042.o0" uid="1042" uid_parent="1016"/>
+    <Constant type="cluster{array.2{uint8}.Pix,array.2{uint8}.Mask}" value="[[],[]]" outputs="value:1043.v" uid="1043" uid_parent="1016"/>
+    <Node _name="Bundle By Name" fields="Pix,Mask" inputs="Pix:1039.o0,Mask:1042.o0,input cluster:1043.v" outputs="output cluster:1044.o0" uid="1044" uid_parent="1016"/>
+    <Tunnel _id="Out1" inputs="value:1044.o0" mode="index" outputs="value:1045.v" uid="1045" uid_parent="1016"/>
+  </Structure>
+  <Indicator _name="Sprites" type="array{cluster{array.2{uint8}.Pix,array.2{uint8}.Mask}}" value="[]" conIdx="4" connection="recommended" inputs="value:1045.v" uid="1046" uid_parent="root"/>
+  <Indicator _name="error out" type="cluster{bool.status,int32.code,string.source}" value="[false,0,]" conIdx="15" connection="recommended" inputs="value:1015.o1" uid="1047" uid_parent="root"/>
+</VI>

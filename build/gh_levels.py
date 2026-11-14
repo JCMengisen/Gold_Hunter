@@ -349,7 +349,7 @@ WORLD = [[rid(d, x) if abs(x - CENTER) <= d else None for x in range(2 * CENTER 
 WORLD.append([rid(DEPTHS, x) if x == CENTER else None for x in range(2 * CENTER + 1)])
 START, TREASURE = rid(0, CENTER), rid(DEPTHS, CENTER)
 # Level; Farbschema; dunkel ab Tiefe; Tempo Spinne; Tempo Totenkopf (px/Tick); Schwundboden an/aus (Ticks); Schatzkammer (s)
-LEVELS = [(1, 0, 2, 2, 3, 150, 90, 15),
+LEVELS = [(1, 0, 5, 2, 3, 150, 90, 15),
           (2, 1, 1, 3, 4, 120, 90, 15),
           (3, 2, 1, 3, 5, 100, 100, 13)]
 

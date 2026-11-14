@@ -3,13 +3,13 @@
   <Control _name="Hud" type="cluster{int32.image type,int32.image depth,array{uint8}.image,array{uint8}.mask,array{uint32}.colors,cluster{int16.left,int16.top,int16.right,int16.bottom}.Rectangle}" value="[0,0,[],[],[],[0,0,0,0]]" conIdx="5" connection="required" outputs="value:1002.v" uid="1002" uid_parent="root"/>
   <Control _name="State" type="cluster{uint32.Tick,int32.Phase,int32.PhaseTicks,int32.Level,int32.Room,int32.X10,int32.Y10,int32.VY10,int32.Mode,int32.Facing,int32.Run,int32.Vert,int32.StandY,int32.EntryX10,int32.EntryY10,int32.EntryMode,int32.Lives,int32.Score,int32.NextLife,int32.KeyR,int32.KeyB,int32.KeyY,bool.Torch,int32.FloorPhase,bool.Dead,bool.LevelStart,bool.Quit,int32.Sound,uint32.Seed,int32.DemoStep,array.2{uint8}.Tiles,array{cluster{string.ID,int32.Depth,int32.Column,array.2{uint8}.Tiles}}.World,array{cluster{int32.Kind,int32.X10,int32.Y10,int32.Dir,int32.Mode}}.Enemies,array{cluster{int32.Score,string.Name}}.Highscores,array{int32}.Name,int32.Cursor}" value="[0,0,0,1,0,0,0,0,0,0,0,0,0,0,0,0,4,0,10000,0,0,0,false,0,false,false,false,0,12345,0,[],[],[],[],[0,0,0],0]" conIdx="7" connection="required" outputs="value:1003.v" uid="1003" uid_parent="root"/>
   <Control _name="error in" type="cluster{bool.status,int32.code,string.source}" value="[false,0,]" conIdx="11" connection="required" outputs="value:1004.v" uid="1004" uid_parent="root"/>
-  <Node _name="Unbundle By Name" fields="Lives,KeyR,KeyB,KeyY,Torch,Level,Score,Phase,PhaseTicks" inputs="input cluster:1003.v" outputs="Lives:1005.o0,KeyR:1005.o1,KeyB:1005.o2,KeyY:1005.o3,Torch:1005.o4,Level:1005.o5,Score:1005.o6,Phase:1005.o7,PhaseTicks:1005.o8" uid="1005" uid_parent="root"/>
-  <Call target="Draw Flattened Pixmap.vi" inputs="image data:1002.v,picture:" outputs="new picture:1006.o0" uid="1006" uid_parent="root"/>
+  <Call target="Draw Flattened Pixmap.vi" inputs="image data:1002.v,picture:" outputs="new picture:1005.o0" uid="1005" uid_parent="root"/>
+  <Node _name="Unbundle By Name" fields="Lives,KeyR,KeyB,KeyY,Torch,Level,Score,Phase,PhaseTicks" inputs="input cluster:1003.v" outputs="Lives:1006.o0,KeyR:1006.o1,KeyB:1006.o2,KeyY:1006.o3,Torch:1006.o4,Level:1006.o5,Score:1006.o6,Phase:1006.o7,PhaseTicks:1006.o8" uid="1006" uid_parent="root"/>
   <Constant type="int32" value="0" outputs="value:1007.v" uid="1007" uid_parent="root"/>
   <Constant type="int32" value="7" outputs="value:1008.v" uid="1008" uid_parent="root"/>
-  <Node _name="Less?" inputs="x:1005.o0,y:1007.v" outputs="x &lt; y?:1009.o0" uid="1009" uid_parent="root"/>
-  <Node _name="Greater?" inputs="x:1005.o0,y:1008.v" outputs="x &gt; y?:1010.o0" uid="1010" uid_parent="root"/>
-  <Node _name="Select" inputs="s:1010.o0,t:1008.v,f:1005.o0" outputs="s? t\3Af:1011.o0" uid="1011" uid_parent="root"/>
+  <Node _name="Less?" inputs="x:1006.o0,y:1007.v" outputs="x &lt; y?:1009.o0" uid="1009" uid_parent="root"/>
+  <Node _name="Greater?" inputs="x:1006.o0,y:1008.v" outputs="x &gt; y?:1010.o0" uid="1010" uid_parent="root"/>
+  <Node _name="Select" inputs="s:1010.o0,t:1008.v,f:1006.o0" outputs="s? t\3Af:1011.o0" uid="1011" uid_parent="root"/>
   <Node _name="Select" inputs="s:1009.o0,t:1007.v,f:1011.o0" outputs="s? t\3Af:1012.o0" uid="1012" uid_parent="root"/>
   <Constant type="int32" value="0" outputs="value:1013.v" uid="1013" uid_parent="root"/>
   <Node _name="Initialize Array" inputs="element:1013.v,dimension size:1012.o0" outputs="initialized array:1014.o0" uid="1014" uid_parent="root"/>
@@ -17,7 +17,7 @@
     <Tunnel _id="In1" inputs="value:1014.o0" mode="index" outputs="value:1016.v" uid="1016" uid_parent="1015"/>
     <Tunnel _id="In2" inputs="value:1001.v" outputs="value:1017.v" uid="1017" uid_parent="1015"/>
     <ShiftReg uid="1018" uid_parent="1015">
-      <Left inputs="value:1006.o0" outputs="value:1019.v" uid="1019" uid_parent="1018"/>
+      <Left inputs="value:1005.o0" outputs="value:1019.v" uid="1019" uid_parent="1018"/>
       <Right inputs="value:1031.o0" outputs="value:1020.v" uid="1020" uid_parent="1018"/>
     </ShiftReg>
     <ShiftReg uid="1021" uid_parent="1015">
@@ -40,8 +40,8 @@
   <Node _name="Bundle By Name" fields="X,Y" inputs="X:1033.v,Y:1034.v,input cluster:1035.v" outputs="output cluster:1036.o0" uid="1036" uid_parent="root"/>
   <Call target="Sprite_Draw.vi" inputs="Picture:1020.v,Sprites:1001.v,Index:1032.v,Position:1036.o0,error in:1023.v" outputs="Picture out:1037.o0,error out:1037.o1" uid="1037" uid_parent="root"/>
   <Constant type="int32" value="9" outputs="value:1038.v" uid="1038" uid_parent="root"/>
-  <Node _name="Less?" inputs="x:1005.o1,y:1038.v" outputs="x &lt; y?:1039.o0" uid="1039" uid_parent="root"/>
-  <Node _name="Select" inputs="s:1039.o0,t:1005.o1,f:1038.v" outputs="s? t\3Af:1040.o0" uid="1040" uid_parent="root"/>
+  <Node _name="Less?" inputs="x:1006.o1,y:1038.v" outputs="x &lt; y?:1039.o0" uid="1039" uid_parent="root"/>
+  <Node _name="Select" inputs="s:1039.o0,t:1006.o1,f:1038.v" outputs="s? t\3Af:1040.o0" uid="1040" uid_parent="root"/>
   <Constant type="string" value="%d" outputs="value:1041.v" uid="1041" uid_parent="root"/>
   <Node _name="Format Into String" inputs="format string:1041.v,initial string:,error in:,input 1:1040.o0" outputs="resulting string:1042.o0,error out:" uid="1042" uid_parent="root"/>
   <Constant type="cluster{int32.X,int32.Y}" value="[352,30]" outputs="value:1043.v" uid="1043" uid_parent="root"/>
@@ -53,8 +53,8 @@
   <Node _name="Bundle By Name" fields="X,Y" inputs="X:1046.v,Y:1047.v,input cluster:1048.v" outputs="output cluster:1049.o0" uid="1049" uid_parent="root"/>
   <Call target="Sprite_Draw.vi" inputs="Picture:1044.o0,Sprites:1001.v,Index:1045.v,Position:1049.o0,error in:1044.o1" outputs="Picture out:1050.o0,error out:1050.o1" uid="1050" uid_parent="root"/>
   <Constant type="int32" value="9" outputs="value:1051.v" uid="1051" uid_parent="root"/>
-  <Node _name="Less?" inputs="x:1005.o2,y:1051.v" outputs="x &lt; y?:1052.o0" uid="1052" uid_parent="root"/>
-  <Node _name="Select" inputs="s:1052.o0,t:1005.o2,f:1051.v" outputs="s? t\3Af:1053.o0" uid="1053" uid_parent="root"/>
+  <Node _name="Less?" inputs="x:1006.o2,y:1051.v" outputs="x &lt; y?:1052.o0" uid="1052" uid_parent="root"/>
+  <Node _name="Select" inputs="s:1052.o0,t:1006.o2,f:1051.v" outputs="s? t\3Af:1053.o0" uid="1053" uid_parent="root"/>
   <Constant type="string" value="%d" outputs="value:1054.v" uid="1054" uid_parent="root"/>
   <Node _name="Format Into String" inputs="format string:1054.v,initial string:,error in:,input 1:1053.o0" outputs="resulting string:1055.o0,error out:" uid="1055" uid_parent="root"/>
   <Constant type="cluster{int32.X,int32.Y}" value="[436,30]" outputs="value:1056.v" uid="1056" uid_parent="root"/>
@@ -66,8 +66,8 @@
   <Node _name="Bundle By Name" fields="X,Y" inputs="X:1059.v,Y:1060.v,input cluster:1061.v" outputs="output cluster:1062.o0" uid="1062" uid_parent="root"/>
   <Call target="Sprite_Draw.vi" inputs="Picture:1057.o0,Sprites:1001.v,Index:1058.v,Position:1062.o0,error in:1057.o1" outputs="Picture out:1063.o0,error out:1063.o1" uid="1063" uid_parent="root"/>
   <Constant type="int32" value="9" outputs="value:1064.v" uid="1064" uid_parent="root"/>
-  <Node _name="Less?" inputs="x:1005.o3,y:1064.v" outputs="x &lt; y?:1065.o0" uid="1065" uid_parent="root"/>
-  <Node _name="Select" inputs="s:1065.o0,t:1005.o3,f:1064.v" outputs="s? t\3Af:1066.o0" uid="1066" uid_parent="root"/>
+  <Node _name="Less?" inputs="x:1006.o3,y:1064.v" outputs="x &lt; y?:1065.o0" uid="1065" uid_parent="root"/>
+  <Node _name="Select" inputs="s:1065.o0,t:1006.o3,f:1064.v" outputs="s? t\3Af:1066.o0" uid="1066" uid_parent="root"/>
   <Constant type="string" value="%d" outputs="value:1067.v" uid="1067" uid_parent="root"/>
   <Node _name="Format Into String" inputs="format string:1067.v,initial string:,error in:,input 1:1066.o0" outputs="resulting string:1068.o0,error out:" uid="1068" uid_parent="root"/>
   <Constant type="cluster{int32.X,int32.Y}" value="[520,30]" outputs="value:1069.v" uid="1069" uid_parent="root"/>
@@ -76,21 +76,21 @@
   <Constant type="int32" value="640" outputs="value:1072.v" uid="1072" uid_parent="root"/>
   <Constant type="int32" value="30" outputs="value:1073.v" uid="1073" uid_parent="root"/>
   <Constant type="int32" value="-2000" outputs="value:1074.v" uid="1074" uid_parent="root"/>
-  <Node _name="Select" inputs="s:1005.o4,t:1073.v,f:1074.v" outputs="s? t\3Af:1075.o0" uid="1075" uid_parent="root"/>
+  <Node _name="Select" inputs="s:1006.o4,t:1073.v,f:1074.v" outputs="s? t\3Af:1075.o0" uid="1075" uid_parent="root"/>
   <Constant type="cluster{int32.X,int32.Y}" value="[0,0]" outputs="value:1076.v" uid="1076" uid_parent="root"/>
   <Node _name="Bundle By Name" fields="X,Y" inputs="X:1072.v,Y:1075.o0,input cluster:1076.v" outputs="output cluster:1077.o0" uid="1077" uid_parent="root"/>
   <Call target="Sprite_Draw.vi" inputs="Picture:1070.o0,Sprites:1001.v,Index:1071.v,Position:1077.o0,error in:1070.o1" outputs="Picture out:1078.o0,error out:1078.o1" uid="1078" uid_parent="root"/>
   <Constant type="string" value="%d" outputs="value:1079.v" uid="1079" uid_parent="root"/>
-  <Node _name="Format Into String" inputs="format string:1079.v,initial string:,error in:,input 1:1005.o5" outputs="resulting string:1080.o0,error out:" uid="1080" uid_parent="root"/>
+  <Node _name="Format Into String" inputs="format string:1079.v,initial string:,error in:,input 1:1006.o5" outputs="resulting string:1080.o0,error out:" uid="1080" uid_parent="root"/>
   <Constant type="cluster{int32.X,int32.Y}" value="[768,30]" outputs="value:1081.v" uid="1081" uid_parent="root"/>
   <Call target="Glyphs_Draw.vi" inputs="Picture:1078.o0,Sprites:1001.v,Text:1080.o0,Position:1081.v,error in:1078.o1" outputs="Picture out:1082.o0,error out:1082.o1" uid="1082" uid_parent="root"/>
   <Constant type="string" value="%06d" outputs="value:1083.v" uid="1083" uid_parent="root"/>
-  <Node _name="Format Into String" inputs="format string:1083.v,initial string:,error in:,input 1:1005.o6" outputs="resulting string:1084.o0,error out:" uid="1084" uid_parent="root"/>
+  <Node _name="Format Into String" inputs="format string:1083.v,initial string:,error in:,input 1:1006.o6" outputs="resulting string:1084.o0,error out:" uid="1084" uid_parent="root"/>
   <Constant type="cluster{int32.X,int32.Y}" value="[902,30]" outputs="value:1085.v" uid="1085" uid_parent="root"/>
   <Call target="Glyphs_Draw.vi" inputs="Picture:1082.o0,Sprites:1001.v,Text:1084.o0,Position:1085.v,error in:1082.o1" outputs="Picture out:1086.o0,error out:1086.o1" uid="1086" uid_parent="root"/>
   <Constant _name="Treasure time" type="array{int32}" value="[900,900,780]" outputs="value:1087.v" uid="1087" uid_parent="root"/>
   <Constant type="int32" value="1" outputs="value:1088.v" uid="1088" uid_parent="root"/>
-  <Node _name="Subtract" inputs="x:1005.o5,y:1088.v" outputs="x-y:1089.o0" uid="1089" uid_parent="root"/>
+  <Node _name="Subtract" inputs="x:1006.o5,y:1088.v" outputs="x-y:1089.o0" uid="1089" uid_parent="root"/>
   <Constant type="int32" value="0" outputs="value:1090.v" uid="1090" uid_parent="root"/>
   <Constant type="int32" value="2" outputs="value:1091.v" uid="1091" uid_parent="root"/>
   <Node _name="Less?" inputs="x:1089.o0,y:1090.v" outputs="x &lt; y?:1092.o0" uid="1092" uid_parent="root"/>
@@ -98,7 +98,7 @@
   <Node _name="Select" inputs="s:1093.o0,t:1091.v,f:1089.o0" outputs="s? t\3Af:1094.o0" uid="1094" uid_parent="root"/>
   <Node _name="Select" inputs="s:1092.o0,t:1090.v,f:1094.o0" outputs="s? t\3Af:1095.o0" uid="1095" uid_parent="root"/>
   <Node _name="Index Array" inputs="array:1087.v,index:1095.o0" outputs="element:1096.o0" uid="1096" uid_parent="root"/>
-  <Node _name="Subtract" inputs="x:1096.o0,y:1005.o8" outputs="x-y:1097.o0" uid="1097" uid_parent="root"/>
+  <Node _name="Subtract" inputs="x:1096.o0,y:1006.o8" outputs="x-y:1097.o0" uid="1097" uid_parent="root"/>
   <Constant type="int32" value="0" outputs="value:1098.v" uid="1098" uid_parent="root"/>
   <Node _name="Greater?" inputs="x:1097.o0,y:1098.v" outputs="x &gt; y?:1099.o0" uid="1099" uid_parent="root"/>
   <Node _name="Select" inputs="s:1099.o0,t:1097.o0,f:1098.v" outputs="s? t\3Af:1100.o0" uid="1100" uid_parent="root"/>
@@ -107,7 +107,7 @@
   <Constant type="int32" value="60" outputs="value:1103.v" uid="1103" uid_parent="root"/>
   <Node _name="Quotient &amp; Remainder" inputs="x:1102.o0,y:1103.v" outputs="x-y*floor(x/y):1104.o0,floor(x/y):1104.o1" uid="1104" uid_parent="root"/>
   <Constant type="int32" value="5" outputs="value:1105.v" uid="1105" uid_parent="root"/>
-  <Node _name="Equal?" inputs="x:1005.o7,y:1105.v" outputs="x = y?:1106.o0" uid="1106" uid_parent="root"/>
+  <Node _name="Equal?" inputs="x:1006.o7,y:1105.v" outputs="x = y?:1106.o0" uid="1106" uid_parent="root"/>
   <Constant type="string" value="%02d" outputs="value:1107.v" uid="1107" uid_parent="root"/>
   <Node _name="Format Into String" inputs="format string:1107.v,initial string:,error in:,input 1:1104.o1" outputs="resulting string:1108.o0,error out:" uid="1108" uid_parent="root"/>
   <Constant type="string" value="" outputs="value:1109.v" uid="1109" uid_parent="root"/>

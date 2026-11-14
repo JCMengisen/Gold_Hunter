@@ -544,9 +544,16 @@ def test_run():
     d.write()
 
 
+def timed(d, err):
+    """Zeitstempel (ms) NACH dem Fehlerdraht err - die Case-Struktur erzwingt die Reihenfolge; err geht durch."""
+    def body(i):
+        return [d.node('Tick Count (ms)', [], ['millisecond timer value'])['millisecond timer value'], i[0]]
+    return d.case(d.unb(err, ['status'])[0], [err], [('True', body), ('False', body)], 2)
+
+
 def snapshot_run():
     d = Doc('Snapshot_Run.vi', 'Test of the whole picture build-up: Test_Setup, then Ticks ticks of Game_Step with the key script (At, Key), '
-            'each tick drawn by Frame_Draw. Its pieces are copied onto an emulated screen exactly like the picture control (never erasing). '
+            'each tick drawn by Frame_Draw (the whole screen) and rastered. '
             'The screen after the last tick is saved as Resources\\Preview\\<File name>. Avg ms / Max ms = time of Frame_Draw.', 17000)
     at = d.ctrl('At', 'array{int32}', '[]')
     keys = d.ctrl('Key', 'array{uint16}', '[]')
@@ -563,11 +570,10 @@ def snapshot_run():
     c = d.i32c
     ts = d.call('Test_Setup.vi', [('Level', level), ('Room', room), ('X', x), ('Y', y), ('Torch', torch), ('Phase', phase), ('Keys', keys_n), ('error in', e)],
                 ['State', 'Rooms', 'error out'])
-    sa = d.call('SpriteAtlas_Load.vi', [('error in', ts['error out'])], ['Sprites', 'error out'])
+    sa = d.call('Blit_Load.vi' if FULL_BLIT else 'SpriteAtlas_Load.vi', [('error in', ts['error out'])], ['Sprites', 'error out'])
     hud = d.call('Image_Load.vi', [('File name', d.const('string', 'hud.png')), ('error in', sa['error out'])], ['Image', 'error out'])
     tit = d.call('Image_Load.vi', [('File name', d.const('string', 'title.png')), ('error in', hud['error out'])], ['Image', 'error out'])
-    screen = d.node('Initialize Array', [('element', d.const('uint8', '0')), ('dimension size', c(H)), ('dimension size', c(W * 3))],
-                    ['initialized array'])['initialized array']
+    screen = d.const(IMG, IMG_V, 'No picture yet')
     mem0, zero, zero2 = d.const(RMEM, RMEM_V, 'Nothing drawn'), d.const('uint32', '0'), d.const('uint32', '0')
     cnt = d.node('Initialize Array', [('element', c(0)), ('dimension size', ticks)], ['initialized array'])['initialized array']
     lp = d.begin('For Loop', 'count="@i.v" maxin="" maxout=""')
@@ -582,32 +588,22 @@ def snapshot_run():
     x_l, x_r = shiftreg(d, lp, zero2)
     hit = d.node('Search 1D Array', [('1D array', at1), ('element', i), ('start index (0)', '')], ['index of element'])['index of element']
     st = d.call('Game_Step.vi', [('State', s_l), ('Key', d.idx(keys1, hit)), ('Rooms', rooms1), ('error in', e_l)], ['State out', 'error out'])
-    t0 = d.node('Tick Count (ms)', [], ['millisecond timer value'])['millisecond timer value']
+    t0, e0 = timed(d, st['error out'])
     fd = d.call('Frame_Draw.vi', [('State', st['State out']), ('Sprites', spr1), ('Hud', hud1), ('Title', tit1), ('Memory', m_l),
-                                  ('error in', st['error out'])], ['-Picture', 'Pieces', 'Memory out', 'error out'])
-    t1 = d.node('Tick Count (ms)', [], ['millisecond timer value'])['millisecond timer value']
-    dt = d.sub(t1, d.add2(t0, d.mul(size(d, fd['Pieces']), d.const('uint32', '0'))))
-    lp2 = d.begin('For Loop', 'count="" maxin="" maxout=""')
-    pc = d.tunnel_in(1, fd['Pieces'], 'index')
-    h_l, h_r = shiftreg(d, lp2, g_l)
-    data, rect = d.unb(pc, ['image', 'Rectangle'])
-    l, t, r, b = (d.i32(v) for v in d.unb(rect, ['left', 'top', 'right', 'bottom']))
-    hh, ww = d.sub(b, t), d.mul(d.sub(r, l), c(3))
-    blk = d.node('Reshape Array', [('array', data), ('dimension size', hh), ('dimension size', ww)], ['output array'])['output array']
-    h2 = d.node('Replace Array Subset', [('array', h_l), ('new element/subarray', blk), ('index (row)', t), ('index (col)', d.mul(l, c(3)))],
-                ['output array'], extra='dimensions="2"')['output array']
-    d.end()
-    g2 = close_reg(d, h_r, h2)
+                                  ('error in', e0)], ['Picture', '-Pieces', 'Memory out', 'error out'])
+    t1, e1 = timed(d, fd['error out'])
+    dt = d.sub(t1, t0)
+    # Bildschirm = das ganze Bild dieses Ticks (Frame_Draw zeichnet jedes Mal den ganzen Bildschirm)
+    g2 = d.call('Picture to Pixmap.vi', [('Background Color', ''), ('depth', c(24)), ('rect', d.const(RECT, f'[0,0,{W},{H}]')),
+                                         ('picture', fd['Picture'])], ['image data', '-new picture'])['image data']
     t2 = d.add2(t_l, dt)
     x2 = d.sel(d.gt(dt, x_l), dt, x_l)
     d.end()
     close_reg(d, s_r, st['State out'])
     close_reg(d, m_r, fd['Memory out'])
-    grid = close_reg(d, g_r, g2)
+    img = close_reg(d, g_r, g2)
     total, mx = close_reg(d, t_r, t2), close_reg(d, x_r, x2)
-    err = close_reg(d, e_r, fd['error out'])
-    flat = d.node('Reshape Array', [('array', grid), ('dimension size', c(H * W * 3))], ['output array'])['output array']
-    img = d.bun(tit['Image'], [('image', flat), ('Rectangle', d.const(RECT, f'[0,0,{W},{H}]'))])
+    err = close_reg(d, e_r, e1)
     rp = d.call('Resource_Path.vi', [('File name', fn), ('Subfolder', d.const('string', 'Preview')), ('error in', err)], ['Path', 'error out'])
     wr = d.call('Write PNG File.vi', [('compression (default)', ''), ('error in (no error)', rp['error out']), ('image data', img),
                                       ('path to PNG file', rp['Path'])], ['error out', '-path'])

@@ -5,19 +5,27 @@
 	<Property Name="NI.Lib.SourceVersion" Type="Int">637566976</Property>
 	<Property Name="NI.Lib.Version" Type="Str">1.0.0.0</Property>
 	<Property Name="NI.LV.All.SourceOnly" Type="Bool">true</Property>
+	<Item Name="Blit_Load.vi" Type="VI" URL="../Blit_Load.vi"/>
 	<Item Name="Block_Cut.vi" Type="VI" URL="../Block_Cut.vi"/>
+	<Item Name="Enemies_Blit.vi" Type="VI" URL="../Enemies_Blit.vi"/>
 	<Item Name="Enemies_Draw.vi" Type="VI" URL="../Enemies_Draw.vi"/>
 	<Item Name="Frame_Draw.vi" Type="VI" URL="../Frame_Draw.vi"/>
+	<Item Name="Glyphs_Blit.vi" Type="VI" URL="../Glyphs_Blit.vi"/>
 	<Item Name="Glyphs_Draw.vi" Type="VI" URL="../Glyphs_Draw.vi"/>
 	<Item Name="Grid_Block.vi" Type="VI" URL="../Grid_Block.vi"/>
 	<Item Name="Hud_Draw.vi" Type="VI" URL="../Hud_Draw.vi"/>
 	<Item Name="Image_Draw.vi" Type="VI" URL="../Image_Draw.vi"/>
 	<Item Name="Image_Load.vi" Type="VI" URL="../Image_Load.vi"/>
 	<Item Name="Light_Update.vi" Type="VI" URL="../Light_Update.vi"/>
+	<Item Name="Overlay_Blit.vi" Type="VI" URL="../Overlay_Blit.vi"/>
 	<Item Name="Overlay_Draw.vi" Type="VI" URL="../Overlay_Draw.vi"/>
 	<Item Name="Piece_Compose.vi" Type="VI" URL="../Piece_Compose.vi"/>
+	<Item Name="Room_Blit.vi" Type="VI" URL="../Room_Blit.vi"/>
 	<Item Name="Room_Draw.vi" Type="VI" URL="../Room_Draw.vi"/>
 	<Item Name="Room_Images.vi" Type="VI" URL="../Room_Images.vi"/>
+	<Item Name="Scene_Blit.vi" Type="VI" URL="../Scene_Blit.vi"/>
+	<Item Name="Scene_Draw.vi" Type="VI" URL="../Scene_Draw.vi"/>
+	<Item Name="Sprite_Blit.vi" Type="VI" URL="../Sprite_Blit.vi"/>
 	<Item Name="Sprite_Draw.vi" Type="VI" URL="../Sprite_Draw.vi"/>
 	<Item Name="SpriteAtlas_Load.vi" Type="VI" URL="../SpriteAtlas_Load.vi"/>
 	<Item Name="Tile_Cut.vi" Type="VI" URL="../Tile_Cut.vi"/>

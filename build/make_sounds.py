@@ -92,6 +92,8 @@ SOUNDS = {
     'level': notes([('C', 5, 0.1), ('G', 4, 0.1), ('C', 5, 0.1), ('E', 5, 0.1), ('G', 5, 0.1), ('C', 6, 0.35)], vol=0.22, duty=0.33),
     # Spielende: langsam abwaerts
     'gameover': notes([('E', 4, 0.3), ('D#', 4, 0.3), ('D', 4, 0.3), ('C#', 4, 0.9)], 'tri', 0.35),
+    # Rutschen an der Stange: kurzes, fallendes Zischen (wird beim Rutschen wiederholt)
+    'slide': mix(noise(0.2, 0.12, 2.5, 9), tone(950, 520, 0.2, 0.05, 'tri')),
     # Bereit (nach einem verlorenen Leben)
     'ready': notes([('E', 5, 0.08), ('A', 5, 0.18)], vol=0.18, duty=0.25),
 }

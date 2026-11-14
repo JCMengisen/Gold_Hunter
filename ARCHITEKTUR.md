@@ -62,7 +62,7 @@ Faustregel beim Verteilen: blaue Schlüssel vor allen Türen, rote möglichst nu
 gelben. Ob wirklich keine Sackgasse entsteht, beweist die Prüfung in Abschnitt 4.
 
 **Fackel und Dunkelheit:**
-- Ab Tiefe 2 (Level 2 und 3: ab Tiefe 1) sind die Räume ohne Fackel fast schwarz.
+- In Level 1 ist nur die unterste Etage (Tiefe 5) dunkel, in Level 2 und 3 alles ab Tiefe 1: ohne Fackel sind diese Räume fast schwarz.
 - Claude sieht dann nur einen Lichtkreis um sich: bis 3 Kacheln hell, bis 5 Kacheln halbdunkel, dahinter nichts.
   Gegenstände, Türen und Gegner erscheinen erst, wenn sie im Lichtkreis liegen.
 - Die Fackel gibt es je Level nur in einem Raum (Raum 106, hinter einer blauen und einer roten Tür). Claude nimmt sie mit,
@@ -105,7 +105,7 @@ also dieselben Räume. Einzelne Räume lassen sich später von Hand ersetzen.
 
 | Grösse | Wert | Folge |
 |---|---|---|
-| Laufen | 3.5 px/Tick | |
+| Laufen | 3 px/Tick | ganze Pixel: kein 3-4-3-4-Ruckeln |
 | Sprung | Start −7.7 px/Tick, Schwerkraft 0.4 | gut 2 Kacheln hoch (74 px), 3 bis 4 Kacheln weit |
 | Klettern / Rutschen | 3 / 5 px/Tick | |
 | Sturz | mehr als 4 Kacheln (133 px) unter dem letzten festen Stand = tot | eine ganze Etage (6 Kacheln) ist tödlich |
@@ -116,8 +116,8 @@ also dieselben Räume. Einzelne Räume lassen sich später von Hand ersetzen.
 - **Leiter**: hoch und runter, seitlich absteigen überall.
 - **Seil**: hängt von der Decke, oft durch ein Loch im Boden. Hoch und runter wie eine Leiter, wird auch im
   Fallen gegriffen. Im Startraum klettert Claude zu Beginn am Seil durch die Decke herein.
-- **Förderband**: fester Boden, der Claude und Totenköpfe mit 1.5 px/Tick in Pfeilrichtung schiebt.
-  Gegen das Band läuft man also langsamer (2 statt 3.5), mit dem Band schneller (5). In der Luft wirkt es nicht.
+- **Förderband**: fester Boden, der Claude und Totenköpfe mit 2 px/Tick in Pfeilrichtung schiebt.
+  Gegen das Band läuft man also langsamer (1 statt 3), mit dem Band schneller (5). In der Luft wirkt es nicht.
 - **Rutschstange**: wird im Fallen gegriffen, nur abwärts, kein Sturzschaden.
 - **Tür**: massiv, bis ein passender Schlüssel im Inventar ist und Claude sie berührt. Türen können hintereinander stehen.
 - **Spinne**: läuft auf Böden und Leitern ihres Raums, wechselt den Raum nicht, springt nicht. Sie wählt an
@@ -154,7 +154,7 @@ mit einem Test-VI, das eine Tastenfolge abspielt. Nach jeder Änderung am Weltpl
 ### Main.vi (4 Schleifen, wie in Pauls Höhenflug)
 
 ```
-UI-Schleife (Key Down/Up per ScanCode) --Queue--> Engine-Schleife (16 ms): Game_Step
+UI-Schleife (Key Down/Up per ScanCode) --Queue--> Engine-Schleife (60 Hz, Frame_Pace): Game_Step
                                                        |-- Notifier --> Render-Schleife: Scene_Draw -> 2D-Picture
                                                        `-- Queue -----> Audio-Schleife: Sound_Mix -> Sound Output Write
 ```
@@ -224,8 +224,23 @@ Geladen werden nur die drei Bilder des aktuellen Raums, beim Raumwechsel (gemess
 Am Bildschirm blieben beim Erneuern einzelner Kacheln Reste der Figur stehen. Die Lösung, vom Benutzer am Bildschirm
 bestätigt (keine Reste, kein Flackern): **ein** Stück von 5 × 6 Kacheln um Claudes letzte drei Positionen (`Block_Cut`),
 alle Objekte und Claude hineinzeichnen, mit `Picture to Pixmap` unsichtbar zu einer Pixmap rastern und in einem Zug
-zeichnen (`Frame_Draw`). `Main.vi` erreicht so 62.5 Bilder pro Sekunde bei 1280 × 720.
+zeichnen (`Frame_Draw`). `Main.vi` erreicht so 60 Bilder pro Sekunde bei 1280 × 720.
 Für Gegner und Animationen (M3, M4) kommt je bewegtem Objekt ein weiteres solches Stück dazu.
+
+**Seit dem Ruckel-Test (14.11.2026): jedes Bild ist der ganze Bildschirm** (`FULL_EVERY_FRAME`, wie in Pauls Höhenflug).
+`Scene_Draw` legt HUD-Bild und -Werte, Raumraster, Objekte, Gegner, Claude und Meldung als Zeichenbefehle in **ein** Bild, ohne `Picture to Pixmap`;
+`Frame_Draw` hält nur die Raumbilder und den Lichtkreis im dunklen Raum (schrittweise mit `Light_Update`). 8,5 ms je Bild.
+Mit den Stücken (unten) ruckelte Claude leicht; mit ganzen Bildern darf LabVIEW Bilder auslassen, ohne dass etwas fehlt.
+
+Früherer Weg mit Stücken: **LabVIEW malt Anzeigen asynchron.** Kommt ein neuer Wert, bevor der alte gemalt ist, fällt der alte weg; und beim
+Neuzeichnen des Fensters (Klick, Verdecken) malt LabVIEW nur den letzten Wert. Deshalb:
+- eine volle Neuzeichnung (und eine HUD-Änderung) wird in `REPEAT_FULL` = 3 weiteren Bildern wiederholt; die Stücke der
+  Wiederholung kommen aus dem Gedächtnis (`Full`), kosten also fast nichts;
+- alle `REFRESH_TICKS` = 240 Ticks (4 s) zeichnet `Frame_Draw` den ganzen Bildschirm neu.
+
+**Takt:** `Frame_Pace` hält die Spielschleife auf genau 60 Ticks pro Sekunde (Start + n · 1000 / 60 ms) – gleich der
+Bildwiederholrate. Mit dem alten Takt von 16 ms (62,5 Hz) machte Claude gegenüber dem 60-Hz-Monitor 2,5-mal pro Sekunde
+einen Doppelschritt (leichtes Ruckeln). Kleine, häufig gerufene SubVIs sind *inline*, alle übrigen ohne Debugging.
 
 ### Übernommen aus `C:\Projects\Paul_Pensionierung`
 

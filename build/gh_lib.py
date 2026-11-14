@@ -78,7 +78,7 @@ CHANNELS = f'cluster{{ref{{Queue}}{{{KEY}}}.Keys,ref{{Notifier}}{{{STATE}}}.Fram
 # Physik (60 Ticks/s, Zehntel Pixel)
 CLAUDE_W, CLAUDE_H = 32, 48
 BOX_L, BOX_R = 8, 23                 # Kollisionskasten in x (16 px breit, mittig)
-WALK10, CLIMB10, SLIDE10, BELT10 = 35, 30, 50, 15
+WALK10, CLIMB10, SLIDE10, BELT10 = 30, 30, 50, 20      # ganze Pixel pro Tick: kein 3-4-3-4-Ruckeln
 JUMP10, GRAVITY10, VY_MAX10 = -77, 4, 100
 MAX_FALL = 133                       # px unter dem letzten festen Stand = tot (gut 4 Kacheln)
 LIVES, MAX_LIVES, EXTRA_LIFE = 4, 7, 10000
@@ -93,7 +93,7 @@ EBOX = [(4, 27, 12, 31), (6, 25, 14, 31), (4, 27, 6, 31)]
 CBOX = (BOX_L, BOX_R, 6, 47)
 # Je Level (Index = min(Level, 3) - 1): Farbschema, dunkel ab Tiefe, Tempo Spinne / Totenkopf (Zehntel px/Tick),
 # Schwundboden da / weg (Ticks), Zeit in der Schatzkammer (Ticks)
-LV_THEME, LV_DARK = [0, 1, 2], [2, 1, 1]
+LV_THEME, LV_DARK = [0, 1, 2], [5, 1, 1]        # dunkel ab Tiefe (Level 1: nur die unterste Etage)
 LV_SPIDER, LV_SKULL = [15, 20, 25], [20, 25, 30]
 LV_ON, LV_OFF, LV_WARN = [150, 120, 100], [90, 90, 100], 30
 LV_TREASURE = [900, 900, 780]
@@ -103,8 +103,10 @@ TITLE_CARD, TITLE_SCORES, DEMO_LEN, TREASURE_MSG = 480, 300, 1500, 90
 DEMO_SEED = 4242
 # Sound-Bits (Game_Step setzt sie im Feld Sound) und Dateien in Prioritaet (Sound_Mix)
 SND = {'jump': 1, 'coin': 2, 'hoard': 4, 'key': 8, 'door': 16, 'torch': 32, 'life': 64, 'death': 128, 'treasure': 256,
-       'level': 512, 'gameover': 1024, 'ready': 2048, 'music': 4096}
-SND_PRIO = ['gameover', 'death', 'treasure', 'level', 'life', 'torch', 'door', 'key', 'hoard', 'coin', 'ready', 'jump']
+       'level': 512, 'gameover': 1024, 'ready': 2048, 'music': 4096, 'slide': 8192}
+SND_PRIO = ['gameover', 'death', 'treasure', 'level', 'life', 'torch', 'door', 'key', 'hoard', 'coin', 'ready', 'jump', 'slide']
+# Stange: Rutschgeraeusch beim Aufspringen und dann alle SLIDE_EVERY Ticks, solange Claude rutscht
+SLIDE_EVERY = 10
 MUSIC_PHASES = ['Ready', 'Playing', 'Treasure']
 BANK = 'array{cluster{array{double}.Y}}'
 MIXER = 'cluster{array{double}.Current,int32.Position,int32.Priority,bool.Music,int32.MusicPos}'
@@ -123,8 +125,8 @@ LIGHT_IN, LIGHT_OUT, LIGHT_R = 11, 28, 6       # Abstand^2 in Kacheln: hell / ha
 VIEW = 'cluster{bool.Hide,int32.CX,int32.CY,int32.ClaudeIdx,int32.ClaudeX,int32.ClaudeY}'
 VIEW_V = '[false,0,0,-1,0,0]'
 RMEM = (f'cluster{{int32.RoomKey,int32.Key,int32.NameKey,{GRID}.Lit,{GRID}.Dim,{GRID}.Dark,{GRID}.Comp,{IMG}.Template,'
-        f'int32.CX,int32.CY,int32.X1,int32.Y1,int32.X2,int32.Y2,{ENEMIES}.Prev,int32.HudKey,int32.HudScore,int32.HudTime}}')
-RMEM_V = f'[-1,-1,-1,[],[],[],[],{IMG_V},-1,-1,0,0,0,0,[],-1,-1,-1]'
+        f'int32.CX,int32.CY,int32.X1,int32.Y1,int32.X2,int32.Y2,{ENEMIES}.Prev,int32.HudKey,int32.HudScore,int32.HudTime,array{{{IMG}}}.Full}}')
+RMEM_V = f'[-1,-1,-1,[],[],[],[],{IMG_V},-1,-1,0,0,0,0,[],-1,-1,-1,[]]'
 PIECES = f'array{{{IMG}}}'
 # Sprite-Bilder von Claude: Profil = Facing * 7 + (0 steht, 1..4 laeuft, 5 springt, 6 faellt)
 SPR_SIDE_STEP = SPR['claude_l_stand'] - SPR['claude_r_stand']
@@ -153,7 +155,11 @@ def esc(s):
 
 
 class Doc:
+    # Umbenennen von VIs (Name und Aufrufe) und Text-Ersetzungen beim Schreiben - fuer Varianten wie die Blit-VIs (gen_blit.py)
+    RENAME, SUBST = {}, []
+
     def __init__(self, name, desc, base=1000):
+        name = Doc.RENAME.get(name, name)
         self.name, self.desc, self.L, self.u = name, desc, [], base
         self.stack = ['root']
 
@@ -214,6 +220,7 @@ class Doc:
         return res
 
     def call(self, target, ins, outs):
+        target = Doc.RENAME.get(target, target)
         u = self.nu()
         i = ','.join(f'{t}:{n}' for t, n in ins)
         o, res = self._io(u, outs)
@@ -314,6 +321,8 @@ class Doc:
 
     def write(self, fname=None):
         txt = f'<VI _name="{qualified(self.name)}" description="{esc(self.desc)}">\n' + '\n'.join(self.L) + '\n</VI>\n'
+        for a, b in Doc.SUBST:
+            txt = txt.replace(a, b)
         fname = fname or os.path.splitext(self.name)[0] + '.xml'
         open(os.path.join(HERE, fname), 'w', encoding='utf-8').write(txt)
         print('wrote', fname, len(self.L), 'lines')
@@ -332,3 +341,21 @@ def shiftreg(d, loop_uid, seed):
 def close_reg(d, rr, net):
     d.L = [x.replace(f'@R{rr}@', net) for x in d.L]
     return f'{rr}.v'
+
+# Render: volle Neuzeichnung alle REFRESH_TICKS Ticks (heilt das Bild nach einem Neuzeichnen des Fensters)
+REFRESH_TICKS = 240
+# Render: eine volle Neuzeichnung (und eine HUD-Aenderung) wird so viele weitere Bilder wiederholt (LabVIEW malt asynchron)
+REPEAT_FULL = 3
+
+# Spieltakt: Ticks pro Sekunde (= Bildwiederholrate des Monitors)
+FPS = 60
+
+
+# Bild: jeden Tick den ganzen Bildschirm neu zeichnen (wie Pauls Spiel) statt nur Stuecke - gleichmaessiger
+FULL_EVERY_FRAME = True
+# Blit-Zeichnen (gen_blit.py): Bild = Pixel-Array, Sprites = rohe Pixel + Maske
+FULL_BLIT = True
+FRAME, FRAME_V = 'array.2{uint8}', '[]'
+BSPR = 'cluster{array.2{uint8}.Pix,array.2{uint8}.Mask}'
+BSPRITES = f'array{{{BSPR}}}'
+SPRITES_USED = BSPRITES if FULL_BLIT else SPRITES

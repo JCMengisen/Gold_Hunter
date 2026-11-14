@@ -1,17 +1,18 @@
 # Gold Hunter - erzeugt Main.xml (AIXML) fuer das Top-Level-VI Main.vi.
-#   4 Schleifen: Tasten (Event-Struktur -> Key_Send), Spiel (Engine_Tick alle 16 ms), Bild (Render_Frame -> Screen), Ton (Audio_Block)
+#   4 Schleifen: Tasten (Event-Struktur -> Key_Send), Spiel (Engine_Tick 60 mal pro Sekunde, Frame_Pace), Bild (Render_Frame -> Screen), Ton (Audio_Block)
 # Aufruf: python gen_main.py
 from gh_lib import *
 
 desc = ('Gold Hunter. Start: App_Init (queues, notifier), Game_Start (world, highscores), sprites, HUD and title pictures, Window_Setup, '
-        'Audio_Start. Four loops: keys (Key Down / Key Up by ScanCode and the Stop button -> Key_Send -> queue), game (Engine_Tick every '
-        '16 ms -> notifier and sound queue), picture (Render_Frame -> Screen) and sound (Audio_Block). End: Esc on the title screen or Stop. '
+        'Audio_Start. Four loops: keys (Key Down / Key Up by ScanCode and the Stop button -> Key_Send -> queue), game (Engine_Tick 60 times per '
+        'second, Frame_Pace -> notifier and sound queue), picture (Render_Frame -> Screen) and sound (Audio_Block). End: Esc on the title screen or Stop. '
         'Keys: arrows = walk, climb, choose letters; Space = jump; Enter = start; Esc/P = pause.')
+SPRITE_LOADER = 'Blit_Load.vi' if FULL_BLIT else 'SpriteAtlas_Load.vi'
 xml = f"""<VI _name="Main.vi" description="{esc(desc)}">
   <Constant _name="no error" type="{ERR}" value="{ERR_V}" outputs="value:4010.v" uid="4010" uid_parent="root"/>
   <Call target="App_Init.vi" inputs="error in:4010.v" outputs="Channels:11.k,error out:11.e" uid="11" uid_parent="root"/>
   <Call target="Game_Start.vi" inputs="error in:11.e" outputs="State:12.st,Rooms:12.rooms,error out:12.e" uid="12" uid_parent="root"/>
-  <Call target="SpriteAtlas_Load.vi" inputs="error in:12.e" outputs="Sprites:13.spr,error out:13.e" uid="13" uid_parent="root"/>
+  <Call target="{SPRITE_LOADER}" inputs="error in:12.e" outputs="Sprites:13.spr,error out:13.e" uid="13" uid_parent="root"/>
   <Constant _name="HUD file" type="string" value="hud.png" outputs="value:14.v" uid="14" uid_parent="root"/>
   <Call target="Image_Load.vi" inputs="File name:14.v,error in:13.e" outputs="Image:15.hud,error out:15.e" uid="15" uid_parent="root"/>
   <Node _name="VI Server Reference" outputs="This VI:16.vi" type="{{LV.VI}}" uid="16" uid_parent="root"/>
@@ -21,6 +22,7 @@ xml = f"""<VI _name="Main.vi" description="{esc(desc)}">
   <Call target="Audio_Start.vi" inputs="error in:22.e" outputs="Bank:17.bank,Task ID:17.task,Mixer:17.mx,error out:17.e" uid="17" uid_parent="root"/>
   <Constant _name="Nothing drawn yet" type="{RMEM}" value="{RMEM_V}" outputs="value:18.v" uid="18" uid_parent="root"/>
   <Constant _name="Start ms" type="uint32" value="0" outputs="value:19.v" uid="19" uid_parent="root"/>
+  <Constant _name="Tick count" type="int32" value="0" outputs="value:23.v" uid="23" uid_parent="root"/>
 
   <Structure _name="While Loop" count="" uid="100" uid_parent="root" label="Keys">
     <Tunnel _id="In1" inputs="value:11.k" outputs="value:101.v" uid="101" uid_parent="100"/>
@@ -59,9 +61,10 @@ xml = f"""<VI _name="Main.vi" description="{esc(desc)}">
     <Condition inputs="value:150.q" value="stop" uid="151" uid_parent="100"/>
   </Structure>
 
-  <Structure _name="While Loop" count="" uid="200" uid_parent="root" label="Game (16 ms)">
+  <Structure _name="While Loop" count="" uid="200" uid_parent="root" label="Game (60 Hz)">
     <Tunnel _id="In1" inputs="value:11.k" outputs="value:201.v" uid="201" uid_parent="200"/>
     <Tunnel _id="In2" inputs="value:12.rooms" outputs="value:202.v" uid="202" uid_parent="200"/>
+    <Tunnel _id="In3" inputs="value:4010.v" outputs="value:203.v" uid="203" uid_parent="200"/>
     <ShiftReg uid="210" uid_parent="200">
       <Left inputs="value:12.st" outputs="value:211.v" uid="211" uid_parent="210"/>
       <Right inputs="value:220.st" outputs="value:" uid="212" uid_parent="210"/>
@@ -71,8 +74,15 @@ xml = f"""<VI _name="Main.vi" description="{esc(desc)}">
       <Right inputs="value:220.e" outputs="value:215.v" uid="215" uid_parent="213"/>
     </ShiftReg>
     <Call target="Engine_Tick.vi" inputs="Channels:201.v,State:211.v,Rooms:202.v,error in:214.v" outputs="State out:220.st,Stop:220.stop,error out:220.e" uid="220" uid_parent="200"/>
-    <Constant _name="Tick ms" type="uint32" value="16" outputs="value:221.v" uid="221" uid_parent="200"/>
-    <Node _name="Wait Until Next ms Multiple" inputs="millisecond multiple:221.v" outputs="millisecond timer value:" uid="222" uid_parent="200"/>
+    <ShiftReg uid="230" uid_parent="200">
+      <Left inputs="value:19.v" outputs="value:231.v" uid="231" uid_parent="230"/>
+      <Right inputs="value:222.st" outputs="value:" uid="232" uid_parent="230"/>
+    </ShiftReg>
+    <ShiftReg uid="233" uid_parent="200">
+      <Left inputs="value:23.v" outputs="value:234.v" uid="234" uid_parent="233"/>
+      <Right inputs="value:222.n" outputs="value:" uid="235" uid_parent="233"/>
+    </ShiftReg>
+    <Call target="Frame_Pace.vi" inputs="Start ms:231.v,Count:234.v,error in:203.v" outputs="Start out:222.st,Count out:222.n,error out:" uid="222" uid_parent="200"/>
     <Condition inputs="value:220.stop" value="stop" uid="223" uid_parent="200"/>
   </Structure>
 

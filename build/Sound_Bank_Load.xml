@@ -1,6 +1,6 @@
-<VI _name="GH_Audio.lvlib:Sound_Bank_Load.vi" description="Loads all sound effects once (order = priority: gameover, death, treasure, level, life, torch, door, key, hoard, coin, ready, jump, then the music): Resources\Sounds\&lt;name&gt;.wav, first channel as samples (-1..1).">
+<VI _name="GH_Audio.lvlib:Sound_Bank_Load.vi" description="Loads all sound effects once (order = priority: gameover, death, treasure, level, life, torch, door, key, hoard, coin, ready, jump, slide, then the music): Resources\Sounds\&lt;name&gt;.wav, first channel as samples (-1..1).">
   <Control _name="error in" type="cluster{bool.status,int32.code,string.source}" value="[false,0,]" conIdx="11" connection="required" outputs="value:1001.v" uid="1001" uid_parent="root"/>
-  <Constant _name="Files" type="array{string}" value="[gameover.wav,death.wav,treasure.wav,level.wav,life.wav,torch.wav,door.wav,key.wav,hoard.wav,coin.wav,ready.wav,jump.wav,music.wav]" outputs="value:1002.v" uid="1002" uid_parent="root"/>
+  <Constant _name="Files" type="array{string}" value="[gameover.wav,death.wav,treasure.wav,level.wav,life.wav,torch.wav,door.wav,key.wav,hoard.wav,coin.wav,ready.wav,jump.wav,slide.wav,music.wav]" outputs="value:1002.v" uid="1002" uid_parent="root"/>
   <Structure _name="For Loop" count="" maxin="" maxout="" uid="1003" uid_parent="root">
     <Tunnel _id="In1" inputs="value:1002.v" mode="index" outputs="value:1004.v" uid="1004" uid_parent="1003"/>
     <ShiftReg uid="1005" uid_parent="1003">

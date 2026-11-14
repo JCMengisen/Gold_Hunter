@@ -1,0 +1,13 @@
+# Lokale LabVIEW-Dateien (pro Rechner / Benutzer)
+.*.UserState/
+*.aliases
+*.lvlps
+*.lvprojstate
+
+# Laufzeitdaten und Testberichte
+Resources/Data/highscores.txt
+Tests/Caraya/*-TestReport.xml
+
+# Python
+__pycache__/
+*.pyc

@@ -1,0 +1,11 @@
+# LabVIEW-Dateien sind binaer: nie Zeilenenden umwandeln, nicht als Text vergleichen
+*.vi     binary
+*.ctl    binary
+*.vit    binary
+*.llb    binary
+*.png    binary
+*.wav    binary
+# LabVIEW-XML (Projekt, Bibliotheken) und Level-Dateien unveraendert lassen
+*.lvproj -text
+*.lvlib  -text
+Resources/Levels/*.txt -text

@@ -385,7 +385,9 @@ def enemies_step():
     passing = allb(d, spider, d.not_(blocked), d.lt(d.qr(nx10, c(TILE * 10))[0], spd))
     colx = d.add2(d.mul(d.qr(nx, c(TILE))[1], c(TILE)), c(16))
     can_up = lad(tile(colx, d.add2(y, c(16))))
-    can_down = lad(tile(colx, d.add2(y, c(33))))
+    # nur Leitern, die im Raum enden: die kleine Leiter im Boden der untersten Reihe fuehrt in den Raum darunter - dort steckte die
+    # Spinne sonst unsichtbar im Loch am Bildrand fest, genau wo Claude hinunterklettert
+    can_down = d.and_(lad(tile(colx, d.add2(y, c(33)))), d.lt(d.add2(y, c(33)), c(FIELD_H - TILE)))
     pick = d.qr(rnd, c(4))[0]
     go_up = allb(d, passing, can_up, d.eq(pick, c(0)))
     go_down = allb(d, passing, can_down, d.not_(go_up), d.eq(pick, c(1)))

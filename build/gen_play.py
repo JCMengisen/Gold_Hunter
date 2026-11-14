@@ -342,7 +342,7 @@ def door_open():
 
 def enemies_step():
     d = Doc('Enemies_Step.vi', 'Moves every enemy by one tick. Snake: stays. Skull: rolls on its floor and turns at walls, doors, edges, '
-            'ladder holes and the room edge. Spider: walks like the skull but also over ladder tops; when it passes a ladder or rope it '
+            'ladder holes, vanishing floors and the room edge. Spider: walks like the skull but also over ladder tops; when it passes a ladder or rope it '
             'may climb up or down (random), and on reaching a floor it walks on in a random direction. Spiders never leave the room and '
             'never jump. Speeds per level (tenths of a pixel per tick). Random numbers from Seed (LCG).')
     st = d.ctrl('State', STATE, STATE_V, 0)
@@ -379,7 +379,11 @@ def enemies_step():
     nx = px(d, nx10)
     front = d.sel(d.gt(dir_, c(0)), d.add2(nx, c(31)), nx)
     ahead = tile(front, d.add2(y, c(32)))
-    support = d.sel(spider, sup_any(ahead), d.or_(sol(ahead), has(ahead, lpla)))
+    # Schwundboeden ('~') betreten Gegner nie: sie koennten nicht rechtzeitig herunter, bevor der Boden durchsichtig wird.
+    # Steht einer schon darauf (Startplatz), darf er weiterlaufen, bis er festen Boden erreicht.
+    hatch_ahead = d.eq(ahead, c(T['~']))
+    on_hatch = d.eq(tile(d.add2(x, c(16)), d.add2(y, c(32))), c(T['~']))
+    support = d.and_(d.sel(spider, sup_any(ahead), d.or_(sol(ahead), has(ahead, lpla))), d.or_(d.not_(hatch_ahead), on_hatch))
     blocked = anyb(d, sol(tile(front, d.add2(y, c(16)))), d.lt(nx, c(0)), d.gt(nx, c(W - 32)), d.not_(support))
     w_x10 = d.sel(blocked, x10, nx10)
     w_dir = d.sel(blocked, d.sub(c(0), dir_), dir_)

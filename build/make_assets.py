@@ -536,7 +536,12 @@ VINE = [rgb('#35602A'), rgb('#4E8A38')]
 
 def weathered(img):
     """Stein mit Koernung (immer dieselbe, damit die Bilder gleich bleiben)"""
-    return ImageChops.soft_light(img, NOISE)
+    noise = NOISE
+    if img.size != NOISE.size:                                # anderes Format (Titelbild): Koernung kacheln
+        noise = Image.new('RGB', img.size)
+        for yy in range(0, img.size[1], RH):
+            noise.paste(NOISE, (0, yy))
+    return ImageChops.soft_light(img.convert('RGB'), noise)
 
 
 def mural(kind, seed):
@@ -919,18 +924,43 @@ def hud_sample(hud):
 
 
 def draw_title():
-    th = THEMES[0]
-    im = brick_layer(W, 360, 16, 8, rgb(th['back']), rgb(th['back_mortar']), 5, 0.2)
-    wall = brick_layer(W, 360, 8, 4, rgb(th['brick']), rgb(th['mortar']), 6)
+    """Titelbild im Pyramiden-Look wie die Raeume: verwitterte Steinbloecke, Friese, Wandmalereien, Wurzeln"""
+    th = {k: (rgb(v) if k != 'name' else v) for k, v in THEMES[0].items()}
+    back = weathered(brick_layer(W, 360, 32, 16, shade(th['back'], 0.85), th['back_mortar'], 5, 0.22)).convert('RGBA')
+    bd = ImageDraw.Draw(back)
+    hi, lo = shade(th['back'], 1.9), shade(th['back'], 0.45)
+    for y in (21, 330):                                        # Friese oben und unten
+        for x in range(16, W - 16, 16):
+            for pts in ([0, 5, 4, 5], [4, 5, 4, 1], [4, 1, 10, 1], [10, 1, 10, 3], [10, 3, 7, 3], [12, 5, 15, 5], [12, 5, 12, 0], [0, 7, 15, 7]):
+                bd.line([x + pts[0], y + pts[1], x + pts[2], y + pts[3]], fill=hi)
+                bd.line([x + pts[0], y + pts[1] + 1, x + pts[2], y + pts[3] + 1], fill=lo)
+    # grosse Wandmalereien links und rechts (doppelt so gross wie in den Raeumen), Schlangen neben dem Untertitel
+    for kind, x, y, k in ((0, 26, 134, 2), (3, 518, 134, 2), (2, 24, 100, 1), (2, 536, 100, 1)):
+        m = mural(kind, 900 + kind + x)
+        m = m.resize((m.width * k, m.height * k), Image.NEAREST)
+        if x > W // 2 and kind == 2:
+            m = mirror(m)
+        back.alpha_composite(m, (x, y))
+    wall = weathered(brick_layer(W, 360, 16, 8, shade(th['brick'], 0.62), shade(th['mortar'], 0.50), 6, 0.18))
     mask = Image.new('L', (W, 360), 0)
     md = ImageDraw.Draw(mask)
     md.rectangle([0, 0, W - 1, 359], fill=255)
     md.rectangle([16, 16, W - 17, 343], fill=0)
     md.rectangle([96, 240, W - 97, 255], fill=255)             # Sockel fuer die Figuren
-    im = Image.composite(wall, im, mask).convert('RGBA')
+    im = Image.composite(wall, back.convert('RGB'), mask).convert('RGBA')
     d = ImageDraw.Draw(im)
-    d.line([96, 240, W - 97, 240], fill=rgb(th['trim']))
+    d.line([96, 240, W - 97, 240], fill=th['trim'])
+    d.line([96, 241, W - 97, 241], fill=shade(th['trim'], 0.7))
+    for k, a in enumerate((120, 80, 45)):                      # Schatten unter Rahmen und Sockel
+        sh = Image.new('RGBA', (W, 360), (0, 0, 0, 0))
+        sd = ImageDraw.Draw(sh)
+        sd.line([16, 16 + k, W - 17, 16 + k], fill=(0, 0, 0, a))
+        sd.line([96, 256 + k, W - 97, 256 + k], fill=(0, 0, 0, a))
+        im = Image.alpha_composite(im, sh)
+    d = ImageDraw.Draw(im)
     d.rectangle([16, 16, W - 17, 343], outline=(0, 0, 0))
+    # Wurzeln und Ranken von der Decke (wie in den Raeumen: Decke = Zeile 0)
+    grow_roots(d, ['#' * COLS] + ['.' * COLS] * (ROWS - 1), 77)
     title = 'GOLD HUNTER'
     text(im, (W - text_w(title, 7)) // 2, 44, title, GOLD, 7, shadow=(60, 24, 0), col2=GOLD_LO)
     sub = 'CLAUDE ON A TREASURE HUNT'

@@ -1816,6 +1816,26 @@ def window_setup():
     d.write()
 
 
+def window_move():
+    d = Doc('Window_Move.vi', 'Moves the window of the VI by DX, DY pixels (Front Panel Window:Panel Bounds) - for dragging Main by its top border.')
+    vi = d.ctrl('VI', 'ref{LV.VI}', '', 0)
+    dx = d.ctrl('DX', 'int32', '0', 5)
+    dy = d.ctrl('DY', 'int32', '0', 7)
+    e = d.err_in()
+    pbn = 'Front Panel Window\\3APanel Bounds'
+    rd = d.node('Property Node', [('reference', vi), ('error in (no error)', e)], [pbn, '-reference out', 'error out'],
+                extra=f'fields="read+{pbn}" type="{{LV.VI}}"')
+    b = rd[pbn]
+    left, top, right, bottom = d.unb(b, ['left', 'top', 'right', 'bottom'])
+    x16 = d.node('To Word Integer', [('number', dx)], ['16bit integer'])['16bit integer']
+    y16 = d.node('To Word Integer', [('number', dy)], ['16bit integer'])['16bit integer']
+    nb = d.bun(b, [('left', d.add2(left, x16)), ('top', d.add2(top, y16)), ('right', d.add2(right, x16)), ('bottom', d.add2(bottom, y16))])
+    wr = d.node('Property Node', [('reference', vi), ('error in (no error)', rd['error out']), (pbn, nb)], ['-reference out', 'error out'],
+                extra=f'fields="write+{pbn}" type="{{LV.VI}}"')
+    d.err_out(wr['error out'])
+    d.write()
+
+
 def key_send():
     d = Doc('Key_Send.vi', 'Translates a key (ScanCode = physical key, independent of the keyboard layout) into a game key and puts it into '
             'the key queue. Pressed: arrows, Space = Jump, Enter/N = Start, Esc/P = Pause; released: arrows = ReleaseL/ReleaseR/ReleaseV. '
@@ -2104,7 +2124,7 @@ ENGINE = (player_move, enemies_init, room_change, items_collect, door_open, enem
 RENDER = (room_images, light_update, grid_block, room_draw, enemies_draw, glyphs_draw, hud_draw, overlay_draw, piece_compose, scene_draw, frame_draw)
 AUDIO = (sound_bank_load, sound_mix)
 APP = (app_init, app_close, window_setup, key_send, engine_tick, frame_pace, render_frame, audio_start, audio_block, audio_close,
-       game_loop, sound_loop, timing_save)
+       game_loop, sound_loop, timing_save, window_move)
 ALL = {f.__name__: f for f in ENGINE + RENDER + AUDIO + APP}
 
 
@@ -2204,6 +2224,7 @@ def contract():
                                                                                                  i('Rooms', RO, 7), E], [o('Cheat used', 'bool', 4), EO]),
         (AP, 'Sound_Loop', [AP + 'Audio_Block.vi'], [i('Channels', '@Channels', 0), i('Bank', '@Bank', 5), i('Task ID', 'uint32', 7), i('Mixer', '@Mixer', 9),
                                                      i('Sound', 'bool', 1, 'recommended'), E], [EO]),
+        (AP, 'Window_Move', [], [i('VI', 'ref{LV.VI}', 0), i('DX', 'int32', 5), i('DY', 'int32', 7), E], [EO]),
         (AP, 'Timing_Save', [LV + 'Resource_Path.vi'], [i('File name', 'string', 0), i('Ms', 'array{int32}', 5), i('Tick', 'array{int32}', 7), E], [EO]),
         (AP, 'Audio_Start', [AU + 'Sound_Bank_Load.vi'], [E], [o('Bank', '@Bank', 4), o('Task ID', 'uint32', 6), o('Mixer', '@Mixer', 8), EO]),
         (AP, 'Audio_Block', [AU + 'Sound_Mix.vi'], [i('Channels', '@Channels', 0), i('Bank', '@Bank', 5), i('Task ID', 'uint32', 7), i('Mixer', '@Mixer', 9),

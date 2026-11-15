@@ -2500,6 +2500,46 @@
       ]
     },
     {
+      "path": "Source\\App\\Window_Move.vi",
+      "builder": "app",
+      "purpose": "Window_Move",
+      "calls": [],
+      "inputs": [
+        {
+          "name": "VI",
+          "type": "ref{LV.VI}",
+          "conIdx": 0,
+          "connection": "required"
+        },
+        {
+          "name": "DX",
+          "type": "int32",
+          "conIdx": 5,
+          "connection": "required"
+        },
+        {
+          "name": "DY",
+          "type": "int32",
+          "conIdx": 7,
+          "connection": "required"
+        },
+        {
+          "name": "error in",
+          "type": "@Error",
+          "conIdx": 11,
+          "connection": "required"
+        }
+      ],
+      "outputs": [
+        {
+          "name": "error out",
+          "type": "@Error",
+          "conIdx": 15,
+          "connection": "recommended"
+        }
+      ]
+    },
+    {
       "path": "Source\\App\\Timing_Save.vi",
       "builder": "app",
       "purpose": "Timing_Save",

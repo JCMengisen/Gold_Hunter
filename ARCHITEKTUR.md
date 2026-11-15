@@ -258,6 +258,11 @@ die Zeit und den gezeichneten Tick (Ringpuffer, die letzten `TIMING_N` = 3600 Ei
 `Cheat used`), schreibt `Timing_Save` beim Beenden beides nach `Resources\Data	iming_game.csv` und `timing_render.csv`; `python build	iming_report.py` wertet
 aus (verspätete Ticks, übersprungene Ticks im Bild, Abstände).
 
+**Fenster verschieben:** mit der Maus am oberen Rand (oberste 30 px, ausser beim X) packen und ziehen: Mouse Down merkt sich
+den Griffpunkt, Mouse Move verschiebt das Fenster um den Versatz (`Window_Move`, Front Panel Window:Panel Bounds), Mouse Up
+oder Mouse Leave beendet das Ziehen. Diese Mausereignisse gehen nicht an `Key_Send`. Die Tasten-Schleife erzeugt
+`build\gen_keyloop.py`.
+
 **Fenster und Beenden:** `Window_Setup` blendet die Titelleiste aus und setzt die Anzeige `Screen` auf (-3, -3): ihr Zeichenbereich liegt 3 px
 innerhalb des Rahmens und beginnt so genau in der Fensterecke. Beenden: das **X** oben rechts im Bild (im HUD in der
 Ecke des TIME-Felds, auf den Titelseiten im Rahmen; Klick in `Screen: Mouse Down`, Feld ab x 1232, bis y 40), Esc auf dem
@@ -268,7 +273,8 @@ Titelbild, oder `Panel Close?` (verworfen). Das Spiel endet immer normal (Protok
 **Zugeklappte Cluster-Konstanten:** AIXML kennt "View Cluster As Icon" nicht. `build\collapse_clusters.py` setzt es nach dem
 Erzeugen per pylabview, so wie LabVIEW es selbst speichert: Bits 0x10000020 in `objFlags` der Cluster-Konstante, Symbol
 16 x 22 in `bounds`, ausgeklappte Grösse in `savedSize`, dazu Rahmen- und Inhaltsteil der Konstante sowie ihr Innenbereich
-(`paneHierarchy`) auf die Symbolgrösse - sonst bleibt ein grosser leerer Rahmen stehen. LabVIEW darf die VIs dabei nicht geladen haben; danach Mass Compile.
+(`paneHierarchy`) auf die Symbolgrösse - sonst bleibt ein grosser leerer Rahmen stehen. LabVIEW darf die VIs dabei nicht geladen haben. Reihenfolge nach dem Erzeugen: erst Mass Compile (LabVIEW repariert dabei
+innere Konstanten und zieht zugeklappte Cluster wieder auf), dann zuklappen, Cleanup, nochmals Mass Compile.
 
 ### Übernommen aus `C:\Projects\Paul_Pensionierung`
 

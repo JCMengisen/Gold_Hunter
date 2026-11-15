@@ -31,16 +31,23 @@ ICON_PANE = '(3, 3, 13, 19)'
 ICON_PARTS = {'39': '(0, 16, 10, 33)', '38': '(10, 0, 27, 16)', '44': '(10, 16, 27, 33)', '28': '(0, 0, 10, 16)'}
 
 
-def shrink_pane(cl, h, w):
-    """Innenbereich (paneHierarchy) und eigene Teile (Rahmen, Inhalt) des Clusters auf das Symbol verkleinern - so speichert
-    LabVIEW es beim Zuklappen; ohne das bleibt im Diagramm der grosse, leere Rahmen stehen. h, w = ausgeklappte Groesse."""
+def shrink_pane(cl):
+    """Eigene Teile (Rahmen partID 9, Inhalt partID 28, Label partID 16) und Innenbereich (paneHierarchy) des Clusters auf das
+    Symbol bringen - so wie bei den von Anfang an kleinen "no error"-Konstanten: Rahmen (0,0,16,22), Inhalt (3,3,13,19), Label
+    darunter. Ohne das bleibt im Diagramm der grosse, leere Rahmen stehen."""
     changed = False
-    own = {'(0, 0, %d, %d)' % (h, w): '(0, 0, 16, 22)', '(3, 3, %d, %d)' % (h - 3, w - 3): ICON_PANE}
     parts = cl.find('partsList')
     for p in (parts if parts is not None else []):
-        b = p.find('bounds')
-        if b is not None and b.text in own:
-            b.text = own[b.text]
+        b, pid = p.find('bounds'), p.findtext('partID')
+        if b is None:
+            continue
+        if pid == '16':                                # Label unter das Symbol
+            lt, ll, lb, lr = box(b.text)
+            want = '(20, 0, %d, %d)' % (20 + lb - lt, lr - ll)
+        else:
+            want = {'9': '(0, 0, 16, 22)', '28': ICON_PANE}.get(pid)
+        if want and b.text != want:
+            b.text = want
             changed = True
     ph = cl.find('paneHierarchy')
     if ph is not None and ph.findtext('bounds') != ICON_PANE:
@@ -75,13 +82,20 @@ def patch_heap(path):
             b = cl.find('bounds')
             if fl is None or b is None:
                 continue
-            if int(fl.text) & 0x10000000:          # schon zugeklappt: Innenbereich und Teile nachziehen (Groesse aus savedSize)
-                st, sl, sb, sr = box(cl.findtext('savedSize') or '(0, 0, 0, 0)')
-                if sb - st > 16 or sr - sl > 22:
-                    changed += shrink_pane(cl, sb - st, sr - sl)
-                continue
             t, l, bt, r = box(b.text)
-            shrink_pane(cl, bt - t, r - l)
+            if int(fl.text) & 0x10000000:          # schon zugeklappt
+                st, sl, sb, sr = box(cl.findtext('savedSize') or '(0, 0, 0, 0)')
+                if sb - st <= 16 and sr - sl <= 22:
+                    continue                       # von Anfang an klein (z. B. "no error"): so lassen
+                if bt - t > 16 or r - l > 22:      # LabVIEW hat es beim Reparieren wieder aufgezogen (Bit bleibt stehen)
+                    cl.find('savedSize').text = b.text
+                    b.text = '(%d, %d, %d, %d)' % (t, l, t + 16, l + 22)
+                    shrink_pane(cl)
+                    changed += 1
+                else:
+                    changed += shrink_pane(cl)
+                continue
+            shrink_pane(cl)
             fl.text = str(int(fl.text) | ICON_BITS)
             ss = cl.find('savedSize')
             if ss is None:

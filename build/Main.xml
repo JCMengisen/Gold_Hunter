@@ -1,4 +1,4 @@
-<VI _name="Main.vi" description="Gold Hunter. Start: App_Init (queues, notifier), Game_Start (world, highscores), sprites, HUD and title pictures, Window_Setup, Audio_Start. Main (same as caller) holds the loops for keys (Key Down / Key Up by ScanCode and the Stop button -&gt; Key_Send -&gt; queue) and picture (Render_Frame in its own system -&gt; Screen). Game_Loop (standard: Engine_Tick 60 times per second, Frame_Pace) and Sound_Loop (other 2: Audio_Block) are subVIs with their own loop. Timing log of ticks and frames to Resources\Data, only when the cheat mode was used. End: Esc on the title screen, a click on the X at the top right of the screen, Stop, or Panel Close? (discarded) - the game ends normally, then Main closes its window. Keys: arrows = walk, climb, choose letters; Space = jump; Enter = start; Esc/P = pause; Z U L U = cheat (all rooms lit, endless lives).">
+<VI _name="Main.vi" description="Gold Hunter. Start: App_Init (queues, notifier), Game_Start (world, highscores), sprites, HUD and title pictures, Window_Setup, Audio_Start. Main (same as caller) holds the loops for keys (Key Down / Key Up by ScanCode and the Stop button -&gt; Key_Send -&gt; queue) and picture (Render_Frame in its own system -&gt; Screen). Game_Loop (standard: Engine_Tick 60 times per second, Frame_Pace) and Sound_Loop (other 2: Audio_Block) are subVIs with their own loop. Timing log of ticks and frames to Resources\Data, only when the cheat mode was used. Drag the window by its top border (mouse). End: Esc on the title screen, a click on the X at the top right of the screen, Stop, or Panel Close? (discarded) - the game ends normally, then Main closes its window. Keys: arrows = walk, climb, choose letters; Space = jump; Enter = start; Esc/P = pause; Z U L U = cheat (all rooms lit, endless lives).">
   <Constant _name="no error" type="cluster{bool.status,int32.code,string.source}" value="[false,0,]" outputs="value:4010.v" uid="4010" uid_parent="root"/>
   <Call target="App_Init.vi" inputs="error in:4010.v" outputs="Channels:11.k,error out:11.e" uid="11" uid_parent="root"/>
   <Call target="Game_Start.vi" inputs="error in:11.e" outputs="State:12.st,Rooms:12.rooms,error out:12.e" uid="12" uid_parent="root"/>
@@ -18,73 +18,231 @@
   <Constant type="int32" value="3600" outputs="value:27.v" uid="27" uid_parent="root"/>
   <Node _name="Initialize Array" inputs="element:26.v,dimension size:27.v" outputs="initialized array:25.z" uid="25" uid_parent="root"/>
 
+  <Constant _name="not dragging" type="bool" value="false" outputs="value:30.v" uid="30" uid_parent="root"/>
   <Structure _name="While Loop" count="" uid="100" uid_parent="root" label="Keys">
     <Tunnel _id="In1" inputs="value:11.k" outputs="value:101.v" uid="101" uid_parent="100"/>
+    <Tunnel _id="In2" inputs="value:16.vi" outputs="value:105.v" uid="105" uid_parent="100"/>
     <ShiftReg uid="102" uid_parent="100">
       <Left inputs="value:24.v" outputs="value:103.v" uid="103" uid_parent="102"/>
-      <Right inputs="value:150.h" outputs="value:" uid="104" uid_parent="102"/>
+      <Right inputs="value:150.h" outputs="value:" uid="152" uid_parent="102"/>
+    </ShiftReg>
+    <ShiftReg uid="106" uid_parent="100">
+      <Left inputs="value:30.v" outputs="value:107.v" uid="107" uid_parent="106"/>
+      <Right inputs="value:141.drag" outputs="value:" uid="156" uid_parent="106"/>
+    </ShiftReg>
+    <ShiftReg uid="108" uid_parent="100">
+      <Left inputs="value:26.v" outputs="value:109.v" uid="109" uid_parent="108"/>
+      <Right inputs="value:141.gx" outputs="value:" uid="158" uid_parent="108"/>
+    </ShiftReg>
+    <ShiftReg uid="118" uid_parent="100">
+      <Left inputs="value:26.v" outputs="value:119.v" uid="119" uid_parent="118"/>
+      <Right inputs="value:141.gy" outputs="value:" uid="168" uid_parent="118"/>
     </ShiftReg>
     <Structure _name="Event Structure" uid="110" uid_parent="100">
-      <CaseFrame selector=" Key Down " uid="111" uid_parent="110">
-        <Node _name="Event Data Node" fields="ScanCode" outputs="ScanCode:112.sc" uid="112" uid_parent="111"/>
-        <Node _name="To Long Integer" inputs="number:112.sc" outputs="32bit integer:113.sc" uid="113" uid_parent="111"/>
-        <Constant type="bool" value="false" outputs="value:114.v" uid="114" uid_parent="111"/>
-        <Tunnel _id="Out1" inputs="value:113.sc" uid="115" uid_parent="111"/>
-        <Tunnel _id="Out2" inputs="value:114.v" uid="116" uid_parent="111"/>
-        <Tunnel _id="Out3" inputs="value:114.v" uid="117" uid_parent="111"/>
-        <Tunnel _id="Out4" inputs="value:114.v" uid="1017" uid_parent="111"/>
+      <Tunnel _id="In1" inputs="value:107.v" uid="6001" uid_parent="110"/>
+      <Tunnel _id="In2" inputs="value:109.v" uid="6002" uid_parent="110"/>
+      <Tunnel _id="In3" inputs="value:119.v" uid="6003" uid_parent="110"/>
+      <Tunnel _id="In4" inputs="value:105.v" uid="6004" uid_parent="110"/>
+      <CaseFrame selector=" Key Down " uid="6005" uid_parent="110">
+        <Tunnel _id="In1" outputs="value:6006.v" uid="6006" uid_parent="6005"/>
+        <Tunnel _id="In2" outputs="value:6007.v" uid="6007" uid_parent="6005"/>
+        <Tunnel _id="In3" outputs="value:6008.v" uid="6008" uid_parent="6005"/>
+        <Tunnel _id="In4" outputs="value:6009.v" uid="6009" uid_parent="6005"/>
+        <Node _name="Event Data Node" fields="ScanCode" inputs="" outputs="ScanCode:6010.o0" uid="6010" uid_parent="6005"/>
+        <Node _name="To Long Integer" inputs="number:6010.o0" outputs="32bit integer:6011.o0" uid="6011" uid_parent="6005"/>
+        <Constant type="bool" value="false" outputs="value:6012.v" uid="6012" uid_parent="6005"/>
+        <Constant type="bool" value="false" outputs="value:6013.v" uid="6013" uid_parent="6005"/>
+        <Constant type="bool" value="true" outputs="value:6014.v" uid="6014" uid_parent="6005"/>
+        <Tunnel _id="Out1" inputs="value:6011.o0" uid="6015" uid_parent="6005"/>
+        <Tunnel _id="Out2" inputs="value:6012.v" uid="6016" uid_parent="6005"/>
+        <Tunnel _id="Out3" inputs="value:6013.v" uid="6017" uid_parent="6005"/>
+        <Tunnel _id="Out4" inputs="value:6014.v" uid="6018" uid_parent="6005"/>
+        <Tunnel _id="Out5" inputs="value:6006.v" uid="6019" uid_parent="6005"/>
+        <Tunnel _id="Out6" inputs="value:6007.v" uid="6020" uid_parent="6005"/>
+        <Tunnel _id="Out7" inputs="value:6008.v" uid="6021" uid_parent="6005"/>
       </CaseFrame>
-      <CaseFrame selector=" Key Up " uid="120" uid_parent="110">
-        <Node _name="Event Data Node" fields="ScanCode" outputs="ScanCode:121.sc" uid="121" uid_parent="120"/>
-        <Node _name="To Long Integer" inputs="number:121.sc" outputs="32bit integer:122.sc" uid="122" uid_parent="120"/>
-        <Constant type="bool" value="true" outputs="value:123.v" uid="123" uid_parent="120"/>
-        <Constant type="bool" value="false" outputs="value:124.v" uid="124" uid_parent="120"/>
-        <Tunnel _id="Out1" inputs="value:122.sc" uid="125" uid_parent="120"/>
-        <Tunnel _id="Out2" inputs="value:123.v" uid="126" uid_parent="120"/>
-        <Tunnel _id="Out3" inputs="value:124.v" uid="127" uid_parent="120"/>
-        <Tunnel _id="Out4" inputs="value:124.v" uid="1027" uid_parent="120"/>
+      <CaseFrame selector=" Key Up " uid="6022" uid_parent="110">
+        <Tunnel _id="In1" outputs="value:6023.v" uid="6023" uid_parent="6022"/>
+        <Tunnel _id="In2" outputs="value:6024.v" uid="6024" uid_parent="6022"/>
+        <Tunnel _id="In3" outputs="value:6025.v" uid="6025" uid_parent="6022"/>
+        <Tunnel _id="In4" outputs="value:6026.v" uid="6026" uid_parent="6022"/>
+        <Node _name="Event Data Node" fields="ScanCode" inputs="" outputs="ScanCode:6027.o0" uid="6027" uid_parent="6022"/>
+        <Node _name="To Long Integer" inputs="number:6027.o0" outputs="32bit integer:6028.o0" uid="6028" uid_parent="6022"/>
+        <Constant type="bool" value="true" outputs="value:6029.v" uid="6029" uid_parent="6022"/>
+        <Constant type="bool" value="false" outputs="value:6030.v" uid="6030" uid_parent="6022"/>
+        <Constant type="bool" value="true" outputs="value:6031.v" uid="6031" uid_parent="6022"/>
+        <Tunnel _id="Out1" inputs="value:6028.o0" uid="6032" uid_parent="6022"/>
+        <Tunnel _id="Out2" inputs="value:6029.v" uid="6033" uid_parent="6022"/>
+        <Tunnel _id="Out3" inputs="value:6030.v" uid="6034" uid_parent="6022"/>
+        <Tunnel _id="Out4" inputs="value:6031.v" uid="6035" uid_parent="6022"/>
+        <Tunnel _id="Out5" inputs="value:6023.v" uid="6036" uid_parent="6022"/>
+        <Tunnel _id="Out6" inputs="value:6024.v" uid="6037" uid_parent="6022"/>
+        <Tunnel _id="Out7" inputs="value:6025.v" uid="6038" uid_parent="6022"/>
       </CaseFrame>
-      <CaseFrame selector=" &quot;Stop&quot;\3A Value Change " uid="130" uid_parent="110">
-        <Control _name="Stop" type="bool" style="latched" value="false" outputs="value:131.v" uid="131" uid_parent="130"/>
-        <Constant type="int32" value="-1" outputs="value:132.v" uid="132" uid_parent="130"/>
-        <Constant type="bool" value="false" outputs="value:133.v" uid="133" uid_parent="130"/>
-        <Tunnel _id="Out1" inputs="value:132.v" uid="134" uid_parent="130"/>
-        <Tunnel _id="Out2" inputs="value:133.v" uid="135" uid_parent="130"/>
-        <Tunnel _id="Out3" inputs="value:131.v" uid="136" uid_parent="130"/>
-        <Tunnel _id="Out4" inputs="value:133.v" uid="1036" uid_parent="130"/>
+      <CaseFrame selector=" &quot;Stop&quot;\3A Value Change " uid="6039" uid_parent="110">
+        <Tunnel _id="In1" outputs="value:6040.v" uid="6040" uid_parent="6039"/>
+        <Tunnel _id="In2" outputs="value:6041.v" uid="6041" uid_parent="6039"/>
+        <Tunnel _id="In3" outputs="value:6042.v" uid="6042" uid_parent="6039"/>
+        <Tunnel _id="In4" outputs="value:6043.v" uid="6043" uid_parent="6039"/>
+        <Control _name="Stop" type="bool" style="latched" value="false" outputs="value:6044.v" uid="6044" uid_parent="6039"/>
+        <Constant type="int32" value="-1" outputs="value:6045.v" uid="6045" uid_parent="6039"/>
+        <Constant type="bool" value="false" outputs="value:6046.v" uid="6046" uid_parent="6039"/>
+        <Constant type="bool" value="true" outputs="value:6047.v" uid="6047" uid_parent="6039"/>
+        <Tunnel _id="Out1" inputs="value:6045.v" uid="6048" uid_parent="6039"/>
+        <Tunnel _id="Out2" inputs="value:6046.v" uid="6049" uid_parent="6039"/>
+        <Tunnel _id="Out3" inputs="value:6044.v" uid="6050" uid_parent="6039"/>
+        <Tunnel _id="Out4" inputs="value:6047.v" uid="6051" uid_parent="6039"/>
+        <Tunnel _id="Out5" inputs="value:6040.v" uid="6052" uid_parent="6039"/>
+        <Tunnel _id="Out6" inputs="value:6041.v" uid="6053" uid_parent="6039"/>
+        <Tunnel _id="Out7" inputs="value:6042.v" uid="6054" uid_parent="6039"/>
       </CaseFrame>
-      <CaseFrame selector=" Panel Close? " uid="160" uid_parent="110">
-        <Constant _name="discard" type="bool" value="true" outputs="value:161.v" uid="161" uid_parent="160"/>
-        <Node _name="Event Filter Node" fields="Discard?" inputs="Discard?:161.v" outputs="" uid="162" uid_parent="160"/>
-        <Constant type="int32" value="-1" outputs="value:163.v" uid="163" uid_parent="160"/>
-        <Constant type="bool" value="false" outputs="value:164.v" uid="164" uid_parent="160"/>
-        <Tunnel _id="Out1" inputs="value:163.v" uid="165" uid_parent="160"/>
-        <Tunnel _id="Out2" inputs="value:164.v" uid="166" uid_parent="160"/>
-        <Tunnel _id="Out3" inputs="value:161.v" uid="167" uid_parent="160"/>
-        <Tunnel _id="Out4" inputs="value:161.v" uid="168" uid_parent="160"/>
+      <CaseFrame selector=" Panel Close? " uid="6055" uid_parent="110">
+        <Tunnel _id="In1" outputs="value:6056.v" uid="6056" uid_parent="6055"/>
+        <Tunnel _id="In2" outputs="value:6057.v" uid="6057" uid_parent="6055"/>
+        <Tunnel _id="In3" outputs="value:6058.v" uid="6058" uid_parent="6055"/>
+        <Tunnel _id="In4" outputs="value:6059.v" uid="6059" uid_parent="6055"/>
+        <Constant _name="discard" type="bool" value="true" outputs="value:6060.v" uid="6060" uid_parent="6055"/>
+        <Node _name="Event Filter Node" fields="Discard?" inputs="Discard?:6060.v" outputs="" uid="6061" uid_parent="6055"/>
+        <Constant type="int32" value="-1" outputs="value:6062.v" uid="6062" uid_parent="6055"/>
+        <Constant type="bool" value="false" outputs="value:6063.v" uid="6063" uid_parent="6055"/>
+        <Tunnel _id="Out1" inputs="value:6062.v" uid="6064" uid_parent="6055"/>
+        <Tunnel _id="Out2" inputs="value:6063.v" uid="6065" uid_parent="6055"/>
+        <Tunnel _id="Out3" inputs="value:6060.v" uid="6066" uid_parent="6055"/>
+        <Tunnel _id="Out4" inputs="value:6060.v" uid="6067" uid_parent="6055"/>
+        <Tunnel _id="Out5" inputs="value:6056.v" uid="6068" uid_parent="6055"/>
+        <Tunnel _id="Out6" inputs="value:6057.v" uid="6069" uid_parent="6055"/>
+        <Tunnel _id="Out7" inputs="value:6058.v" uid="6070" uid_parent="6055"/>
       </CaseFrame>
-      <CaseFrame selector=" &quot;Screen&quot;\3A Mouse Down " uid="170" uid_parent="110">
-        <Node _name="Event Data Node" fields="Coords" outputs="Coords:171.c" uid="171" uid_parent="170"/>
-        <Node _name="Unbundle By Name" fields="Horizontal,Vertical" inputs="input cluster:171.c" outputs="Horizontal:172.h,Vertical:172.v" uid="172" uid_parent="170"/>
-        <Constant _name="X button left" type="int32" value="1232" outputs="value:173.v" uid="173" uid_parent="170"/>
-        <Constant _name="X button bottom" type="int32" value="40" outputs="value:174.v" uid="174" uid_parent="170"/>
-        <Node _name="Greater Or Equal?" inputs="x:172.h,y:173.v" outputs="x &gt;= y?:175.v" uid="175" uid_parent="170"/>
-        <Node _name="Less Or Equal?" inputs="x:172.v,y:174.v" outputs="x &lt;= y?:176.v" uid="176" uid_parent="170"/>
-        <Node _name="And" inputs="x:175.v,y:176.v" outputs="x .and. y?:177.v" uid="177" uid_parent="170"/>
-        <Constant type="int32" value="-1" outputs="value:178.v" uid="178" uid_parent="170"/>
-        <Constant type="bool" value="false" outputs="value:179.v" uid="179" uid_parent="170"/>
-        <Tunnel _id="Out1" inputs="value:178.v" uid="180" uid_parent="170"/>
-        <Tunnel _id="Out2" inputs="value:179.v" uid="181" uid_parent="170"/>
-        <Tunnel _id="Out3" inputs="value:177.v" uid="182" uid_parent="170"/>
-        <Tunnel _id="Out4" inputs="value:177.v" uid="183" uid_parent="170"/>
+      <CaseFrame selector=" &quot;Screen&quot;\3A Mouse Down " uid="6071" uid_parent="110">
+        <Tunnel _id="In1" outputs="value:6072.v" uid="6072" uid_parent="6071"/>
+        <Tunnel _id="In2" outputs="value:6073.v" uid="6073" uid_parent="6071"/>
+        <Tunnel _id="In3" outputs="value:6074.v" uid="6074" uid_parent="6071"/>
+        <Tunnel _id="In4" outputs="value:6075.v" uid="6075" uid_parent="6071"/>
+        <Node _name="Event Data Node" fields="Coords" inputs="" outputs="Coords:6076.o0" uid="6076" uid_parent="6071"/>
+        <Node _name="Unbundle By Name" fields="Horizontal,Vertical" inputs="input cluster:6076.o0" outputs="Horizontal:6077.o0,Vertical:6077.o1" uid="6077" uid_parent="6071"/>
+        <Constant _name="X button left" type="int32" value="1232" outputs="value:6078.v" uid="6078" uid_parent="6071"/>
+        <Node _name="Greater Or Equal?" inputs="x:6077.o0,y:6078.v" outputs="x &gt;= y?:6079.o0" uid="6079" uid_parent="6071"/>
+        <Constant _name="X button bottom" type="int32" value="40" outputs="value:6080.v" uid="6080" uid_parent="6071"/>
+        <Node _name="Less Or Equal?" inputs="x:6077.o1,y:6080.v" outputs="x &lt;= y?:6081.o0" uid="6081" uid_parent="6071"/>
+        <Node _name="And" inputs="x:6079.o0,y:6081.o0" outputs="x .and. y?:6082.o0" uid="6082" uid_parent="6071"/>
+        <Constant _name="drag border" type="int32" value="30" outputs="value:6083.v" uid="6083" uid_parent="6071"/>
+        <Node _name="Less Or Equal?" inputs="x:6077.o1,y:6083.v" outputs="x &lt;= y?:6084.o0" uid="6084" uid_parent="6071"/>
+        <Node _name="Not" inputs="x:6082.o0" outputs=".not. x?:6085.o0" uid="6085" uid_parent="6071"/>
+        <Node _name="And" inputs="x:6084.o0,y:6085.o0" outputs="x .and. y?:6086.o0" uid="6086" uid_parent="6071"/>
+        <Constant type="int32" value="-1" outputs="value:6087.v" uid="6087" uid_parent="6071"/>
+        <Constant type="bool" value="false" outputs="value:6088.v" uid="6088" uid_parent="6071"/>
+        <Tunnel _id="Out1" inputs="value:6087.v" uid="6089" uid_parent="6071"/>
+        <Tunnel _id="Out2" inputs="value:6088.v" uid="6090" uid_parent="6071"/>
+        <Tunnel _id="Out3" inputs="value:6082.o0" uid="6091" uid_parent="6071"/>
+        <Tunnel _id="Out4" inputs="value:6082.o0" uid="6092" uid_parent="6071"/>
+        <Tunnel _id="Out5" inputs="value:6086.o0" uid="6093" uid_parent="6071"/>
+        <Tunnel _id="Out6" inputs="value:6077.o0" uid="6094" uid_parent="6071"/>
+        <Tunnel _id="Out7" inputs="value:6077.o1" uid="6095" uid_parent="6071"/>
       </CaseFrame>
-      <Tunnel _id="Out1" outputs="value:141.sc" uid="141" uid_parent="110"/>
-      <Tunnel _id="Out2" outputs="value:142.up" uid="142" uid_parent="110"/>
-      <Tunnel _id="Out3" outputs="value:143.quit" uid="143" uid_parent="110"/>
-      <Tunnel _id="Out4" outputs="value:144.close" uid="144" uid_parent="110"/>
+      <CaseFrame selector=" &quot;Screen&quot;\3A Mouse Up " uid="6096" uid_parent="110">
+        <Tunnel _id="In1" outputs="value:6097.v" uid="6097" uid_parent="6096"/>
+        <Tunnel _id="In2" outputs="value:6098.v" uid="6098" uid_parent="6096"/>
+        <Tunnel _id="In3" outputs="value:6099.v" uid="6099" uid_parent="6096"/>
+        <Tunnel _id="In4" outputs="value:6100.v" uid="6100" uid_parent="6096"/>
+        <Constant type="int32" value="-1" outputs="value:6101.v" uid="6101" uid_parent="6096"/>
+        <Constant type="bool" value="false" outputs="value:6102.v" uid="6102" uid_parent="6096"/>
+        <Tunnel _id="Out1" inputs="value:6101.v" uid="6103" uid_parent="6096"/>
+        <Tunnel _id="Out2" inputs="value:6102.v" uid="6104" uid_parent="6096"/>
+        <Tunnel _id="Out3" inputs="value:6102.v" uid="6105" uid_parent="6096"/>
+        <Tunnel _id="Out4" inputs="value:6102.v" uid="6106" uid_parent="6096"/>
+        <Tunnel _id="Out5" inputs="value:6102.v" uid="6107" uid_parent="6096"/>
+        <Tunnel _id="Out6" inputs="value:6098.v" uid="6108" uid_parent="6096"/>
+        <Tunnel _id="Out7" inputs="value:6099.v" uid="6109" uid_parent="6096"/>
+      </CaseFrame>
+      <CaseFrame selector=" &quot;Screen&quot;\3A Mouse Leave " uid="6110" uid_parent="110">
+        <Tunnel _id="In1" outputs="value:6111.v" uid="6111" uid_parent="6110"/>
+        <Tunnel _id="In2" outputs="value:6112.v" uid="6112" uid_parent="6110"/>
+        <Tunnel _id="In3" outputs="value:6113.v" uid="6113" uid_parent="6110"/>
+        <Tunnel _id="In4" outputs="value:6114.v" uid="6114" uid_parent="6110"/>
+        <Constant type="int32" value="-1" outputs="value:6115.v" uid="6115" uid_parent="6110"/>
+        <Constant type="bool" value="false" outputs="value:6116.v" uid="6116" uid_parent="6110"/>
+        <Tunnel _id="Out1" inputs="value:6115.v" uid="6117" uid_parent="6110"/>
+        <Tunnel _id="Out2" inputs="value:6116.v" uid="6118" uid_parent="6110"/>
+        <Tunnel _id="Out3" inputs="value:6116.v" uid="6119" uid_parent="6110"/>
+        <Tunnel _id="Out4" inputs="value:6116.v" uid="6120" uid_parent="6110"/>
+        <Tunnel _id="Out5" inputs="value:6116.v" uid="6121" uid_parent="6110"/>
+        <Tunnel _id="Out6" inputs="value:6112.v" uid="6122" uid_parent="6110"/>
+        <Tunnel _id="Out7" inputs="value:6113.v" uid="6123" uid_parent="6110"/>
+      </CaseFrame>
+      <CaseFrame selector=" &quot;Screen&quot;\3A Mouse Move " uid="6124" uid_parent="110">
+        <Tunnel _id="In1" outputs="value:6125.v" uid="6125" uid_parent="6124"/>
+        <Tunnel _id="In2" outputs="value:6126.v" uid="6126" uid_parent="6124"/>
+        <Tunnel _id="In3" outputs="value:6127.v" uid="6127" uid_parent="6124"/>
+        <Tunnel _id="In4" outputs="value:6128.v" uid="6128" uid_parent="6124"/>
+        <Node _name="Event Data Node" fields="Coords" inputs="" outputs="Coords:6129.o0" uid="6129" uid_parent="6124"/>
+        <Node _name="Unbundle By Name" fields="Horizontal,Vertical" inputs="input cluster:6129.o0" outputs="Horizontal:6130.o0,Vertical:6130.o1" uid="6130" uid_parent="6124"/>
+        <Node _name="Subtract" inputs="x:6130.o0,y:6126.v" outputs="x-y:6131.o0" uid="6131" uid_parent="6124"/>
+        <Node _name="Subtract" inputs="x:6130.o1,y:6127.v" outputs="x-y:6132.o0" uid="6132" uid_parent="6124"/>
+        <Structure _name="Case Structure" selectin="6125.v" uid="6133" uid_parent="6124">
+          <Tunnel _id="In1" inputs="value:6128.v" uid="6134" uid_parent="6133"/>
+          <Tunnel _id="In2" inputs="value:6131.o0" uid="6135" uid_parent="6133"/>
+          <Tunnel _id="In3" inputs="value:6132.o0" uid="6136" uid_parent="6133"/>
+          <CaseFrame selector="True" selectout="" uid="6137" uid_parent="6133">
+            <Tunnel _id="In1" outputs="value:6138.v" uid="6138" uid_parent="6137"/>
+            <Tunnel _id="In2" outputs="value:6139.v" uid="6139" uid_parent="6137"/>
+            <Tunnel _id="In3" outputs="value:6140.v" uid="6140" uid_parent="6137"/>
+            <Constant _name="no error" type="cluster{bool.status,int32.code,string.source}" value="[false,0,]" outputs="value:6141.v" uid="6141" uid_parent="6137"/>
+            <Call target="Window_Move.vi" inputs="VI:6138.v,DX:6139.v,DY:6140.v,error in:6141.v" outputs="error out:" uid="6142" uid_parent="6137"/>
+          </CaseFrame>
+          <CaseFrame selector="False" selectout="" uid="6143" uid_parent="6133">
+            <Tunnel _id="In1" outputs="value:6144.v" uid="6144" uid_parent="6143"/>
+            <Tunnel _id="In2" outputs="value:6145.v" uid="6145" uid_parent="6143"/>
+            <Tunnel _id="In3" outputs="value:6146.v" uid="6146" uid_parent="6143"/>
+          </CaseFrame>
+        </Structure>
+        <Constant type="int32" value="-1" outputs="value:6147.v" uid="6147" uid_parent="6124"/>
+        <Constant type="bool" value="false" outputs="value:6148.v" uid="6148" uid_parent="6124"/>
+        <Tunnel _id="Out1" inputs="value:6147.v" uid="6149" uid_parent="6124"/>
+        <Tunnel _id="Out2" inputs="value:6148.v" uid="6150" uid_parent="6124"/>
+        <Tunnel _id="Out3" inputs="value:6148.v" uid="6151" uid_parent="6124"/>
+        <Tunnel _id="Out4" inputs="value:6148.v" uid="6152" uid_parent="6124"/>
+        <Tunnel _id="Out5" inputs="value:6125.v" uid="6153" uid_parent="6124"/>
+        <Tunnel _id="Out6" inputs="value:6126.v" uid="6154" uid_parent="6124"/>
+        <Tunnel _id="Out7" inputs="value:6127.v" uid="6155" uid_parent="6124"/>
+      </CaseFrame>
+      <Tunnel _id="Out1" outputs="value:141.sc" uid="6156" uid_parent="110"/>
+      <Tunnel _id="Out2" outputs="value:141.up" uid="6157" uid_parent="110"/>
+      <Tunnel _id="Out3" outputs="value:141.quit" uid="6158" uid_parent="110"/>
+      <Tunnel _id="Out4" outputs="value:141.send" uid="6159" uid_parent="110"/>
+      <Tunnel _id="Out5" outputs="value:141.drag" uid="6160" uid_parent="110"/>
+      <Tunnel _id="Out6" outputs="value:141.gx" uid="6161" uid_parent="110"/>
+      <Tunnel _id="Out7" outputs="value:141.gy" uid="6162" uid_parent="110"/>
     </Structure>
-    <Constant _name="no error" type="cluster{bool.status,int32.code,string.source}" value="[false,0,]" outputs="value:145.v" uid="145" uid_parent="100"/>
-    <Call target="Key_Send.vi" inputs="Channels:101.v,ScanCode:141.sc,Released:142.up,Quit:143.quit,History:103.v,error in:145.v" outputs="Quit out:150.q,History out:150.h,error out:" uid="150" uid_parent="100"/>
+    <Structure _name="Case Structure" selectin="141.send" uid="160" uid_parent="100">
+      <Tunnel _id="In1" inputs="value:101.v" uid="6163" uid_parent="160"/>
+      <Tunnel _id="In2" inputs="value:141.sc" uid="6164" uid_parent="160"/>
+      <Tunnel _id="In3" inputs="value:141.up" uid="6165" uid_parent="160"/>
+      <Tunnel _id="In4" inputs="value:141.quit" uid="6166" uid_parent="160"/>
+      <Tunnel _id="In5" inputs="value:103.v" uid="6167" uid_parent="160"/>
+      <CaseFrame selector="True" selectout="" uid="6168" uid_parent="160">
+        <Tunnel _id="In1" outputs="value:6169.v" uid="6169" uid_parent="6168"/>
+        <Tunnel _id="In2" outputs="value:6170.v" uid="6170" uid_parent="6168"/>
+        <Tunnel _id="In3" outputs="value:6171.v" uid="6171" uid_parent="6168"/>
+        <Tunnel _id="In4" outputs="value:6172.v" uid="6172" uid_parent="6168"/>
+        <Tunnel _id="In5" outputs="value:6173.v" uid="6173" uid_parent="6168"/>
+        <Constant _name="no error" type="cluster{bool.status,int32.code,string.source}" value="[false,0,]" outputs="value:6174.v" uid="6174" uid_parent="6168"/>
+        <Call target="Key_Send.vi" inputs="Channels:6169.v,ScanCode:6170.v,Released:6171.v,Quit:6172.v,History:6173.v,error in:6174.v" outputs="Quit out:6175.q,History out:6175.h,error out:" uid="6175" uid_parent="6168"/>
+        <Tunnel _id="Out1" inputs="value:6175.q" uid="6176" uid_parent="6168"/>
+        <Tunnel _id="Out2" inputs="value:6175.h" uid="6177" uid_parent="6168"/>
+      </CaseFrame>
+      <CaseFrame selector="False" selectout="" uid="6178" uid_parent="160">
+        <Tunnel _id="In1" outputs="value:6179.v" uid="6179" uid_parent="6178"/>
+        <Tunnel _id="In2" outputs="value:6180.v" uid="6180" uid_parent="6178"/>
+        <Tunnel _id="In3" outputs="value:6181.v" uid="6181" uid_parent="6178"/>
+        <Tunnel _id="In4" outputs="value:6182.v" uid="6182" uid_parent="6178"/>
+        <Tunnel _id="In5" outputs="value:6183.v" uid="6183" uid_parent="6178"/>
+        <Constant type="bool" value="false" outputs="value:6184.v" uid="6184" uid_parent="6178"/>
+        <Tunnel _id="Out1" inputs="value:6184.v" uid="6185" uid_parent="6178"/>
+        <Tunnel _id="Out2" inputs="value:6183.v" uid="6186" uid_parent="6178"/>
+      </CaseFrame>
+      <Tunnel _id="Out1" outputs="value:150.q" uid="6187" uid_parent="160"/>
+      <Tunnel _id="Out2" outputs="value:150.h" uid="6188" uid_parent="160"/>
+    </Structure>
     <Condition inputs="value:150.q" value="stop" uid="151" uid_parent="100"/>
   </Structure>
 

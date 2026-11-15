@@ -17,5 +17,6 @@
 	<Item Name="Render_Frame.vi" Type="VI" URL="../Render_Frame.vi"/>
 	<Item Name="Sound_Loop.vi" Type="VI" URL="../Sound_Loop.vi"/>
 	<Item Name="Timing_Save.vi" Type="VI" URL="../Timing_Save.vi"/>
+	<Item Name="Window_Move.vi" Type="VI" URL="../Window_Move.vi"/>
 	<Item Name="Window_Setup.vi" Type="VI" URL="../Window_Setup.vi"/>
 </Library>

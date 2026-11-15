@@ -1,0 +1,17 @@
+<VI _name="Window_Move.vi" description="Moves the window of the VI by DX, DY pixels (Front Panel Window:Panel Bounds) - for dragging Main by its top border.">
+  <Control _name="VI" type="ref{LV.VI}" value="" conIdx="0" connection="required" outputs="value:1001.v" uid="1001" uid_parent="root"/>
+  <Control _name="DX" type="int32" value="0" conIdx="5" connection="required" outputs="value:1002.v" uid="1002" uid_parent="root"/>
+  <Control _name="DY" type="int32" value="0" conIdx="7" connection="required" outputs="value:1003.v" uid="1003" uid_parent="root"/>
+  <Control _name="error in" type="cluster{bool.status,int32.code,string.source}" value="[false,0,]" conIdx="11" connection="required" outputs="value:1004.v" uid="1004" uid_parent="root"/>
+  <Node _name="Property Node" fields="read+Front Panel Window\3APanel Bounds" type="{LV.VI}" inputs="reference:1001.v,error in (no error):1004.v" outputs="Front Panel Window\3APanel Bounds:1005.o0,reference out:,error out:1005.o1" uid="1005" uid_parent="root"/>
+  <Node _name="Unbundle By Name" fields="left,top,right,bottom" inputs="input cluster:1005.o0" outputs="left:1006.o0,top:1006.o1,right:1006.o2,bottom:1006.o3" uid="1006" uid_parent="root"/>
+  <Node _name="To Word Integer" inputs="number:1002.v" outputs="16bit integer:1007.o0" uid="1007" uid_parent="root"/>
+  <Node _name="To Word Integer" inputs="number:1003.v" outputs="16bit integer:1008.o0" uid="1008" uid_parent="root"/>
+  <Node _name="Add" inputs="x:1006.o0,y:1007.o0" outputs="x+y:1009.o0" uid="1009" uid_parent="root"/>
+  <Node _name="Add" inputs="x:1006.o1,y:1008.o0" outputs="x+y:1010.o0" uid="1010" uid_parent="root"/>
+  <Node _name="Add" inputs="x:1006.o2,y:1007.o0" outputs="x+y:1011.o0" uid="1011" uid_parent="root"/>
+  <Node _name="Add" inputs="x:1006.o3,y:1008.o0" outputs="x+y:1012.o0" uid="1012" uid_parent="root"/>
+  <Node _name="Bundle By Name" fields="left,top,right,bottom" inputs="left:1009.o0,top:1010.o0,right:1011.o0,bottom:1012.o0,input cluster:1005.o0" outputs="output cluster:1013.o0" uid="1013" uid_parent="root"/>
+  <Node _name="Property Node" fields="write+Front Panel Window\3APanel Bounds" type="{LV.VI}" inputs="reference:1001.v,error in (no error):1005.o1,Front Panel Window\3APanel Bounds:1013.o0" outputs="reference out:,error out:1014.o0" uid="1014" uid_parent="root"/>
+  <Indicator _name="error out" type="cluster{bool.status,int32.code,string.source}" value="[false,0,]" conIdx="15" connection="recommended" inputs="value:1014.o0" uid="1015" uid_parent="root"/>
+</VI>

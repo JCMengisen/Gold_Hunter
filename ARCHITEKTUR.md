@@ -258,15 +258,17 @@ die Zeit und den gezeichneten Tick (Ringpuffer, die letzten `TIMING_N` = 3600 Ei
 `Cheat used`), schreibt `Timing_Save` beim Beenden beides nach `Resources\Data	iming_game.csv` und `timing_render.csv`; `python build	iming_report.py` wertet
 aus (verspätete Ticks, übersprungene Ticks im Bild, Abstände).
 
-**Fenster und Beenden:** `Window_Setup` blendet die Titelleiste aus. Beenden: das **X** oben rechts im Bild (im HUD in der
+**Fenster und Beenden:** `Window_Setup` blendet die Titelleiste aus und setzt die Anzeige `Screen` auf (-3, -3): ihr Zeichenbereich liegt 3 px
+innerhalb des Rahmens und beginnt so genau in der Fensterecke. Beenden: das **X** oben rechts im Bild (im HUD in der
 Ecke des TIME-Felds, auf den Titelseiten im Rahmen; Klick in `Screen: Mouse Down`, Feld ab x 1232, bis y 40), Esc auf dem
 Titelbild, oder `Panel Close?` (verworfen). Das Spiel endet immer normal (Protokoll, Ton-Kanal zu), danach schliesst
 `Main.vi` sein Fenster selbst (`FP.Close`). **Pause:** Esc/P hält an; nochmals Esc/P beendet das Spiel über Game Over
 (Highscore bleibt möglich), Leertaste, Enter oder ein Pfeil setzt fort.
 
 **Zugeklappte Cluster-Konstanten:** AIXML kennt "View Cluster As Icon" nicht. `build\collapse_clusters.py` setzt es nach dem
-Erzeugen per pylabview (Bits 0x10000020 in `objFlags` der Cluster-Konstante, ausgeklappte Grösse in `savedSize`, wie LabVIEW
-es selbst speichert). LabVIEW darf die VIs dabei nicht geladen haben; danach Mass Compile.
+Erzeugen per pylabview, so wie LabVIEW es selbst speichert: Bits 0x10000020 in `objFlags` der Cluster-Konstante, Symbol
+16 x 22 in `bounds`, ausgeklappte Grösse in `savedSize`, dazu Rahmen- und Inhaltsteil der Konstante sowie ihr Innenbereich
+(`paneHierarchy`) auf die Symbolgrösse - sonst bleibt ein grosser leerer Rahmen stehen. LabVIEW darf die VIs dabei nicht geladen haben; danach Mass Compile.
 
 ### Übernommen aus `C:\Projects\Paul_Pensionierung`
 

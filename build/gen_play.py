@@ -1761,7 +1761,7 @@ def app_close():
 
 
 def window_setup():
-    d = Doc('Window_Setup.vi', f'Sets up the window of Main: picture "Screen" at the top left with a fixed drawing area of {W} x {H}, never '
+    d = Doc('Window_Setup.vi', f'Sets up the window of Main: picture "Screen" at the top left (moved up and left by its 3 px frame, so its drawing area starts at the window corner) with a fixed drawing area of {W} x {H}, never '
             'erasing; all other controls are moved to the right outside the visible area; the panel is sized to the screen; no title bar '
             '(the X at the top right of the screen ends the game).')
     vi = d.ctrl('VI', 'ref{LV.VI}', '', 0)
@@ -1790,7 +1790,7 @@ def window_setup():
         pic = d.node('To More Specific Class', [('reference', ref), ('error in', err), ('target class', d.const('ref{LV.Picture}', '', 'Picture class'))],
                      ['specific class reference', 'error out'])
         w = d.node('Property Node', [('reference', pic['specific class reference']), ('error in (no error)', pic['error out']),
-                                     ('Position', d.const('cluster{int32.Left,int32.Top}', '[0,0]', 'Top left')),
+                                     ('Position', d.const('cluster{int32.Left,int32.Top}', '[-3,-3]', 'Top left minus the 3 px frame')),
                                      ('Draw Area Size', d.const('cluster{int32.Width,int32.Height}', f'[{W},{H}]', 'Screen size')),
                                      ('Erase First', d.const('uint8', '0', 'never erase'))],
                    ['-reference out', 'error out'], extra='fields="write+Position,write+Draw Area Size,write+Erase First" type="{LV.Picture}"')

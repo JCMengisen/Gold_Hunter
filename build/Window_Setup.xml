@@ -1,4 +1,4 @@
-<VI _name="GH_App.lvlib:Window_Setup.vi" description="Sets up the window of Main: picture &quot;Screen&quot; at the top left with a fixed drawing area of 1280 x 720, never erasing; all other controls are moved to the right outside the visible area; the panel is sized to the screen; no title bar (the X at the top right of the screen ends the game).">
+<VI _name="GH_App.lvlib:Window_Setup.vi" description="Sets up the window of Main: picture &quot;Screen&quot; at the top left (moved up and left by its 3 px frame, so its drawing area starts at the window corner) with a fixed drawing area of 1280 x 720, never erasing; all other controls are moved to the right outside the visible area; the panel is sized to the screen; no title bar (the X at the top right of the screen ends the game).">
   <Control _name="VI" type="ref{LV.VI}" value="" conIdx="0" connection="required" outputs="value:1001.v" uid="1001" uid_parent="root"/>
   <Control _name="error in" type="cluster{bool.status,int32.code,string.source}" value="[false,0,]" conIdx="11" connection="required" outputs="value:1002.v" uid="1002" uid_parent="root"/>
   <Constant _name="no title bar" type="bool" value="false" outputs="value:1003.v" uid="1003" uid_parent="root"/>
@@ -25,7 +25,7 @@
         <Tunnel _id="In3" outputs="value:1023.v" uid="1023" uid_parent="1020"/>
         <Constant _name="Picture class" type="ref{LV.Picture}" value="" outputs="value:1024.v" uid="1024" uid_parent="1020"/>
         <Node _name="To More Specific Class" inputs="reference:1021.v,error in:1022.v,target class:1024.v" outputs="specific class reference:1025.o0,error out:1025.o1" uid="1025" uid_parent="1020"/>
-        <Constant _name="Top left" type="cluster{int32.Left,int32.Top}" value="[0,0]" outputs="value:1026.v" uid="1026" uid_parent="1020"/>
+        <Constant _name="Top left minus the 3 px frame" type="cluster{int32.Left,int32.Top}" value="[-3,-3]" outputs="value:1026.v" uid="1026" uid_parent="1020"/>
         <Constant _name="Screen size" type="cluster{int32.Width,int32.Height}" value="[1280,720]" outputs="value:1027.v" uid="1027" uid_parent="1020"/>
         <Constant _name="never erase" type="uint8" value="0" outputs="value:1028.v" uid="1028" uid_parent="1020"/>
         <Node _name="Property Node" fields="write+Position,write+Draw Area Size,write+Erase First" type="{LV.Picture}" inputs="reference:1025.o0,error in (no error):1025.o1,Position:1026.v,Draw Area Size:1027.v,Erase First:1028.v" outputs="reference out:,error out:1029.o0" uid="1029" uid_parent="1020"/>

@@ -25,6 +25,42 @@ def run(args):
         raise RuntimeError(r.stdout + r.stderr)
 
 
+# Innenbereich eines zugeklappten Clusters (so wie bei den von Anfang an kleinen "no error"-Konstanten): ohne das bleibt
+# im Diagramm der grosse, leere Rahmen stehen
+ICON_PANE = '(3, 3, 13, 19)'
+ICON_PARTS = {'39': '(0, 16, 10, 33)', '38': '(10, 0, 27, 16)', '44': '(10, 16, 27, 33)', '28': '(0, 0, 10, 16)'}
+
+
+def shrink_pane(cl, h, w):
+    """Innenbereich (paneHierarchy) und eigene Teile (Rahmen, Inhalt) des Clusters auf das Symbol verkleinern - so speichert
+    LabVIEW es beim Zuklappen; ohne das bleibt im Diagramm der grosse, leere Rahmen stehen. h, w = ausgeklappte Groesse."""
+    changed = False
+    own = {'(0, 0, %d, %d)' % (h, w): '(0, 0, 16, 22)', '(3, 3, %d, %d)' % (h - 3, w - 3): ICON_PANE}
+    parts = cl.find('partsList')
+    for p in (parts if parts is not None else []):
+        b = p.find('bounds')
+        if b is not None and b.text in own:
+            b.text = own[b.text]
+            changed = True
+    ph = cl.find('paneHierarchy')
+    if ph is not None and ph.findtext('bounds') != ICON_PANE:
+        ph.find('bounds').text = ICON_PANE
+        fl = ph.find('objFlags')
+        if fl is not None:
+            fl.text = str(int(fl.text) & ~4)          # wie LabVIEW beim Zuklappen (2494740 -> 2494736)
+        pl = ph.find('partsList')
+        for p in (pl if pl is not None else []):
+            b, pid = p.find('bounds'), p.findtext('partID')
+            if b is not None and pid in ICON_PARTS:
+                b.text = ICON_PARTS[pid]
+        changed = True
+    return changed
+
+
+def box(text):
+    return tuple(int(v) for v in re.findall(r'-?\d+', text))
+
+
 def patch_heap(path):
     txt = open(path, encoding='utf-8').read()
     tree = ET.ElementTree(ET.fromstring(txt))
@@ -37,9 +73,15 @@ def patch_heap(path):
                 continue
             fl = cl.find('objFlags')
             b = cl.find('bounds')
-            if fl is None or b is None or int(fl.text) & 0x10000000:
+            if fl is None or b is None:
                 continue
-            t, l, bt, r = (int(v) for v in re.findall(r'-?\d+', b.text))
+            if int(fl.text) & 0x10000000:          # schon zugeklappt: Innenbereich und Teile nachziehen (Groesse aus savedSize)
+                st, sl, sb, sr = box(cl.findtext('savedSize') or '(0, 0, 0, 0)')
+                if sb - st > 16 or sr - sl > 22:
+                    changed += shrink_pane(cl, sb - st, sr - sl)
+                continue
+            t, l, bt, r = box(b.text)
+            shrink_pane(cl, bt - t, r - l)
             fl.text = str(int(fl.text) | ICON_BITS)
             ss = cl.find('savedSize')
             if ss is None:

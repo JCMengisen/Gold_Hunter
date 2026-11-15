@@ -695,7 +695,7 @@ def game_start():
 
 
 def game_step():
-    d = Doc('Game_Step.vi', 'One game tick, a state machine over the phases ' + ', '.join(PHASES) + '. Title: card, then the highscore '
+    d = Doc('Game_Step.vi', 'One game tick, a state machine over the phases ' + ', '.join(PHASES) + '. Title: card, short instructions, then the highscore '
             'table, then the demo; Enter starts, Esc quits. Ready: short pause with a message. Playing: Game_Play; a hit or a deadly fall '
             'starts Dying, the treasure room starts Treasure. Paused: Esc/P or Enter continues. Dying: one life less, then Ready at the '
             'arrival point or GameOver. Treasure: playing against the clock, then LevelDone and the next level. GameOver: then Name '
@@ -730,7 +730,7 @@ def game_step():
         s, kk, rm, err = i
         pt = ticks(s)
         start = d.eq(kk, c(IN['Start']))
-        demo_go = ge(d, pt, c(TITLE_CARD + TITLE_SCORES))
+        demo_go = ge(d, pt, c(TITLE_CARD + TITLE_HELP + TITLE_SCORES))
         gn = d.call('Game_New.vi', [('State', s), ('Rooms', rm), ('Demo', d.not_(start)), ('error in', err)], ['State out', 'error out'])
         q, = d.unb(s, ['Quit'])
         idle = d.bun(s, [('PhaseTicks', pt), ('Quit', d.or_(q, d.eq(kk, c(IN['Pause']))))])
@@ -1208,7 +1208,7 @@ def overlay_draw():
         return lambda i: frame(sw, [text_net(i)], [BOX_SMALL[1] + 12])(i)
 
     def f_title(i):
-        show = ge(d, i[1], c(TITLE_CARD))
+        show = ge(d, i[1], c(TITLE_CARD + TITLE_HELP))
         lp = d.begin('For Loop', 'count="@i.v" maxin="" maxout=""')
         k = f'{lp}i.v'
         hs = d.tunnel_in(1, i[2], 'index')
@@ -1497,7 +1497,7 @@ def frame_draw():
     cix = d.sel(is_title, c(-1), d.sel(dying, dead_ix, normal))
     view = d.bun(d.const(VIEW, VIEW_V), [('Hide', dark), ('CX', cxt), ('CY', cyt), ('ClaudeIdx', cix), ('ClaudeX', x), ('ClaudeY', d.add2(y, c(HUD_H)))])
     # Schluessel fuer die volle Neuzeichnung
-    ov = d.add2(d.mul(phase, c(10)), d.add2(d.i32(d.b01(d.and_(is_title, ge(d, pt, c(TITLE_CARD))))),
+    ov = d.add2(d.mul(phase, c(10)), d.add2(d.i32(d.b01(d.and_(is_title, ge(d, pt, c(TITLE_CARD + TITLE_HELP))))),
                                            d.i32(d.b01(d.and_(d.eq(phase, c(PH['Treasure'])), d.lt(pt, c(TREASURE_MSG)))))))
     key = d.add2(d.add2(roomkey, d.mul(fphase, c(10000))), d.add2(d.mul(d.i32(d.b01(dark)), c(100000)), d.mul(ov, c(1000000))))
     key = d.add2(key, d.mul(d.i32(d.b01(lstart)), c(7)))

@@ -100,6 +100,7 @@ LV_TREASURE = [900, 900, 780]
 # Dauer der Phasen (Ticks)
 READY_TICKS, DYING_TICKS, LEVELDONE_TICKS, GAMEOVER_TICKS = 100, 100, 150, 200
 TITLE_CARD, TITLE_SCORES, DEMO_LEN, TREASURE_MSG = 480, 300, 1500, 90
+TITLE_HELP = 720                      # Kurzanleitung (zweite Titelseite) nach dem Titelbild, vor der Bestenliste
 DEMO_SEED = 4242
 # Sound-Bits (Game_Step setzt sie im Feld Sound) und Dateien in Prioritaet (Sound_Mix)
 SND = {'jump': 1, 'coin': 2, 'hoard': 4, 'key': 8, 'door': 16, 'torch': 32, 'life': 64, 'death': 128, 'treasure': 256,

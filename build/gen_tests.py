@@ -540,6 +540,11 @@ def test_run():
     d.indic('Min Y', 'int32', '0', close_reg(d, m_r, m2))
     d.indic('Air ticks', 'int32', '0', close_reg(d, a_r, a2))
     d.indic('Sounds', 'int32', '0', close_reg(d, b_r, b2))
+    # zum Abgleich mit sim_enemies.py: Gegner, Zufallszahl und Demo-Schritt am Ende
+    fe, fseed, fstep = d.unb(final, ['Enemies', 'Seed', 'DemoStep'])
+    d.indic('Enemies out', ENEMIES, '[]', fe)
+    d.indic('Seed out', 'uint32', '0', fseed)
+    d.indic('Demo step', 'int32', '0', fstep)
     d.indic('error out', ERR, ERR_V, close_reg(d, e_r, st['error out']))
     d.write()
 

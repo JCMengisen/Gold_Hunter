@@ -72,6 +72,9 @@ FONT = {
     ' ': '.' * 35, '.': '.' * 30 + '..#..', ':': '.' * 10 + '..#..' + '.' * 10 + '..#..' + '.' * 5,
     '-': '.' * 15 + '.###.' + '.' * 15, '!': '..#....#....#....#....#.......' + '..#..',
     '=': '.' * 10 + '#####' + '.' * 5 + '#####' + '.' * 10,
+    # nur fuer Bilder (nicht im Glyphen-Satz des Spiels)
+    ',': '.' * 25 + '..#...#...', '/': '....#...#....#...#...#....#...#....', "'": '..#....#...#...' + '.' * 20,
+    '+': '.' * 5 + '..#....#..#####..#....#..' + '.' * 5,
 }
 CHARSET = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789 .:-!='
 assert all(len(v) == 35 for v in FONT.values()) and all(c in FONT for c in CHARSET)
@@ -925,6 +928,10 @@ def hud_sample(hud):
 
 def draw_title():
     """Titelbild im Pyramiden-Look wie die Raeume: verwitterte Steinbloecke, Friese, Wandmalereien, Wurzeln"""
+    return stone_card(True)
+
+
+def stone_card(title_page):
     th = {k: (rgb(v) if k != 'name' else v) for k, v in THEMES[0].items()}
     back = weathered(brick_layer(W, 360, 32, 16, shade(th['back'], 0.85), th['back_mortar'], 5, 0.22)).convert('RGBA')
     bd = ImageDraw.Draw(back)
@@ -935,7 +942,8 @@ def draw_title():
                 bd.line([x + pts[0], y + pts[1], x + pts[2], y + pts[3]], fill=hi)
                 bd.line([x + pts[0], y + pts[1] + 1, x + pts[2], y + pts[3] + 1], fill=lo)
     # grosse Wandmalereien links und rechts (doppelt so gross wie in den Raeumen), Schlangen neben dem Untertitel
-    for kind, x, y, k in ((0, 26, 134, 2), (3, 518, 134, 2), (2, 24, 100, 1), (2, 536, 100, 1)):
+    murals = ((0, 26, 134, 2), (3, 518, 134, 2), (2, 24, 100, 1), (2, 536, 100, 1)) if title_page else ((2, 24, 30, 1), (2, 536, 30, 1))
+    for kind, x, y, k in murals:
         m = mural(kind, 900 + kind + x)
         m = m.resize((m.width * k, m.height * k), Image.NEAREST)
         if x > W // 2 and kind == 2:
@@ -946,21 +954,26 @@ def draw_title():
     md = ImageDraw.Draw(mask)
     md.rectangle([0, 0, W - 1, 359], fill=255)
     md.rectangle([16, 16, W - 17, 343], fill=0)
-    md.rectangle([96, 240, W - 97, 255], fill=255)             # Sockel fuer die Figuren
+    if title_page:
+        md.rectangle([96, 240, W - 97, 255], fill=255)         # Sockel fuer die Figuren
     im = Image.composite(wall, back.convert('RGB'), mask).convert('RGBA')
     d = ImageDraw.Draw(im)
-    d.line([96, 240, W - 97, 240], fill=th['trim'])
-    d.line([96, 241, W - 97, 241], fill=shade(th['trim'], 0.7))
+    if title_page:
+        d.line([96, 240, W - 97, 240], fill=th['trim'])
+        d.line([96, 241, W - 97, 241], fill=shade(th['trim'], 0.7))
     for k, a in enumerate((120, 80, 45)):                      # Schatten unter Rahmen und Sockel
         sh = Image.new('RGBA', (W, 360), (0, 0, 0, 0))
         sd = ImageDraw.Draw(sh)
         sd.line([16, 16 + k, W - 17, 16 + k], fill=(0, 0, 0, a))
-        sd.line([96, 256 + k, W - 97, 256 + k], fill=(0, 0, 0, a))
+        if title_page:
+            sd.line([96, 256 + k, W - 97, 256 + k], fill=(0, 0, 0, a))
         im = Image.alpha_composite(im, sh)
     d = ImageDraw.Draw(im)
     d.rectangle([16, 16, W - 17, 343], outline=(0, 0, 0))
     # Wurzeln und Ranken von der Decke (wie in den Raeumen: Decke = Zeile 0)
     grow_roots(d, ['#' * COLS] + ['.' * COLS] * (ROWS - 1), 77)
+    if not title_page:
+        return help_text(im)
     title = 'GOLD HUNTER'
     text(im, (W - text_w(title, 7)) // 2, 44, title, GOLD, 7, shadow=(60, 24, 0), col2=GOLD_LO)
     sub = 'CLAUDE ON A TREASURE HUNT'
@@ -980,6 +993,63 @@ def draw_title():
     return im
 
 
+def draw_help():
+    """zweite Titelseite: Kurzanleitung, im Wechsel mit dem Titelbild"""
+    return stone_card(False)
+
+
+def help_text(im):
+    import gh_lib
+    head = 'HOW TO PLAY'
+    text(im, (W - text_w(head, 4)) // 2, 34, head, GOLD, 4, shadow=(60, 24, 0), col2=GOLD_LO)
+    sub = 'GUIDE CLAUDE DOWN THROUGH THE PYRAMID INTO THE TREASURE CHAMBER'
+    text(im, (W - text_w(sub)) // 2, 70, sub, rgb('#F0B890'), shadow=(0, 0, 0))
+    panel = Image.new('RGBA', (W, 360), (0, 0, 0, 0))     # dunkle Tafel hinter dem Text
+    ImageDraw.Draw(panel).rectangle([40, 84, W - 41, 297], fill=(10, 6, 4, 150))
+    im.alpha_composite(panel)
+    d = ImageDraw.Draw(im)
+    d.rectangle([40, 84, W - 41, 297], outline=shade(GOLD_LO, 0.6))
+
+    def ladder(x, y):                                       # kleine Leiter und Stange (gibt es nicht als Sprite)
+        wood, pole = rgb('#8A5A2C'), rgb('#B0A890')
+        d.line([x + 2, y, x + 2, y + 31], fill=wood)
+        d.line([x + 13, y, x + 13, y + 31], fill=wood)
+        for yy in range(y + 3, y + 32, 6):
+            d.line([x + 2, yy, x + 13, yy], fill=wood)
+        d.line([x + 22, y, x + 22, y + 31], fill=pole)
+        d.line([x + 23, y, x + 23, y + 31], fill=shade(pole, 0.6))
+
+    rows = [
+        (['key_r', 'key_b', 'key_y'], 'KEYS +200', 'A KEY OPENS ONE DOOR OF ITS COLOUR'),
+        (['gold_0', 'hoard_0'], 'COINS +100    GOLD HOARD +500', 'AN EXTRA LIFE EVERY %d POINTS' % gh_lib.EXTRA_LIFE),
+        (['torch_0'], 'THE TORCH +500', 'LIGHTS UP THE DARK ROOMS DEEP DOWN'),
+        (['spider_0', 'snake_1', 'skull_0'], 'SPIDERS, SNAKES AND SKULLS', "ONE TOUCH COSTS A LIFE - JUMP OVER THEM WITH SPACE"),
+        (['floor_0', 'belt_r_0'], 'FLICKERING FLOORS VANISH FOR A WHILE', 'CONVEYOR BELTS CARRY YOU ALONG'),
+        (['ladder', 'claude_climb_0'], 'LADDERS, ROPES AND POLES', "CLIMB WITH UP / DOWN - BUT DON'T FALL TOO DEEP"),
+    ]
+    for i, (icons, title, line) in enumerate(rows):
+        y0 = 90 + i * 34
+        x = 54
+        for n in icons:
+            if n == 'ladder':
+                ladder(x, y0)
+                x += 30
+                continue
+            spr = frames[n]
+            k = 2 if spr.height <= 16 else 1
+            spr = spr.resize((spr.width * k, spr.height * k), Image.NEAREST)
+            dy = 14 if n == 'floor_0' else 2 if n.startswith('belt') else (32 - spr.height) // 2   # Boeden: Platte unten in der Zeile
+            im.alpha_composite(spr, (x, y0 + dy))
+            x += spr.width + 4
+        text(im, 168, y0 + 6, title, GOLD, shadow=(0, 0, 0))
+        text(im, 168, y0 + 18, line, rgb('#E8E4D0'), shadow=(0, 0, 0))
+    start = 'ENTER = START'
+    text(im, (W - text_w(start, 2)) // 2, 302, start, (255, 255, 255), 2, shadow=(0, 0, 0))
+    keys = "ARROWS = WALK AND CLIMB    SPACE = JUMP    ESC / P = PAUSE"
+    text(im, (W - text_w(keys)) // 2, 320, keys, rgb('#C8961E'))
+    return im
+
+
 # ------------------------------------------------------------------ Ausgabe
 if __name__ == '__main__':
     names = list(frames)
@@ -990,7 +1060,11 @@ if __name__ == '__main__':
 
     hud = draw_hud()
     save(big(hud).convert('RGB'), 'Images', 'hud.png')
-    save(big(draw_title()).convert('RGB'), 'Images', 'title.png')
+    # title.png: oben das Titelbild, darunter die Kurzanleitung (Scene_Blit waehlt die Haelfte nach PhaseTicks)
+    pages = Image.new('RGB', (W, 720))
+    pages.paste(draw_title().convert('RGB'), (0, 0))
+    pages.paste(draw_help().convert('RGB'), (0, 360))
+    save(big(pages), 'Images', 'title.png')
 
     for name in os.listdir(os.path.join(RES, 'Images')) + os.listdir(os.path.join(RES, 'Preview')):   # alte Bilder entfernen
         for folder in ('Images', 'Preview'):

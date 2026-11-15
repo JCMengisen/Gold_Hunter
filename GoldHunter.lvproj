@@ -30,8 +30,8 @@
 		</Item>
 		<Item Name="GH_Engine.lvlib" Type="Library" URL="../Source/Engine/GH_Engine.lvlib"/>
 		<Item Name="GH_App.lvlib" Type="Library" URL="../Source/App/GH_App.lvlib"/>
-		<Item Name="Main.vi" Type="VI" URL="../Main.vi"/>
 		<Item Name="GH_Audio.lvlib" Type="Library" URL="../Source/Audio/GH_Audio.lvlib"/>
+		<Item Name="Main.vi" Type="VI" URL="../Main.vi"/>
 		<Item Name="Dependencies" Type="Dependencies"/>
 		<Item Name="Build Specifications" Type="Build"/>
 	</Item>

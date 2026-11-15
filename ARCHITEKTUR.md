@@ -242,6 +242,18 @@ Neuzeichnen des Fensters (Klick, Verdecken) malt LabVIEW nur den letzten Wert. D
 Bildwiederholrate. Mit dem alten Takt von 16 ms (62,5 Hz) machte Claude gegenüber dem 60-Hz-Monitor 2,5-mal pro Sekunde
 einen Doppelschritt (leichtes Ruckeln). Kleine, häufig gerufene SubVIs sind *inline*, alle übrigen ohne Debugging.
 
+**Ausführungssysteme (15.11.2026):** `Main.vi` läuft im *user interface*-System; dort bleiben nur Tasten (Event-Struktur,
+`Key_Send`) und das Schreiben der Anzeigen. Die Arbeit jeder Schleife liegt in einem eigenen, nicht inline gesetzten SubVI
+mit eigenem System, damit nichts davon den UI-Thread belegt oder warten lässt und Bild und Ton sich nicht gegenseitig sperren:
+
+| SubVI | System | Inhalt |
+|---|---|---|
+| `Engine_Tick`, `Frame_Pace` | standard | Spiellogik, Warten auf den nächsten Tick |
+| `Render_Frame` | other 1 | Warten auf den Zustand, ganzes Bild aufbauen (Frame_Draw, Scene_Blit) |
+| `Audio_Block` | other 2 | Ton mischen und streamen |
+
+Ihre SubVIs (inline oder *same as caller*) laufen im System des Aufrufers mit.
+
 ### Übernommen aus `C:\Projects\Paul_Pensionierung`
 
 | Baustein | Verwendung |
@@ -292,3 +304,18 @@ sucht fuer jeden Schritt im Python-Nachbau (`sim_player.py`) die Tasten Tick fue
 Schwundboeden). Ergebnis `demo_events.py` (rund 250 s). In der Demo ist Claude unverwundbar, Raumwechsel sind erlaubt.
 In der Schatzkammer schwebt Claude am **Fallschirm** hinunter (Fallgeschwindigkeit hoechstens `CHUTE10`, Landung nie toedlich) -
 im Spiel wie in der Demo. Neu planen: `python plan_demo.py neu` (danach `gen_play.py demo_input game_step`).
+
+**Spruenge ueber die Gegner:** `build\sim_enemies.py` baut Enemies_Init, Enemies_Step und Hit_Check nach (gleiche Zufallszahlen,
+mit `Test_Run` gegen LabVIEW geprueft: Gegner, Seed und Position stimmen). `build\jump_demo.py` geht die geplante Demo durch
+und setzt fuer jede Beruehrung einen Sprung kurz davor ein, nach dem Claude wieder genau auf dem alten Weg ist (gleicher Ort,
+gleicher Tick - die Gegner bewegen sich unabhaengig von Claude, also bleibt der Rest gleich). Haelt Claude dabei eine
+Pfeiltaste hoch/runter, wird sie fuer den Sprung losgelassen (sonst packt er im Sprung eine Leiter); auf einem Foerderband
+bleibt er nach der Landung kurz stehen, bis der alte Weg ihn eingeholt hat. Hilft kein Sprung, wartet Claude auf festem
+Boden oder auf einer Leiter, und der Rest der Demo laeuft um die Pause verschoben weiter (nur wenn sein Weg dann genau
+gleich bleibt). Reihenfolge: `plan_demo.py`, dann `jump_demo.py`, dann `gen_play.py demo_input game_step`.
+
+## Titelseiten
+
+`title.png` enthaelt zwei Seiten untereinander (1280 x 1440): oben das Titelbild, darunter die Kurzanleitung
+(`make_assets.py`, `draw_help`). Ablauf auf dem Titel: Titelbild `TITLE_CARD`, Kurzanleitung `TITLE_HELP`, Titelbild mit
+Bestenliste `TITLE_SCORES`, dann die Demo - und danach wieder von vorn. `Scene_Blit` waehlt die Haelfte nach PhaseTicks.

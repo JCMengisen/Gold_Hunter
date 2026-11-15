@@ -123,7 +123,14 @@ def scene_blit():
 
     def f_title(i):
         tt, sp, s, clip, err = i[:5]
-        ov = d.call('Overlay_Blit.vi', [('Picture', raster(tt, H)), ('Sprites', sp), ('State', s), ('Clip', clip), ('error in', err)],
+        # title.png hat zwei Seiten untereinander: Titelbild, darunter die Kurzanleitung (nach dem Titelbild TITLE_HELP Ticks lang)
+        pt, = d.unb(s, ['PhaseTicks'])
+        help_page = d.and_(gp.ge(d, pt, c(TITLE_CARD)), d.lt(pt, c(TITLE_CARD + TITLE_HELP)))
+        data, = d.unb(tt, ['image'])
+        page = d.node('Array Subset', [('array', data), ('index', d.sel(help_page, c(H * W * 3), c(0))), ('length', c(H * W * 3))],
+                      ['subarray'])['subarray']
+        rast = d.node('Reshape Array', [('array', page), ('dimension size', c(H)), ('dimension size', c(W * 3))], ['output array'])['output array']
+        ov = d.call('Overlay_Blit.vi', [('Picture', rast), ('Sprites', sp), ('State', s), ('Clip', clip), ('error in', err)],
                     ['Picture out', 'error out'])
         return [ov['Picture out'], ov['error out']]
 

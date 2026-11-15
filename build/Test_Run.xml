@@ -75,5 +75,9 @@
   <Indicator _name="Min Y" type="int32" value="0" inputs="value:16031.v" uid="16068" uid_parent="root"/>
   <Indicator _name="Air ticks" type="int32" value="0" inputs="value:16034.v" uid="16069" uid_parent="root"/>
   <Indicator _name="Sounds" type="int32" value="0" inputs="value:16037.v" uid="16070" uid_parent="root"/>
-  <Indicator _name="error out" type="cluster{bool.status,int32.code,string.source}" value="[false,0,]" inputs="value:16028.v" uid="16071" uid_parent="root"/>
+  <Node _name="Unbundle By Name" fields="Enemies,Seed,DemoStep" inputs="input cluster:16025.v" outputs="Enemies:16071.o0,Seed:16071.o1,DemoStep:16071.o2" uid="16071" uid_parent="root"/>
+  <Indicator _name="Enemies out" type="array{cluster{int32.Kind,int32.X10,int32.Y10,int32.Dir,int32.Mode}}" value="[]" inputs="value:16071.o0" uid="16072" uid_parent="root"/>
+  <Indicator _name="Seed out" type="uint32" value="0" inputs="value:16071.o1" uid="16073" uid_parent="root"/>
+  <Indicator _name="Demo step" type="int32" value="0" inputs="value:16071.o2" uid="16074" uid_parent="root"/>
+  <Indicator _name="error out" type="cluster{bool.status,int32.code,string.source}" value="[false,0,]" inputs="value:16028.v" uid="16075" uid_parent="root"/>
 </VI>

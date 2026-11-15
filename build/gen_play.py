@@ -1915,15 +1915,108 @@ def render_frame():
                    ['Picture', '-Pieces', 'Memory out', 'error out']))),
         ('True', lambda i: [d.call('Draw Flattened Pixmap.vi', [('image data', d.const(IMG, IMG_V, 'No pixels')), ('picture', '')], ['new picture'])['new picture'], i[4], i[5]]),
     ], 3)
-    quit_, = d.unb(st, ['Quit'])
+    quit_, tk = d.unb(st, ['Quit', 'Tick'])
     now = d.node('Tick Count (ms)', [], ['millisecond timer value'])['millisecond timer value']
     fps = d.node('Divide', [('x', d.const('double', '1000')), ('y', d.sub(now, last))], ['x/y'])['x/y']
     d.indic('Picture', 'picture', '', pic, 4)
     d.indic('Memory out', RMEM, RMEM_V, mem2, 6)
     d.indic('FPS', 'double', '0', fps, 8)
     d.indic('Now ms', 'uint32', '0', now, 10)
+    # fuer das Zeitprotokoll: welcher Spiel-Tick gezeichnet wurde (-1 = kein neuer Zustand)
+    d.indic('Tick', 'int32', '0', d.sel(wn['timed out?'], d.i32c(-1), d.i32(tk)), 14)
     d.indic('Stop', 'bool', 'false', d.or_(d.and_(quit_, d.not_(wn['timed out?'])), status(d, err)), 13)
     d.err_out(err)
+    d.write()
+
+
+def log_put(d, arr, i, value):
+    """Ringpuffer: arr[i mod TIMING_N] = value"""
+    ix = d.qr(i, d.i32c(TIMING_N))[0]
+    return d.node('Replace Array Subset', [('array', arr), ('new element/subarray', value), ('index', ix)], ['output array'])['output array']
+
+
+def game_loop():
+    d = Doc('Game_Loop.vi', f'The game loop of Main as a subVI, so that it runs in its own execution system (standard) and never needs the '
+            f'user interface thread: Engine_Tick {FPS} times per second, paced by Frame_Pace, until Stop. Timing log: the start time of every '
+            f'tick (ms) and the game tick, the last {TIMING_N} ticks, written to Resources\\Data\\{TIMING_GAME} at the end (Timing_Save).')
+    k = d.ctrl('Channels', CHANNELS, '[,,]', 0)
+    st0 = d.ctrl('State', STATE, STATE_V, 5)
+    rooms = d.ctrl('Rooms', ROOMS, '[]', 7)
+    e = d.err_in()
+    c = d.i32c
+    zeros = d.node('Initialize Array', [('element', c(0)), ('dimension size', c(TIMING_N))], ['initialized array'])['initialized array']
+    start0, count0 = d.const('uint32', '0', 'Start ms'), c(0)
+    lp = d.begin('While Loop', 'count="@i.v"', 'Game (60 Hz)')
+    i = f'{lp}i.v'
+    k1, r1 = d.tunnel_in(1, k), d.tunnel_in(2, rooms)
+    s_l, s_r = shiftreg(d, lp, st0)
+    e_l, e_r = shiftreg(d, lp, e)
+    t_l, t_r = shiftreg(d, lp, start0)
+    n_l, n_r = shiftreg(d, lp, count0)
+    lm_l, lm_r = shiftreg(d, lp, zeros)
+    lt_l, lt_r = shiftreg(d, lp, zeros)
+    t0 = d.node('Tick Count (ms)', [], ['millisecond timer value'])['millisecond timer value']
+    et = d.call('Engine_Tick.vi', [('Channels', k1), ('State', s_l), ('Rooms', r1), ('error in', e_l)], ['State out', 'Stop', 'error out'])
+    fp = d.call('Frame_Pace.vi', [('Start ms', t_l), ('Count', n_l), ('error in', d.const(ERR, ERR_V, 'no error'))], ['Start out', 'Count out', '-error out'])
+    tk, = d.unb(et['State out'], ['Tick'])
+    lm2, lt2 = log_put(d, lm_l, i, d.i32(t0)), log_put(d, lt_l, i, d.i32(tk))
+    condition(d, lp, et['Stop'])
+    d.end()
+    close_reg(d, s_r, et['State out'])
+    err = close_reg(d, e_r, et['error out'])
+    close_reg(d, t_r, fp['Start out'])
+    close_reg(d, n_r, fp['Count out'])
+    ms, ticks = close_reg(d, lm_r, lm2), close_reg(d, lt_r, lt2)
+    if TIMING_LOG:
+        d.call('Timing_Save.vi', [('File name', d.const('string', TIMING_GAME)), ('Ms', ms), ('Tick', ticks), ('error in', d.const(ERR, ERR_V, 'no error'))],
+               ['-error out'])
+    d.err_out(err)
+    d.write()
+
+
+def sound_loop():
+    d = Doc('Sound_Loop.vi', 'The sound loop of Main as a subVI, so that it runs in its own execution system (other 2) and never waits for '
+            'the user interface thread or the picture: Audio_Block until Stop (the sound queue is released at the end of the game).')
+    k = d.ctrl('Channels', CHANNELS, '[,,]', 0)
+    bank = d.ctrl('Bank', BANK, '[]', 5)
+    task = d.ctrl('Task ID', 'uint32', '0', 7)
+    mx = d.ctrl('Mixer', MIXER, MIXER_V, 9)
+    on = d.ctrl('Sound', 'bool', 'true', 1, 'recommended')
+    e = d.err_in()
+    lp = d.begin('While Loop', 'count=""', 'Sound')
+    k1, b1, t1, o1 = d.tunnel_in(1, k), d.tunnel_in(2, bank), d.tunnel_in(3, task), d.tunnel_in(4, on)
+    m_l, m_r = shiftreg(d, lp, mx)
+    e_l, e_r = shiftreg(d, lp, e)
+    ab = d.call('Audio_Block.vi', [('Channels', k1), ('Bank', b1), ('Task ID', t1), ('Mixer', m_l), ('Sound', o1), ('error in', e_l)],
+                ['Mixer out', 'Stop', 'error out'])
+    condition(d, lp, ab['Stop'])
+    d.end()
+    close_reg(d, m_r, ab['Mixer out'])
+    d.err_out(close_reg(d, e_r, ab['error out']))
+    d.write()
+
+
+def timing_save():
+    d = Doc('Timing_Save.vi', 'Writes a timing log to Resources\\Data\\<File name>: one line "ms;tick" per entry (header line first). '
+            'Entries with ms = 0 were never filled and are left out.')
+    fn = d.ctrl('File name', 'string', 'timing.csv', 0)
+    ms = d.ctrl('Ms', 'array{int32}', '[]', 5)
+    tk = d.ctrl('Tick', 'array{int32}', '[]', 7)
+    e = d.err_in()
+    nl = d.const('string', '\\0D\\0A')
+    head = d.const('string', 'ms;tick\\0D\\0A', 'Header')
+    lp = d.begin('For Loop', 'count="" maxin="" maxout=""')
+    m, t = d.tunnel_in(1, ms, 'index'), d.tunnel_in(2, tk, 'index')
+    nl1 = d.tunnel_in(3, nl)
+    s_l, s_r = shiftreg(d, lp, head)
+    line = d.node('Concatenate Strings', [('string', s_l), ('string', fmt(d, '%d;%d', m, t)), ('string', nl1)], ['concatenated string'])['concatenated string']
+    s2 = d.sel(d.eq(m, d.i32c(0)), s_l, line)
+    d.end()
+    text = close_reg(d, s_r, s2)
+    r = d.call('Resource_Path.vi', [('File name', fn), ('Subfolder', d.const('string', 'Data')), ('error in', e)], ['Path', 'error out'])
+    w = d.node('Write to Text File', [('file (use dialog)', r['Path']), ('text', text), ('error in', r['error out']),
+                                      ('prompt (Choose or enter file path)', '')], ['-refnum out', '-cancelled', 'error out'])
+    d.err_out(w['error out'])
     d.write()
 
 
@@ -1994,7 +2087,8 @@ ENGINE = (player_move, enemies_init, room_change, items_collect, door_open, enem
           keys_apply, game_play, demo_input, highscore_load, highscore_save, highscore_insert, game_start, game_step)
 RENDER = (room_images, light_update, grid_block, room_draw, enemies_draw, glyphs_draw, hud_draw, overlay_draw, piece_compose, scene_draw, frame_draw)
 AUDIO = (sound_bank_load, sound_mix)
-APP = (app_init, app_close, window_setup, key_send, engine_tick, frame_pace, render_frame, audio_start, audio_block, audio_close)
+APP = (app_init, app_close, window_setup, key_send, engine_tick, frame_pace, render_frame, audio_start, audio_block, audio_close,
+       game_loop, sound_loop, timing_save)
 ALL = {f.__name__: f for f in ENGINE + RENDER + AUDIO + APP}
 
 
@@ -2088,7 +2182,13 @@ def contract():
         (AP, 'Frame_Pace', [], [i('Start ms', 'uint32', 0), i('Count', 'int32', 1), E], [o('Start out', 'uint32', 4), o('Count out', 'int32', 6), EO]),
         (AP, 'Render_Frame', [RE + 'Frame_Draw.vi'], [i('Channels', '@Channels', 0), i('Sprites', '@Sprites', 5), i('Hud', '@ImageData', 7),
                                                      i('Title', '@ImageData', 9), i('Memory', '@RenderMemory', 1), i('Last ms', 'uint32', 2, 'recommended'), E],
-         [o('Picture', 'picture', 4), o('Memory out', '@RenderMemory', 6), o('FPS', 'double', 8), o('Now ms', 'uint32', 10), o('Stop', 'bool', 13), EO]),
+         [o('Picture', 'picture', 4), o('Memory out', '@RenderMemory', 6), o('FPS', 'double', 8), o('Now ms', 'uint32', 10), o('Stop', 'bool', 13),
+          o('Tick', 'int32', 14), EO]),
+        (AP, 'Game_Loop', [AP + 'Engine_Tick.vi', AP + 'Frame_Pace.vi', AP + 'Timing_Save.vi'], [i('Channels', '@Channels', 0), i('State', S, 5),
+                                                                                                 i('Rooms', RO, 7), E], [EO]),
+        (AP, 'Sound_Loop', [AP + 'Audio_Block.vi'], [i('Channels', '@Channels', 0), i('Bank', '@Bank', 5), i('Task ID', 'uint32', 7), i('Mixer', '@Mixer', 9),
+                                                     i('Sound', 'bool', 1, 'recommended'), E], [EO]),
+        (AP, 'Timing_Save', [LV + 'Resource_Path.vi'], [i('File name', 'string', 0), i('Ms', 'array{int32}', 5), i('Tick', 'array{int32}', 7), E], [EO]),
         (AP, 'Audio_Start', [AU + 'Sound_Bank_Load.vi'], [E], [o('Bank', '@Bank', 4), o('Task ID', 'uint32', 6), o('Mixer', '@Mixer', 8), EO]),
         (AP, 'Audio_Block', [AU + 'Sound_Mix.vi'], [i('Channels', '@Channels', 0), i('Bank', '@Bank', 5), i('Task ID', 'uint32', 7), i('Mixer', '@Mixer', 9),
                                                    i('Sound', 'bool', 1, 'recommended'), E], [o('Mixer out', '@Mixer', 4), o('Stop', 'bool', 6), EO]),

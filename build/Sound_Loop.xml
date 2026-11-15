@@ -1,0 +1,25 @@
+<VI _name="Sound_Loop.vi" description="The sound loop of Main as a subVI, so that it runs in its own execution system (other 2) and never waits for the user interface thread or the picture: Audio_Block until Stop (the sound queue is released at the end of the game).">
+  <Control _name="Channels" type="cluster{ref{Queue}{uint16}.Keys,ref{Notifier}{cluster{uint32.Tick,int32.Phase,int32.PhaseTicks,int32.Level,int32.Room,int32.X10,int32.Y10,int32.VY10,int32.Mode,int32.Facing,int32.Run,int32.Vert,int32.StandY,int32.EntryX10,int32.EntryY10,int32.EntryMode,int32.Lives,int32.Score,int32.NextLife,int32.KeyR,int32.KeyB,int32.KeyY,bool.Torch,int32.FloorPhase,bool.Dead,bool.LevelStart,bool.Quit,int32.Sound,uint32.Seed,int32.DemoStep,array.2{uint8}.Tiles,array{cluster{string.ID,int32.Depth,int32.Column,array.2{uint8}.Tiles}}.World,array{cluster{int32.Kind,int32.X10,int32.Y10,int32.Dir,int32.Mode}}.Enemies,array{cluster{int32.Score,string.Name}}.Highscores,array{int32}.Name,int32.Cursor}}.Frames,ref{Queue}{int32}.Sounds}" value="[,,]" conIdx="0" connection="required" outputs="value:1001.v" uid="1001" uid_parent="root"/>
+  <Control _name="Bank" type="array{cluster{array{double}.Y}}" value="[]" conIdx="5" connection="required" outputs="value:1002.v" uid="1002" uid_parent="root"/>
+  <Control _name="Task ID" type="uint32" value="0" conIdx="7" connection="required" outputs="value:1003.v" uid="1003" uid_parent="root"/>
+  <Control _name="Mixer" type="cluster{array{double}.Current,int32.Position,int32.Priority,bool.Music,int32.MusicPos}" value="[[],0,99,false,0]" conIdx="9" connection="required" outputs="value:1004.v" uid="1004" uid_parent="root"/>
+  <Control _name="Sound" type="bool" value="true" conIdx="1" connection="recommended" outputs="value:1005.v" uid="1005" uid_parent="root"/>
+  <Control _name="error in" type="cluster{bool.status,int32.code,string.source}" value="[false,0,]" conIdx="11" connection="required" outputs="value:1006.v" uid="1006" uid_parent="root"/>
+  <Structure _name="While Loop" count="" uid="1007" uid_parent="root" label="Sound">
+    <Tunnel _id="In1" inputs="value:1001.v" outputs="value:1008.v" uid="1008" uid_parent="1007"/>
+    <Tunnel _id="In2" inputs="value:1002.v" outputs="value:1009.v" uid="1009" uid_parent="1007"/>
+    <Tunnel _id="In3" inputs="value:1003.v" outputs="value:1010.v" uid="1010" uid_parent="1007"/>
+    <Tunnel _id="In4" inputs="value:1005.v" outputs="value:1011.v" uid="1011" uid_parent="1007"/>
+    <ShiftReg uid="1012" uid_parent="1007">
+      <Left inputs="value:1004.v" outputs="value:1013.v" uid="1013" uid_parent="1012"/>
+      <Right inputs="value:1018.o0" outputs="value:1014.v" uid="1014" uid_parent="1012"/>
+    </ShiftReg>
+    <ShiftReg uid="1015" uid_parent="1007">
+      <Left inputs="value:1006.v" outputs="value:1016.v" uid="1016" uid_parent="1015"/>
+      <Right inputs="value:1018.o2" outputs="value:1017.v" uid="1017" uid_parent="1015"/>
+    </ShiftReg>
+    <Call target="Audio_Block.vi" inputs="Channels:1008.v,Bank:1009.v,Task ID:1010.v,Mixer:1013.v,Sound:1011.v,error in:1016.v" outputs="Mixer out:1018.o0,Stop:1018.o1,error out:1018.o2" uid="1018" uid_parent="1007"/>
+    <Condition inputs="value:1018.o1" value="stop" uid="1019" uid_parent="1007"/>
+  </Structure>
+  <Indicator _name="error out" type="cluster{bool.status,int32.code,string.source}" value="[false,0,]" conIdx="15" connection="recommended" inputs="value:1017.v" uid="1020" uid_parent="root"/>
+</VI>

@@ -2382,6 +2382,152 @@
           "connection": "recommended"
         },
         {
+          "name": "Tick",
+          "type": "int32",
+          "conIdx": 14,
+          "connection": "recommended"
+        },
+        {
+          "name": "error out",
+          "type": "@Error",
+          "conIdx": 15,
+          "connection": "recommended"
+        }
+      ]
+    },
+    {
+      "path": "Source\\App\\Game_Loop.vi",
+      "builder": "app",
+      "purpose": "Game_Loop",
+      "calls": [
+        "Source\\App\\Engine_Tick.vi",
+        "Source\\App\\Frame_Pace.vi",
+        "Source\\App\\Timing_Save.vi"
+      ],
+      "inputs": [
+        {
+          "name": "Channels",
+          "type": "@Channels",
+          "conIdx": 0,
+          "connection": "required"
+        },
+        {
+          "name": "State",
+          "type": "@State",
+          "conIdx": 5,
+          "connection": "required"
+        },
+        {
+          "name": "Rooms",
+          "type": "@Rooms",
+          "conIdx": 7,
+          "connection": "required"
+        },
+        {
+          "name": "error in",
+          "type": "@Error",
+          "conIdx": 11,
+          "connection": "required"
+        }
+      ],
+      "outputs": [
+        {
+          "name": "error out",
+          "type": "@Error",
+          "conIdx": 15,
+          "connection": "recommended"
+        }
+      ]
+    },
+    {
+      "path": "Source\\App\\Sound_Loop.vi",
+      "builder": "app",
+      "purpose": "Sound_Loop",
+      "calls": [
+        "Source\\App\\Audio_Block.vi"
+      ],
+      "inputs": [
+        {
+          "name": "Channels",
+          "type": "@Channels",
+          "conIdx": 0,
+          "connection": "required"
+        },
+        {
+          "name": "Bank",
+          "type": "@Bank",
+          "conIdx": 5,
+          "connection": "required"
+        },
+        {
+          "name": "Task ID",
+          "type": "uint32",
+          "conIdx": 7,
+          "connection": "required"
+        },
+        {
+          "name": "Mixer",
+          "type": "@Mixer",
+          "conIdx": 9,
+          "connection": "required"
+        },
+        {
+          "name": "Sound",
+          "type": "bool",
+          "conIdx": 1,
+          "connection": "recommended"
+        },
+        {
+          "name": "error in",
+          "type": "@Error",
+          "conIdx": 11,
+          "connection": "required"
+        }
+      ],
+      "outputs": [
+        {
+          "name": "error out",
+          "type": "@Error",
+          "conIdx": 15,
+          "connection": "recommended"
+        }
+      ]
+    },
+    {
+      "path": "Source\\App\\Timing_Save.vi",
+      "builder": "app",
+      "purpose": "Timing_Save",
+      "calls": [
+        "Source\\Level\\Resource_Path.vi"
+      ],
+      "inputs": [
+        {
+          "name": "File name",
+          "type": "string",
+          "conIdx": 0,
+          "connection": "required"
+        },
+        {
+          "name": "Ms",
+          "type": "array{int32}",
+          "conIdx": 5,
+          "connection": "required"
+        },
+        {
+          "name": "Tick",
+          "type": "array{int32}",
+          "conIdx": 7,
+          "connection": "required"
+        },
+        {
+          "name": "error in",
+          "type": "@Error",
+          "conIdx": 11,
+          "connection": "required"
+        }
+      ],
+      "outputs": [
+        {
           "name": "error out",
           "type": "@Error",
           "conIdx": 15,

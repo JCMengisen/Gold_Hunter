@@ -45,7 +45,7 @@
     <Tunnel _id="Out2" outputs="value:1042.v" uid="1042" uid_parent="1011"/>
     <Tunnel _id="Out3" outputs="value:1043.v" uid="1043" uid_parent="1011"/>
   </Structure>
-  <Node _name="Unbundle By Name" fields="Quit" inputs="input cluster:1010.o0" outputs="Quit:1044.o0" uid="1044" uid_parent="root"/>
+  <Node _name="Unbundle By Name" fields="Quit,Tick" inputs="input cluster:1010.o0" outputs="Quit:1044.o0,Tick:1044.o1" uid="1044" uid_parent="root"/>
   <Node _name="Tick Count (ms)" inputs="" outputs="millisecond timer value:1045.o0" uid="1045" uid_parent="root"/>
   <Constant type="double" value="1000" outputs="value:1046.v" uid="1046" uid_parent="root"/>
   <Node _name="Subtract" inputs="x:1045.o0,y:1006.v" outputs="x-y:1047.o0" uid="1047" uid_parent="root"/>
@@ -54,10 +54,14 @@
   <Indicator _name="Memory out" type="cluster{int32.RoomKey,int32.Key,int32.NameKey,array.2{uint8}.Lit,array.2{uint8}.Dim,array.2{uint8}.Dark,array.2{uint8}.Comp,cluster{int32.image type,int32.image depth,array{uint8}.image,array{uint8}.mask,array{uint32}.colors,cluster{int16.left,int16.top,int16.right,int16.bottom}.Rectangle}.Template,int32.CX,int32.CY,int32.X1,int32.Y1,int32.X2,int32.Y2,array{cluster{int32.Kind,int32.X10,int32.Y10,int32.Dir,int32.Mode}}.Prev,int32.HudKey,int32.HudScore,int32.HudTime,array{cluster{int32.image type,int32.image depth,array{uint8}.image,array{uint8}.mask,array{uint32}.colors,cluster{int16.left,int16.top,int16.right,int16.bottom}.Rectangle}}.Full}" value="[-1,-1,-1,[],[],[],[],[0,0,[],[],[],[0,0,0,0]],-1,-1,0,0,0,0,[],-1,-1,-1,[]]" conIdx="6" connection="recommended" inputs="value:1042.v" uid="1050" uid_parent="root"/>
   <Indicator _name="FPS" type="double" value="0" conIdx="8" connection="recommended" inputs="value:1048.o0" uid="1051" uid_parent="root"/>
   <Indicator _name="Now ms" type="uint32" value="0" conIdx="10" connection="recommended" inputs="value:1045.o0" uid="1052" uid_parent="root"/>
-  <Node _name="Not" inputs="x:1010.o1" outputs=".not. x?:1053.o0" uid="1053" uid_parent="root"/>
-  <Node _name="And" inputs="x:1044.o0,y:1053.o0" outputs="x .and. y?:1054.o0" uid="1054" uid_parent="root"/>
-  <Node _name="Unbundle By Name" fields="status" inputs="input cluster:1043.v" outputs="status:1055.o0" uid="1055" uid_parent="root"/>
-  <Node _name="Or" inputs="x:1054.o0,y:1055.o0" outputs="x .or. y?:1056.o0" uid="1056" uid_parent="root"/>
-  <Indicator _name="Stop" type="bool" value="false" conIdx="13" connection="recommended" inputs="value:1056.o0" uid="1057" uid_parent="root"/>
-  <Indicator _name="error out" type="cluster{bool.status,int32.code,string.source}" value="[false,0,]" conIdx="15" connection="recommended" inputs="value:1043.v" uid="1058" uid_parent="root"/>
+  <Constant type="int32" value="-1" outputs="value:1053.v" uid="1053" uid_parent="root"/>
+  <Node _name="To Long Integer" inputs="number:1044.o1" outputs="32bit integer:1054.o0" uid="1054" uid_parent="root"/>
+  <Node _name="Select" inputs="s:1010.o1,t:1053.v,f:1054.o0" outputs="s? t\3Af:1055.o0" uid="1055" uid_parent="root"/>
+  <Indicator _name="Tick" type="int32" value="0" conIdx="14" connection="recommended" inputs="value:1055.o0" uid="1056" uid_parent="root"/>
+  <Node _name="Not" inputs="x:1010.o1" outputs=".not. x?:1057.o0" uid="1057" uid_parent="root"/>
+  <Node _name="And" inputs="x:1044.o0,y:1057.o0" outputs="x .and. y?:1058.o0" uid="1058" uid_parent="root"/>
+  <Node _name="Unbundle By Name" fields="status" inputs="input cluster:1043.v" outputs="status:1059.o0" uid="1059" uid_parent="root"/>
+  <Node _name="Or" inputs="x:1058.o0,y:1059.o0" outputs="x .or. y?:1060.o0" uid="1060" uid_parent="root"/>
+  <Indicator _name="Stop" type="bool" value="false" conIdx="13" connection="recommended" inputs="value:1060.o0" uid="1061" uid_parent="root"/>
+  <Indicator _name="error out" type="cluster{bool.status,int32.code,string.source}" value="[false,0,]" conIdx="15" connection="recommended" inputs="value:1043.v" uid="1062" uid_parent="root"/>
 </VI>

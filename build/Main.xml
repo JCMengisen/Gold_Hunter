@@ -1,4 +1,4 @@
-<VI _name="Main.vi" description="Gold Hunter. Start: App_Init (queues, notifier), Game_Start (world, highscores), sprites, HUD and title pictures, Window_Setup, Audio_Start. Four loops: keys (Key Down / Key Up by ScanCode and the Stop button -&gt; Key_Send -&gt; queue), game (Engine_Tick 60 times per second, Frame_Pace -&gt; notifier and sound queue), picture (Render_Frame -&gt; Screen) and sound (Audio_Block). End: Esc on the title screen or Stop. Keys: arrows = walk, climb, choose letters; Space = jump; Enter = start; Esc/P = pause; Z U L U = cheat (all rooms lit, endless lives).">
+<VI _name="Main.vi" description="Gold Hunter. Start: App_Init (queues, notifier), Game_Start (world, highscores), sprites, HUD and title pictures, Window_Setup, Audio_Start. Main runs in the user interface system: keys (Key Down / Key Up by ScanCode and the Stop button -&gt; Key_Send -&gt; queue) and picture (Render_Frame in its own system -&gt; Screen). Game_Loop (standard: Engine_Tick 60 times per second, Frame_Pace) and Sound_Loop (other 2: Audio_Block) are subVIs with their own loop. Timing log of ticks and frames to Resources\Data. End: Esc on the title screen or Stop. Keys: arrows = walk, climb, choose letters; Space = jump; Enter = start; Esc/P = pause; Z U L U = cheat (all rooms lit, endless lives).">
   <Constant _name="no error" type="cluster{bool.status,int32.code,string.source}" value="[false,0,]" outputs="value:4010.v" uid="4010" uid_parent="root"/>
   <Call target="App_Init.vi" inputs="error in:4010.v" outputs="Channels:11.k,error out:11.e" uid="11" uid_parent="root"/>
   <Call target="Game_Start.vi" inputs="error in:11.e" outputs="State:12.st,Rooms:12.rooms,error out:12.e" uid="12" uid_parent="root"/>
@@ -14,6 +14,9 @@
   <Constant _name="Start ms" type="uint32" value="0" outputs="value:19.v" uid="19" uid_parent="root"/>
   <Constant _name="Tick count" type="int32" value="0" outputs="value:23.v" uid="23" uid_parent="root"/>
   <Constant _name="No keys yet" type="int32" value="0" outputs="value:24.v" uid="24" uid_parent="root"/>
+  <Constant type="int32" value="0" outputs="value:26.v" uid="26" uid_parent="root"/>
+  <Constant type="int32" value="3600" outputs="value:27.v" uid="27" uid_parent="root"/>
+  <Node _name="Initialize Array" inputs="element:26.v,dimension size:27.v" outputs="initialized array:25.z" uid="25" uid_parent="root"/>
 
   <Structure _name="While Loop" count="" uid="100" uid_parent="root" label="Keys">
     <Tunnel _id="In1" inputs="value:11.k" outputs="value:101.v" uid="101" uid_parent="100"/>
@@ -56,32 +59,9 @@
     <Condition inputs="value:150.q" value="stop" uid="151" uid_parent="100"/>
   </Structure>
 
-  <Structure _name="While Loop" count="" uid="200" uid_parent="root" label="Game (60 Hz)">
-    <Tunnel _id="In1" inputs="value:11.k" outputs="value:201.v" uid="201" uid_parent="200"/>
-    <Tunnel _id="In2" inputs="value:12.rooms" outputs="value:202.v" uid="202" uid_parent="200"/>
-    <Tunnel _id="In3" inputs="value:4010.v" outputs="value:203.v" uid="203" uid_parent="200"/>
-    <ShiftReg uid="210" uid_parent="200">
-      <Left inputs="value:12.st" outputs="value:211.v" uid="211" uid_parent="210"/>
-      <Right inputs="value:220.st" outputs="value:" uid="212" uid_parent="210"/>
-    </ShiftReg>
-    <ShiftReg uid="213" uid_parent="200">
-      <Left inputs="value:22.e" outputs="value:214.v" uid="214" uid_parent="213"/>
-      <Right inputs="value:220.e" outputs="value:215.v" uid="215" uid_parent="213"/>
-    </ShiftReg>
-    <Call target="Engine_Tick.vi" inputs="Channels:201.v,State:211.v,Rooms:202.v,error in:214.v" outputs="State out:220.st,Stop:220.stop,error out:220.e" uid="220" uid_parent="200"/>
-    <ShiftReg uid="230" uid_parent="200">
-      <Left inputs="value:19.v" outputs="value:231.v" uid="231" uid_parent="230"/>
-      <Right inputs="value:222.st" outputs="value:" uid="232" uid_parent="230"/>
-    </ShiftReg>
-    <ShiftReg uid="233" uid_parent="200">
-      <Left inputs="value:23.v" outputs="value:234.v" uid="234" uid_parent="233"/>
-      <Right inputs="value:222.n" outputs="value:" uid="235" uid_parent="233"/>
-    </ShiftReg>
-    <Call target="Frame_Pace.vi" inputs="Start ms:231.v,Count:234.v,error in:203.v" outputs="Start out:222.st,Count out:222.n,error out:" uid="222" uid_parent="200"/>
-    <Condition inputs="value:220.stop" value="stop" uid="223" uid_parent="200"/>
-  </Structure>
+  <Call target="Game_Loop.vi" inputs="Channels:11.k,State:12.st,Rooms:12.rooms,error in:22.e" outputs="error out:215.v" uid="215" uid_parent="root"/>
 
-  <Structure _name="While Loop" count="" uid="300" uid_parent="root" label="Picture">
+  <Structure _name="While Loop" count="300i.v" uid="300" uid_parent="root" label="Picture">
     <Tunnel _id="In1" inputs="value:11.k" outputs="value:301.v" uid="301" uid_parent="300"/>
     <Tunnel _id="In2" inputs="value:13.spr" outputs="value:302.v" uid="302" uid_parent="300"/>
     <Tunnel _id="In3" inputs="value:12.rooms" outputs="value:303.v" uid="303" uid_parent="300"/>
@@ -99,31 +79,33 @@
       <Left inputs="value:18.v" outputs="value:317.v" uid="317" uid_parent="316"/>
       <Right inputs="value:320.mem" outputs="value:" uid="318" uid_parent="316"/>
     </ShiftReg>
-    <Call target="Render_Frame.vi" inputs="Channels:301.v,Sprites:302.v,Hud:304.v,Title:305.v,Memory:317.v,Last ms:311.v,error in:314.v" outputs="Picture:320.pic,Memory out:320.mem,FPS:320.fps,Now ms:320.ms,Stop:320.stop,error out:320.e" uid="320" uid_parent="300"/>
+    <ShiftReg uid="330" uid_parent="300">
+      <Left inputs="value:25.z" outputs="value:331.v" uid="331" uid_parent="330"/>
+      <Right inputs="value:337.a" outputs="value:332.v" uid="332" uid_parent="330"/>
+    </ShiftReg>
+    <ShiftReg uid="333" uid_parent="300">
+      <Left inputs="value:25.z" outputs="value:334.v" uid="334" uid_parent="333"/>
+      <Right inputs="value:338.a" outputs="value:335.v" uid="335" uid_parent="333"/>
+    </ShiftReg>
+    <Call target="Render_Frame.vi" inputs="Channels:301.v,Sprites:302.v,Hud:304.v,Title:305.v,Memory:317.v,Last ms:311.v,error in:314.v" outputs="Picture:320.pic,Memory out:320.mem,FPS:320.fps,Now ms:320.ms,Stop:320.stop,Tick:320.tk,error out:320.e" uid="320" uid_parent="300"/>
+    <Constant type="int32" value="3600" outputs="value:339.v" uid="339" uid_parent="300"/>
+    <Node _name="Quotient &amp; Remainder" inputs="x:300i.v,y:339.v" outputs="x-y*floor(x/y):336.r,floor(x/y):" uid="336" uid_parent="300"/>
+    <Node _name="To Long Integer" inputs="number:320.ms" outputs="32bit integer:340.ms" uid="340" uid_parent="300"/>
+    <Node _name="Replace Array Subset" inputs="array:331.v,new element/subarray:340.ms,index:336.r" outputs="output array:337.a" uid="337" uid_parent="300"/>
+    <Node _name="Replace Array Subset" inputs="array:334.v,new element/subarray:320.tk,index:336.r" outputs="output array:338.a" uid="338" uid_parent="300"/>
     <Indicator _name="Screen" type="picture" value="" inputs="value:320.pic" uid="321" uid_parent="300"/>
     <Indicator _name="FPS" type="double" value="0" inputs="value:320.fps" uid="322" uid_parent="300"/>
     <Condition inputs="value:320.stop" value="stop" uid="328" uid_parent="300"/>
   </Structure>
 
-  <Structure _name="While Loop" count="" uid="400" uid_parent="root" label="Sound">
-    <Tunnel _id="In1" inputs="value:11.k" outputs="value:401.v" uid="401" uid_parent="400"/>
-    <Tunnel _id="In2" inputs="value:17.bank" outputs="value:402.v" uid="402" uid_parent="400"/>
-    <Tunnel _id="In3" inputs="value:17.task" outputs="value:403.v" uid="403" uid_parent="400"/>
-    <ShiftReg uid="410" uid_parent="400">
-      <Left inputs="value:17.mx" outputs="value:411.v" uid="411" uid_parent="410"/>
-      <Right inputs="value:420.mx" outputs="value:" uid="412" uid_parent="410"/>
-    </ShiftReg>
-    <ShiftReg uid="413" uid_parent="400">
-      <Left inputs="value:17.e" outputs="value:414.v" uid="414" uid_parent="413"/>
-      <Right inputs="value:420.e" outputs="value:415.v" uid="415" uid_parent="413"/>
-    </ShiftReg>
-    <Control _name="Sound" type="bool" value="true" outputs="value:416.v" uid="416" uid_parent="400"/>
-    <Call target="Audio_Block.vi" inputs="Channels:401.v,Bank:402.v,Task ID:403.v,Mixer:411.v,Sound:416.v,error in:414.v" outputs="Mixer out:420.mx,Stop:420.stop,error out:420.e" uid="420" uid_parent="400"/>
-    <Condition inputs="value:420.stop" value="stop" uid="421" uid_parent="400"/>
-  </Structure>
+  <Control _name="Sound" type="bool" value="true" outputs="value:416.v" uid="416" uid_parent="root"/>
+  <Call target="Sound_Loop.vi" inputs="Channels:11.k,Bank:17.bank,Task ID:17.task,Mixer:17.mx,Sound:416.v,error in:17.e" outputs="error out:415.v" uid="415" uid_parent="root"/>
 
   <Node _name="Merge Errors" inputs="error in:215.v,error in:315.v" outputs="error out:500.e" uid="500" uid_parent="root"/>
   <Call target="App_Close.vi" inputs="Channels:11.k,error in:500.e" outputs="error out:501.e" uid="501" uid_parent="root"/>
   <Call target="Audio_Close.vi" inputs="Task ID:17.task,error in:415.v" outputs="error out:" uid="502" uid_parent="root"/>
+  <Constant type="string" value="timing_render.csv" outputs="value:520.v" uid="520" uid_parent="root"/>
+  <Constant _name="no error" type="cluster{bool.status,int32.code,string.source}" value="[false,0,]" outputs="value:521.v" uid="521" uid_parent="root"/>
+  <Call target="Timing_Save.vi" inputs="File name:520.v,Ms:332.v,Tick:335.v,error in:521.v" outputs="error out:" uid="522" uid_parent="root"/>
   <Indicator _name="error out" type="cluster{bool.status,int32.code,string.source}" value="[false,0,]" inputs="value:501.e" uid="510" uid_parent="root"/>
 </VI>

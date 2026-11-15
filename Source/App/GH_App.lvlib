@@ -12,7 +12,10 @@
 	<Item Name="Audio_Start.vi" Type="VI" URL="../Audio_Start.vi"/>
 	<Item Name="Engine_Tick.vi" Type="VI" URL="../Engine_Tick.vi"/>
 	<Item Name="Frame_Pace.vi" Type="VI" URL="../Frame_Pace.vi"/>
+	<Item Name="Game_Loop.vi" Type="VI" URL="../Game_Loop.vi"/>
 	<Item Name="Key_Send.vi" Type="VI" URL="../Key_Send.vi"/>
 	<Item Name="Render_Frame.vi" Type="VI" URL="../Render_Frame.vi"/>
+	<Item Name="Sound_Loop.vi" Type="VI" URL="../Sound_Loop.vi"/>
+	<Item Name="Timing_Save.vi" Type="VI" URL="../Timing_Save.vi"/>
 	<Item Name="Window_Setup.vi" Type="VI" URL="../Window_Setup.vi"/>
 </Library>

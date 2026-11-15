@@ -242,17 +242,21 @@ Neuzeichnen des Fensters (Klick, Verdecken) malt LabVIEW nur den letzten Wert. D
 Bildwiederholrate. Mit dem alten Takt von 16 ms (62,5 Hz) machte Claude gegenüber dem 60-Hz-Monitor 2,5-mal pro Sekunde
 einen Doppelschritt (leichtes Ruckeln). Kleine, häufig gerufene SubVIs sind *inline*, alle übrigen ohne Debugging.
 
-**Ausführungssysteme (15.11.2026):** `Main.vi` läuft im *user interface*-System; dort bleiben nur Tasten (Event-Struktur,
-`Key_Send`) und das Schreiben der Anzeigen. Die Arbeit jeder Schleife liegt in einem eigenen, nicht inline gesetzten SubVI
-mit eigenem System, damit nichts davon den UI-Thread belegt oder warten lässt und Bild und Ton sich nicht gegenseitig sperren:
+**Ausführungssysteme (15.11.2026, vom Benutzer bestätigt: "es ruckelt fast nichts mehr"):** Spiel- und Ton-Schleife
+stecken als ganze Schleife in eigenen SubVIs mit eigenem System, `Render_Frame` ebenso; `Main.vi` selbst läuft im
+Standard-System (*same as caller*) und hält nur Tasten und Bild-Schleife. Ein Versuch mit `Main.vi` im
+*user interface*-System machte das Ruckeln deutlich schlimmer: die Bild-Schleife hing am UI-Thread und verpasste Ticks.
 
 | SubVI | System | Inhalt |
 |---|---|---|
-| `Engine_Tick`, `Frame_Pace` | standard | Spiellogik, Warten auf den nächsten Tick |
-| `Render_Frame` | other 1 | Warten auf den Zustand, ganzes Bild aufbauen (Frame_Draw, Scene_Blit) |
-| `Audio_Block` | other 2 | Ton mischen und streamen |
+| `Game_Loop` | standard | Schleife: `Engine_Tick` + `Frame_Pace` (beide inline), 60 Ticks pro Sekunde |
+| `Sound_Loop` | other 2 | Schleife: `Audio_Block` (Ton mischen und streamen) |
+| `Render_Frame` | other 1 | aus der Bild-Schleife von Main: Warten auf den Zustand, ganzes Bild aufbauen |
 
-Ihre SubVIs (inline oder *same as caller*) laufen im System des Aufrufers mit.
+**Zeitprotokoll** (`TIMING_LOG` in `gh_lib.py`): `Game_Loop` merkt sich die Startzeit jedes Ticks, die Bild-Schleife je Bild
+die Zeit und den gezeichneten Tick (Ringpuffer, die letzten `TIMING_N` = 3600 Einträge = 60 s). Beim Beenden schreibt
+`Timing_Save` beides nach `Resources\Data	iming_game.csv` und `timing_render.csv`; `python build	iming_report.py` wertet
+aus (verspätete Ticks, übersprungene Ticks im Bild, Abstände).
 
 ### Übernommen aus `C:\Projects\Paul_Pensionierung`
 

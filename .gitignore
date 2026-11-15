@@ -15,3 +15,6 @@ __pycache__/
 # Zwischenstaende des Demo-Planers
 build/plan_demo.log
 build/demo_partial.json
+
+# Zeitprotokoll von Main.vi (Ruckel-Suche, build/timing_report.py)
+Resources/Data/timing_*.csv

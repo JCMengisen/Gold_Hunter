@@ -372,7 +372,7 @@ CHEAT_IGNORE = [42, 54, 58, 29, 56]
 CHUTE10 = 12
 
 # Zeitprotokoll (Ruckel-Suche): Game_Loop und die Bild-Schleife von Main merken sich die letzten TIMING_N Ticks/Bilder
-# und schreiben sie am Ende nach Resources\Data (Timing_Save). False = nicht schreiben.
+# und schreiben sie am Ende nach Resources\Data (Timing_Save) - nur wenn der Cheat-Modus im Lauf aktiv war. False = nie.
 TIMING_LOG = True
 TIMING_N = 3600
 TIMING_GAME, TIMING_RENDER = 'timing_game.csv', 'timing_render.csv'

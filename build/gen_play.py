@@ -697,7 +697,7 @@ def game_start():
 def game_step():
     d = Doc('Game_Step.vi', 'One game tick, a state machine over the phases ' + ', '.join(PHASES) + '. Title: card, short instructions, then the highscore '
             'table, then the demo; Enter starts, Esc quits. Ready: short pause with a message. Playing: Game_Play; a hit or a deadly fall '
-            'starts Dying, the treasure room starts Treasure. Paused: Esc/P or Enter continues. Dying: one life less, then Ready at the '
+            'starts Dying, the treasure room starts Treasure. Paused: Space, Enter or an arrow continues, Esc/P again ends the game (GameOver). Dying: one life less, then Ready at the '
             'arrival point or GameOver. Treasure: playing against the clock, then LevelDone and the next level. GameOver: then Name '
             'entry (arrows choose letters, Enter saves) when the score is good enough, else Title. Sound bits for the audio loop; music '
             'during ' + ', '.join(MUSIC_PHASES) + '. Keys: ' + ', '.join(f'{i} {k}' for i, k in enumerate(KEYS)) + '.')
@@ -784,8 +784,11 @@ def game_step():
 
     def f_paused(i):
         s, kk, rm, err = i
-        go = d.or_(d.eq(kk, c(IN['Pause'])), d.eq(kk, c(IN['Start'])))
-        return [d.sel(go, to(s, 'Playing'), s), err]
+        # Esc (oder P) nochmals: Spiel beenden ueber Game Over (Highscore bleibt moeglich); Leertaste, Enter, Pfeile: weiter
+        go = anyb(d, *[d.eq(kk, c(IN[n])) for n in ('Start', 'Jump', 'Up', 'Down', 'Left', 'Right')])
+        end = d.eq(kk, c(IN['Pause']))
+        over = to(s, 'GameOver', SND['gameover'], [('Run', c(0)), ('Vert', c(0))])
+        return [d.sel(end, over, d.sel(go, to(s, 'Playing'), s)), err]
 
     def f_dying(i):
         s, kk, rm, err = i
@@ -1253,7 +1256,7 @@ def overlay_draw():
     frames = [(str(PH['Title']), f_title),
               (str(PH['Demo']), frame(ww, ['DEMO - PRESS ENTER'], [BOX_WIDE[1] + 12])),
               (str(PH['Ready']), f_ready),
-              (str(PH['Paused']), frame(sw, ['PAUSE'], [BOX_SMALL[1] + 12])),
+              (str(PH['Paused']), frame(bw, ['PAUSE', 'SPACE = CONTINUE', 'ESC = END GAME'], [BOX_BIG[1] + 16, BOX_BIG[1] + 120, BOX_BIG[1] + 184])),
               (str(PH['Treasure']), f_treasure),
               (str(PH['LevelDone']), frame(sw, ['LEVEL CLEAR'], [BOX_SMALL[1] + 12])),
               (str(PH['GameOver']), frame(sw, ['GAME OVER'], [BOX_SMALL[1] + 12])),
@@ -1759,9 +1762,13 @@ def app_close():
 
 def window_setup():
     d = Doc('Window_Setup.vi', f'Sets up the window of Main: picture "Screen" at the top left with a fixed drawing area of {W} x {H}, never '
-            'erasing; all other controls are moved to the right outside the visible area; the panel is sized to the screen.')
+            'erasing; all other controls are moved to the right outside the visible area; the panel is sized to the screen; no title bar '
+            '(the X at the top right of the screen ends the game).')
     vi = d.ctrl('VI', 'ref{LV.VI}', '', 0)
-    e = d.err_in()
+    e0 = d.err_in()
+    tb = d.node('Property Node', [('reference', vi), ('error in (no error)', e0), ('Front Panel Window\\3ATitle Bar Visible', d.const('bool', 'false', 'no title bar'))],
+                ['-reference out', 'error out'], extra='fields="write+Front Panel Window\\3ATitle Bar Visible" type="{LV.VI}"')
+    e = tb['error out']
     org = d.node('Property Node', [('reference', vi), ('error in (no error)', e),
                                    ('Front Panel Window\\3AOrigin', d.const('cluster{int16.Horizontal,int16.Vertical}', '[0,0]', 'Origin'))],
                  ['-reference out', 'error out'], extra='fields="write+Front Panel Window\\3AOrigin" type="{LV.VI}"')
@@ -1938,14 +1945,15 @@ def log_put(d, arr, i, value):
 def game_loop():
     d = Doc('Game_Loop.vi', f'The game loop of Main as a subVI, so that it runs in its own execution system (standard) and never needs the '
             f'user interface thread: Engine_Tick {FPS} times per second, paced by Frame_Pace, until Stop. Timing log: the start time of every '
-            f'tick (ms) and the game tick, the last {TIMING_N} ticks, written to Resources\\Data\\{TIMING_GAME} at the end (Timing_Save).')
+            f'tick (ms) and the game tick, the last {TIMING_N} ticks, written to Resources\\Data\\{TIMING_GAME} at the end (Timing_Save) - '
+            f'only when the cheat mode was on at some point (Cheat used, also for the picture log of Main).')
     k = d.ctrl('Channels', CHANNELS, '[,,]', 0)
     st0 = d.ctrl('State', STATE, STATE_V, 5)
     rooms = d.ctrl('Rooms', ROOMS, '[]', 7)
     e = d.err_in()
     c = d.i32c
     zeros = d.node('Initialize Array', [('element', c(0)), ('dimension size', c(TIMING_N))], ['initialized array'])['initialized array']
-    start0, count0 = d.const('uint32', '0', 'Start ms'), c(0)
+    start0, count0, cheat0 = d.const('uint32', '0', 'Start ms'), c(0), d.const('bool', 'false', 'no cheat yet')
     lp = d.begin('While Loop', 'count="@i.v"', 'Game (60 Hz)')
     i = f'{lp}i.v'
     k1, r1 = d.tunnel_in(1, k), d.tunnel_in(2, rooms)
@@ -1955,11 +1963,14 @@ def game_loop():
     n_l, n_r = shiftreg(d, lp, count0)
     lm_l, lm_r = shiftreg(d, lp, zeros)
     lt_l, lt_r = shiftreg(d, lp, zeros)
+    ch_l, ch_r = shiftreg(d, lp, cheat0)
     t0 = d.node('Tick Count (ms)', [], ['millisecond timer value'])['millisecond timer value']
     et = d.call('Engine_Tick.vi', [('Channels', k1), ('State', s_l), ('Rooms', r1), ('error in', e_l)], ['State out', 'Stop', 'error out'])
     fp = d.call('Frame_Pace.vi', [('Start ms', t_l), ('Count', n_l), ('error in', d.const(ERR, ERR_V, 'no error'))], ['Start out', 'Count out', '-error out'])
-    tk, = d.unb(et['State out'], ['Tick'])
+    tk, mark, ph = d.unb(et['State out'], ['Tick', 'DemoStep', 'Phase'])
     lm2, lt2 = log_put(d, lm_l, i, d.i32(t0)), log_put(d, lt_l, i, d.i32(tk))
+    # Cheat (Z U L U) = Marke in DemoStep, ausser in der Demo
+    ch2 = d.or_(ch_l, d.and_(d.eq(mark, c(CHEAT_MARK)), d.ne(ph, c(PH['Demo']))))
     condition(d, lp, et['Stop'])
     d.end()
     close_reg(d, s_r, et['State out'])
@@ -1967,9 +1978,14 @@ def game_loop():
     close_reg(d, t_r, fp['Start out'])
     close_reg(d, n_r, fp['Count out'])
     ms, ticks = close_reg(d, lm_r, lm2), close_reg(d, lt_r, lt2)
+    cheat = close_reg(d, ch_r, ch2)
     if TIMING_LOG:
-        d.call('Timing_Save.vi', [('File name', d.const('string', TIMING_GAME)), ('Ms', ms), ('Tick', ticks), ('error in', d.const(ERR, ERR_V, 'no error'))],
-               ['-error out'])
+        def save(j):
+            d.call('Timing_Save.vi', [('File name', d.const('string', TIMING_GAME)), ('Ms', j[0]), ('Tick', j[1]),
+                                      ('error in', d.const(ERR, ERR_V, 'no error'))], ['-error out'])
+            return []
+        d.case(cheat, [ms, ticks], [('True', save), ('False', lambda j: [])], 0)
+    d.indic('Cheat used', 'bool', 'false', cheat, 4)
     d.err_out(err)
     d.write()
 
@@ -2185,7 +2201,7 @@ def contract():
          [o('Picture', 'picture', 4), o('Memory out', '@RenderMemory', 6), o('FPS', 'double', 8), o('Now ms', 'uint32', 10), o('Stop', 'bool', 13),
           o('Tick', 'int32', 14), EO]),
         (AP, 'Game_Loop', [AP + 'Engine_Tick.vi', AP + 'Frame_Pace.vi', AP + 'Timing_Save.vi'], [i('Channels', '@Channels', 0), i('State', S, 5),
-                                                                                                 i('Rooms', RO, 7), E], [EO]),
+                                                                                                 i('Rooms', RO, 7), E], [o('Cheat used', 'bool', 4), EO]),
         (AP, 'Sound_Loop', [AP + 'Audio_Block.vi'], [i('Channels', '@Channels', 0), i('Bank', '@Bank', 5), i('Task ID', 'uint32', 7), i('Mixer', '@Mixer', 9),
                                                      i('Sound', 'bool', 1, 'recommended'), E], [EO]),
         (AP, 'Timing_Save', [LV + 'Resource_Path.vi'], [i('File name', 'string', 0), i('Ms', 'array{int32}', 5), i('Tick', 'array{int32}', 7), E], [EO]),

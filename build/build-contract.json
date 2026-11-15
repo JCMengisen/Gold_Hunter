@@ -2432,6 +2432,12 @@
       ],
       "outputs": [
         {
+          "name": "Cheat used",
+          "type": "bool",
+          "conIdx": 4,
+          "connection": "recommended"
+        },
+        {
           "name": "error out",
           "type": "@Error",
           "conIdx": 15,

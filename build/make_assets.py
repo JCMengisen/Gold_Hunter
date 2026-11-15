@@ -909,7 +909,21 @@ def draw_hud():
         d.rectangle([x0, 3, x1, 33], fill=(8, 6, 12), outline=rgb('#C8961E'))
         d.line([x0, 3, x1, 3], fill=GOLD)
         text(im, x0 + 5, 6, name, rgb('#C8961E'))
+    draw_close(im, CLOSE_HUD)
     return im
+
+
+# Schliessen-Knopf (X) oben rechts: im HUD in der Ecke des TIME-Felds, auf den Titelseiten im Rahmen.
+# Ein Mausklick in die Ecke oben rechts (Main.vi, Screen: Mouse Down) beendet das Spiel.
+CLOSE_HUD, CLOSE_TITLE = (620, 6), (W - 14, 3)
+
+
+def draw_close(im, pos):
+    x, y = pos
+    d = ImageDraw.Draw(im)
+    d.rectangle([x, y, x + 10, y + 10], fill=rgb('#7A1414'), outline=rgb('#C8961E'))
+    d.line([x + 3, y + 3, x + 7, y + 7], fill=(255, 240, 220))
+    d.line([x + 3, y + 7, x + 7, y + 3], fill=(255, 240, 220))
 
 
 def hud_sample(hud):
@@ -972,6 +986,7 @@ def stone_card(title_page):
     d.rectangle([16, 16, W - 17, 343], outline=(0, 0, 0))
     # Wurzeln und Ranken von der Decke (wie in den Raeumen: Decke = Zeile 0)
     grow_roots(d, ['#' * COLS] + ['.' * COLS] * (ROWS - 1), 77)
+    draw_close(im, CLOSE_TITLE)
     if not title_page:
         return help_text(im)
     title = 'GOLD HUNTER'
@@ -988,7 +1003,7 @@ def stone_card(title_page):
         x += 36
     start = 'ENTER = START'
     text(im, (W - text_w(start, 3)) // 2, 276, start, (255, 255, 255), 3, shadow=(0, 0, 0))
-    for i, line in enumerate(('ARROWS = MOVE AND CLIMB    SPACE = JUMP    ESC = PAUSE',)):
+    for i, line in enumerate(('ARROWS = MOVE AND CLIMB    SPACE = JUMP    ESC = PAUSE    X = QUIT',)):
         text(im, (W - text_w(line)) // 2, 316 + i * 12, line, rgb('#C8961E'))
     return im
 
@@ -1002,8 +1017,8 @@ def help_text(im):
     import gh_lib
     head = 'HOW TO PLAY'
     text(im, (W - text_w(head, 4)) // 2, 34, head, GOLD, 4, shadow=(60, 24, 0), col2=GOLD_LO)
-    sub = 'GUIDE CLAUDE DOWN THROUGH THE PYRAMID INTO THE TREASURE CHAMBER'
-    text(im, (W - text_w(sub)) // 2, 70, sub, rgb('#F0B890'), shadow=(0, 0, 0))
+    sub = 'FIND THE TREASURE ROOM AT THE VERY BOTTOM OF THE PYRAMID'
+    text(im, (W - text_w(sub)) // 2, 68, sub, GOLD, shadow=(0, 0, 0))
     panel = Image.new('RGBA', (W, 360), (0, 0, 0, 0))     # dunkle Tafel hinter dem Text
     ImageDraw.Draw(panel).rectangle([40, 84, W - 41, 297], fill=(10, 6, 4, 150))
     im.alpha_composite(panel)
@@ -1045,7 +1060,7 @@ def help_text(im):
         text(im, 168, y0 + 18, line, rgb('#E8E4D0'), shadow=(0, 0, 0))
     start = 'ENTER = START'
     text(im, (W - text_w(start, 2)) // 2, 302, start, (255, 255, 255), 2, shadow=(0, 0, 0))
-    keys = "ARROWS = WALK AND CLIMB    SPACE = JUMP    ESC / P = PAUSE"
+    keys = "ARROWS = WALK AND CLIMB   SPACE = JUMP   ESC = PAUSE, ESC AGAIN = END"
     text(im, (W - text_w(keys)) // 2, 320, keys, rgb('#C8961E'))
     return im
 

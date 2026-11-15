@@ -1,4 +1,4 @@
-<VI _name="Game_Loop.vi" description="The game loop of Main as a subVI, so that it runs in its own execution system (standard) and never needs the user interface thread: Engine_Tick 60 times per second, paced by Frame_Pace, until Stop. Timing log: the start time of every tick (ms) and the game tick, the last 3600 ticks, written to Resources\Data\timing_game.csv at the end (Timing_Save).">
+<VI _name="GH_App.lvlib:Game_Loop.vi" description="The game loop of Main as a subVI, so that it runs in its own execution system (standard) and never needs the user interface thread: Engine_Tick 60 times per second, paced by Frame_Pace, until Stop. Timing log: the start time of every tick (ms) and the game tick, the last 3600 ticks, written to Resources\Data\timing_game.csv at the end (Timing_Save) - only when the cheat mode was on at some point (Cheat used, also for the picture log of Main).">
   <Control _name="Channels" type="cluster{ref{Queue}{uint16}.Keys,ref{Notifier}{cluster{uint32.Tick,int32.Phase,int32.PhaseTicks,int32.Level,int32.Room,int32.X10,int32.Y10,int32.VY10,int32.Mode,int32.Facing,int32.Run,int32.Vert,int32.StandY,int32.EntryX10,int32.EntryY10,int32.EntryMode,int32.Lives,int32.Score,int32.NextLife,int32.KeyR,int32.KeyB,int32.KeyY,bool.Torch,int32.FloorPhase,bool.Dead,bool.LevelStart,bool.Quit,int32.Sound,uint32.Seed,int32.DemoStep,array.2{uint8}.Tiles,array{cluster{string.ID,int32.Depth,int32.Column,array.2{uint8}.Tiles}}.World,array{cluster{int32.Kind,int32.X10,int32.Y10,int32.Dir,int32.Mode}}.Enemies,array{cluster{int32.Score,string.Name}}.Highscores,array{int32}.Name,int32.Cursor}}.Frames,ref{Queue}{int32}.Sounds}" value="[,,]" conIdx="0" connection="required" outputs="value:1001.v" uid="1001" uid_parent="root"/>
   <Control _name="State" type="cluster{uint32.Tick,int32.Phase,int32.PhaseTicks,int32.Level,int32.Room,int32.X10,int32.Y10,int32.VY10,int32.Mode,int32.Facing,int32.Run,int32.Vert,int32.StandY,int32.EntryX10,int32.EntryY10,int32.EntryMode,int32.Lives,int32.Score,int32.NextLife,int32.KeyR,int32.KeyB,int32.KeyY,bool.Torch,int32.FloorPhase,bool.Dead,bool.LevelStart,bool.Quit,int32.Sound,uint32.Seed,int32.DemoStep,array.2{uint8}.Tiles,array{cluster{string.ID,int32.Depth,int32.Column,array.2{uint8}.Tiles}}.World,array{cluster{int32.Kind,int32.X10,int32.Y10,int32.Dir,int32.Mode}}.Enemies,array{cluster{int32.Score,string.Name}}.Highscores,array{int32}.Name,int32.Cursor}" value="[0,0,0,1,0,0,0,0,0,0,0,0,0,0,0,0,4,0,10000,0,0,0,false,0,false,false,false,0,12345,0,[],[],[],[],[0,0,0],0]" conIdx="5" connection="required" outputs="value:1002.v" uid="1002" uid_parent="root"/>
   <Control _name="Rooms" type="array{cluster{string.ID,int32.Depth,int32.Column,array.2{uint8}.Tiles}}" value="[]" conIdx="7" connection="required" outputs="value:1003.v" uid="1003" uid_parent="root"/>
@@ -8,50 +8,74 @@
   <Node _name="Initialize Array" inputs="element:1005.v,dimension size:1006.v" outputs="initialized array:1007.o0" uid="1007" uid_parent="root"/>
   <Constant _name="Start ms" type="uint32" value="0" outputs="value:1008.v" uid="1008" uid_parent="root"/>
   <Constant type="int32" value="0" outputs="value:1009.v" uid="1009" uid_parent="root"/>
-  <Structure _name="While Loop" count="1010i.v" uid="1010" uid_parent="root" label="Game (60 Hz)">
-    <Tunnel _id="In1" inputs="value:1001.v" outputs="value:1011.v" uid="1011" uid_parent="1010"/>
-    <Tunnel _id="In2" inputs="value:1003.v" outputs="value:1012.v" uid="1012" uid_parent="1010"/>
-    <ShiftReg uid="1013" uid_parent="1010">
-      <Left inputs="value:1002.v" outputs="value:1014.v" uid="1014" uid_parent="1013"/>
-      <Right inputs="value:1032.o0" outputs="value:1015.v" uid="1015" uid_parent="1013"/>
+  <Constant _name="no cheat yet" type="bool" value="false" outputs="value:1010.v" uid="1010" uid_parent="root"/>
+  <Structure _name="While Loop" count="1011i.v" uid="1011" uid_parent="root" label="Game (60 Hz)">
+    <Tunnel _id="In1" inputs="value:1001.v" outputs="value:1012.v" uid="1012" uid_parent="1011"/>
+    <Tunnel _id="In2" inputs="value:1003.v" outputs="value:1013.v" uid="1013" uid_parent="1011"/>
+    <ShiftReg uid="1014" uid_parent="1011">
+      <Left inputs="value:1002.v" outputs="value:1015.v" uid="1015" uid_parent="1014"/>
+      <Right inputs="value:1036.o0" outputs="value:1016.v" uid="1016" uid_parent="1014"/>
     </ShiftReg>
-    <ShiftReg uid="1016" uid_parent="1010">
-      <Left inputs="value:1004.v" outputs="value:1017.v" uid="1017" uid_parent="1016"/>
-      <Right inputs="value:1032.o2" outputs="value:1018.v" uid="1018" uid_parent="1016"/>
+    <ShiftReg uid="1017" uid_parent="1011">
+      <Left inputs="value:1004.v" outputs="value:1018.v" uid="1018" uid_parent="1017"/>
+      <Right inputs="value:1036.o2" outputs="value:1019.v" uid="1019" uid_parent="1017"/>
     </ShiftReg>
-    <ShiftReg uid="1019" uid_parent="1010">
-      <Left inputs="value:1008.v" outputs="value:1020.v" uid="1020" uid_parent="1019"/>
-      <Right inputs="value:1034.o0" outputs="value:1021.v" uid="1021" uid_parent="1019"/>
+    <ShiftReg uid="1020" uid_parent="1011">
+      <Left inputs="value:1008.v" outputs="value:1021.v" uid="1021" uid_parent="1020"/>
+      <Right inputs="value:1038.o0" outputs="value:1022.v" uid="1022" uid_parent="1020"/>
     </ShiftReg>
-    <ShiftReg uid="1022" uid_parent="1010">
-      <Left inputs="value:1009.v" outputs="value:1023.v" uid="1023" uid_parent="1022"/>
-      <Right inputs="value:1034.o1" outputs="value:1024.v" uid="1024" uid_parent="1022"/>
+    <ShiftReg uid="1023" uid_parent="1011">
+      <Left inputs="value:1009.v" outputs="value:1024.v" uid="1024" uid_parent="1023"/>
+      <Right inputs="value:1038.o1" outputs="value:1025.v" uid="1025" uid_parent="1023"/>
     </ShiftReg>
-    <ShiftReg uid="1025" uid_parent="1010">
-      <Left inputs="value:1007.o0" outputs="value:1026.v" uid="1026" uid_parent="1025"/>
-      <Right inputs="value:1039.o0" outputs="value:1027.v" uid="1027" uid_parent="1025"/>
+    <ShiftReg uid="1026" uid_parent="1011">
+      <Left inputs="value:1007.o0" outputs="value:1027.v" uid="1027" uid_parent="1026"/>
+      <Right inputs="value:1043.o0" outputs="value:1028.v" uid="1028" uid_parent="1026"/>
     </ShiftReg>
-    <ShiftReg uid="1028" uid_parent="1010">
-      <Left inputs="value:1007.o0" outputs="value:1029.v" uid="1029" uid_parent="1028"/>
-      <Right inputs="value:1043.o0" outputs="value:1030.v" uid="1030" uid_parent="1028"/>
+    <ShiftReg uid="1029" uid_parent="1011">
+      <Left inputs="value:1007.o0" outputs="value:1030.v" uid="1030" uid_parent="1029"/>
+      <Right inputs="value:1047.o0" outputs="value:1031.v" uid="1031" uid_parent="1029"/>
     </ShiftReg>
-    <Node _name="Tick Count (ms)" inputs="" outputs="millisecond timer value:1031.o0" uid="1031" uid_parent="1010"/>
-    <Call target="Engine_Tick.vi" inputs="Channels:1011.v,State:1014.v,Rooms:1012.v,error in:1017.v" outputs="State out:1032.o0,Stop:1032.o1,error out:1032.o2" uid="1032" uid_parent="1010"/>
-    <Constant _name="no error" type="cluster{bool.status,int32.code,string.source}" value="[false,0,]" outputs="value:1033.v" uid="1033" uid_parent="1010"/>
-    <Call target="Frame_Pace.vi" inputs="Start ms:1020.v,Count:1023.v,error in:1033.v" outputs="Start out:1034.o0,Count out:1034.o1,error out:" uid="1034" uid_parent="1010"/>
-    <Node _name="Unbundle By Name" fields="Tick" inputs="input cluster:1032.o0" outputs="Tick:1035.o0" uid="1035" uid_parent="1010"/>
-    <Node _name="To Long Integer" inputs="number:1031.o0" outputs="32bit integer:1036.o0" uid="1036" uid_parent="1010"/>
-    <Constant type="int32" value="3600" outputs="value:1037.v" uid="1037" uid_parent="1010"/>
-    <Node _name="Quotient &amp; Remainder" inputs="x:1010i.v,y:1037.v" outputs="x-y*floor(x/y):1038.o0,floor(x/y):1038.o1" uid="1038" uid_parent="1010"/>
-    <Node _name="Replace Array Subset" inputs="array:1026.v,new element/subarray:1036.o0,index:1038.o0" outputs="output array:1039.o0" uid="1039" uid_parent="1010"/>
-    <Node _name="To Long Integer" inputs="number:1035.o0" outputs="32bit integer:1040.o0" uid="1040" uid_parent="1010"/>
-    <Constant type="int32" value="3600" outputs="value:1041.v" uid="1041" uid_parent="1010"/>
-    <Node _name="Quotient &amp; Remainder" inputs="x:1010i.v,y:1041.v" outputs="x-y*floor(x/y):1042.o0,floor(x/y):1042.o1" uid="1042" uid_parent="1010"/>
-    <Node _name="Replace Array Subset" inputs="array:1029.v,new element/subarray:1040.o0,index:1042.o0" outputs="output array:1043.o0" uid="1043" uid_parent="1010"/>
-    <Condition inputs="value:1032.o1" value="stop" uid="1044" uid_parent="1010"/>
+    <ShiftReg uid="1032" uid_parent="1011">
+      <Left inputs="value:1010.v" outputs="value:1033.v" uid="1033" uid_parent="1032"/>
+      <Right inputs="value:1053.o0" outputs="value:1034.v" uid="1034" uid_parent="1032"/>
+    </ShiftReg>
+    <Node _name="Tick Count (ms)" inputs="" outputs="millisecond timer value:1035.o0" uid="1035" uid_parent="1011"/>
+    <Call target="Engine_Tick.vi" inputs="Channels:1012.v,State:1015.v,Rooms:1013.v,error in:1018.v" outputs="State out:1036.o0,Stop:1036.o1,error out:1036.o2" uid="1036" uid_parent="1011"/>
+    <Constant _name="no error" type="cluster{bool.status,int32.code,string.source}" value="[false,0,]" outputs="value:1037.v" uid="1037" uid_parent="1011"/>
+    <Call target="Frame_Pace.vi" inputs="Start ms:1021.v,Count:1024.v,error in:1037.v" outputs="Start out:1038.o0,Count out:1038.o1,error out:" uid="1038" uid_parent="1011"/>
+    <Node _name="Unbundle By Name" fields="Tick,DemoStep,Phase" inputs="input cluster:1036.o0" outputs="Tick:1039.o0,DemoStep:1039.o1,Phase:1039.o2" uid="1039" uid_parent="1011"/>
+    <Node _name="To Long Integer" inputs="number:1035.o0" outputs="32bit integer:1040.o0" uid="1040" uid_parent="1011"/>
+    <Constant type="int32" value="3600" outputs="value:1041.v" uid="1041" uid_parent="1011"/>
+    <Node _name="Quotient &amp; Remainder" inputs="x:1011i.v,y:1041.v" outputs="x-y*floor(x/y):1042.o0,floor(x/y):1042.o1" uid="1042" uid_parent="1011"/>
+    <Node _name="Replace Array Subset" inputs="array:1027.v,new element/subarray:1040.o0,index:1042.o0" outputs="output array:1043.o0" uid="1043" uid_parent="1011"/>
+    <Node _name="To Long Integer" inputs="number:1039.o0" outputs="32bit integer:1044.o0" uid="1044" uid_parent="1011"/>
+    <Constant type="int32" value="3600" outputs="value:1045.v" uid="1045" uid_parent="1011"/>
+    <Node _name="Quotient &amp; Remainder" inputs="x:1011i.v,y:1045.v" outputs="x-y*floor(x/y):1046.o0,floor(x/y):1046.o1" uid="1046" uid_parent="1011"/>
+    <Node _name="Replace Array Subset" inputs="array:1030.v,new element/subarray:1044.o0,index:1046.o0" outputs="output array:1047.o0" uid="1047" uid_parent="1011"/>
+    <Constant type="int32" value="-1" outputs="value:1048.v" uid="1048" uid_parent="1011"/>
+    <Node _name="Equal?" inputs="x:1039.o1,y:1048.v" outputs="x = y?:1049.o0" uid="1049" uid_parent="1011"/>
+    <Constant type="int32" value="9" outputs="value:1050.v" uid="1050" uid_parent="1011"/>
+    <Node _name="Not Equal?" inputs="x:1039.o2,y:1050.v" outputs="x != y?:1051.o0" uid="1051" uid_parent="1011"/>
+    <Node _name="And" inputs="x:1049.o0,y:1051.o0" outputs="x .and. y?:1052.o0" uid="1052" uid_parent="1011"/>
+    <Node _name="Or" inputs="x:1033.v,y:1052.o0" outputs="x .or. y?:1053.o0" uid="1053" uid_parent="1011"/>
+    <Condition inputs="value:1036.o1" value="stop" uid="1054" uid_parent="1011"/>
   </Structure>
-  <Constant type="string" value="timing_game.csv" outputs="value:1045.v" uid="1045" uid_parent="root"/>
-  <Constant _name="no error" type="cluster{bool.status,int32.code,string.source}" value="[false,0,]" outputs="value:1046.v" uid="1046" uid_parent="root"/>
-  <Call target="Timing_Save.vi" inputs="File name:1045.v,Ms:1027.v,Tick:1030.v,error in:1046.v" outputs="error out:" uid="1047" uid_parent="root"/>
-  <Indicator _name="error out" type="cluster{bool.status,int32.code,string.source}" value="[false,0,]" conIdx="15" connection="recommended" inputs="value:1018.v" uid="1048" uid_parent="root"/>
+  <Structure _name="Case Structure" selectin="1034.v" uid="1055" uid_parent="root">
+    <Tunnel _id="In1" inputs="value:1028.v" uid="1056" uid_parent="1055"/>
+    <Tunnel _id="In2" inputs="value:1031.v" uid="1057" uid_parent="1055"/>
+    <CaseFrame selector="True" selectout="" uid="1058" uid_parent="1055">
+      <Tunnel _id="In1" outputs="value:1059.v" uid="1059" uid_parent="1058"/>
+      <Tunnel _id="In2" outputs="value:1060.v" uid="1060" uid_parent="1058"/>
+      <Constant type="string" value="timing_game.csv" outputs="value:1061.v" uid="1061" uid_parent="1058"/>
+      <Constant _name="no error" type="cluster{bool.status,int32.code,string.source}" value="[false,0,]" outputs="value:1062.v" uid="1062" uid_parent="1058"/>
+      <Call target="Timing_Save.vi" inputs="File name:1061.v,Ms:1059.v,Tick:1060.v,error in:1062.v" outputs="error out:" uid="1063" uid_parent="1058"/>
+    </CaseFrame>
+    <CaseFrame selector="False" selectout="" uid="1064" uid_parent="1055">
+      <Tunnel _id="In1" outputs="value:1065.v" uid="1065" uid_parent="1064"/>
+      <Tunnel _id="In2" outputs="value:1066.v" uid="1066" uid_parent="1064"/>
+    </CaseFrame>
+  </Structure>
+  <Indicator _name="Cheat used" type="bool" value="false" conIdx="4" connection="recommended" inputs="value:1034.v" uid="1067" uid_parent="root"/>
+  <Indicator _name="error out" type="cluster{bool.status,int32.code,string.source}" value="[false,0,]" conIdx="15" connection="recommended" inputs="value:1019.v" uid="1068" uid_parent="root"/>
 </VI>

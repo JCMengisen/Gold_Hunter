@@ -4,14 +4,33 @@
 from gh_lib import *
 
 desc = ('Gold Hunter. Start: App_Init (queues, notifier), Game_Start (world, highscores), sprites, HUD and title pictures, Window_Setup, '
-        'Audio_Start. Main runs in the user interface system: keys (Key Down / Key Up by ScanCode and the Stop button -> Key_Send -> queue) and '
+        'Audio_Start. Main (same as caller) holds the loops for keys (Key Down / Key Up by ScanCode and the Stop button -> Key_Send -> queue) and '
         'picture (Render_Frame in its own system -> Screen). Game_Loop (standard: Engine_Tick 60 times per second, Frame_Pace) and '
-        'Sound_Loop (other 2: Audio_Block) are subVIs with their own loop. Timing log of ticks and frames to Resources\Data. End: Esc on the title screen or Stop. '
+        'Sound_Loop (other 2: Audio_Block) are subVIs with their own loop. Timing log of ticks and frames to Resources\Data, only when the cheat mode was used. End: Esc on the title screen, a click on the X at the top right of the screen, Stop, or Panel Close? (discarded) - the game ends normally, then Main closes its window. '
         'Keys: arrows = walk, climb, choose letters; Space = jump; Enter = start; Esc/P = pause; Z U L U = cheat (all rooms lit, endless lives).')
-TIMING_SAVE = f"""  <Constant type="string" value="{TIMING_RENDER}" outputs="value:520.v" uid="520" uid_parent="root"/>
-  <Constant _name="no error" type="{ERR}" value="{ERR_V}" outputs="value:521.v" uid="521" uid_parent="root"/>
-  <Call target="Timing_Save.vi" inputs="File name:520.v,Ms:332.v,Tick:335.v,error in:521.v" outputs="error out:" uid="522" uid_parent="root"/>
+TIMING_SAVE = f"""  <Structure _name="Case Structure" selectin="215.ch" uid="550" uid_parent="root">
+    <Tunnel _id="In1" inputs="value:332.v" uid="551" uid_parent="550"/>
+    <Tunnel _id="In2" inputs="value:335.v" uid="552" uid_parent="550"/>
+    <CaseFrame selector="True" selectout="" uid="553" uid_parent="550">
+      <Tunnel _id="In1" outputs="value:554.v" uid="554" uid_parent="553"/>
+      <Tunnel _id="In2" outputs="value:555.v" uid="555" uid_parent="553"/>
+      <Constant type="string" value="{TIMING_RENDER}" outputs="value:520.v" uid="520" uid_parent="553"/>
+      <Constant _name="no error" type="{ERR}" value="{ERR_V}" outputs="value:521.v" uid="521" uid_parent="553"/>
+      <Call target="Timing_Save.vi" inputs="File name:520.v,Ms:554.v,Tick:555.v,error in:521.v" outputs="error out:" uid="522" uid_parent="553"/>
+    </CaseFrame>
+    <CaseFrame selector="False" selectout="" uid="556" uid_parent="550">
+      <Tunnel _id="In1" outputs="value:557.v" uid="557" uid_parent="556"/>
+      <Tunnel _id="In2" outputs="value:558.v" uid="558" uid_parent="556"/>
+    </CaseFrame>
+  </Structure>
 """
+# Ende (Esc auf dem Titel, Klick aufs X oben rechts im Bild, Panel Close?): das Spiel endet normal (Protokoll, Ton zu),
+# danach schliesst Main sein Fenster immer selbst - ohne Titelleiste gaebe es sonst keinen Weg
+_save_err = ''
+CLOSE_PANEL = f"""  <Node _name="Merge Errors" inputs="error in:501.e,error in:502.e" outputs="error out:533.e" uid="533" uid_parent="root"/>
+  <Node _name="Invoke Node" target="FP.Close" type="{{LV.VI}}" inputs="reference:16.vi,error in (no error):533.e" outputs="reference out:,error out:" uid="537" uid_parent="root"/>
+"""
+CLOSE_X, CLOSE_Y = W - 48, 40         # Klickfeld des X oben rechts im Bild (Pixel)
 SPRITE_LOADER = 'Blit_Load.vi' if FULL_BLIT else 'SpriteAtlas_Load.vi'
 xml = f"""<VI _name="Main.vi" description="{esc(desc)}">
   <Constant _name="no error" type="{ERR}" value="{ERR_V}" outputs="value:4010.v" uid="4010" uid_parent="root"/>
@@ -47,6 +66,7 @@ xml = f"""<VI _name="Main.vi" description="{esc(desc)}">
         <Tunnel _id="Out1" inputs="value:113.sc" uid="115" uid_parent="111"/>
         <Tunnel _id="Out2" inputs="value:114.v" uid="116" uid_parent="111"/>
         <Tunnel _id="Out3" inputs="value:114.v" uid="117" uid_parent="111"/>
+        <Tunnel _id="Out4" inputs="value:114.v" uid="1017" uid_parent="111"/>
       </CaseFrame>
       <CaseFrame selector=" Key Up " uid="120" uid_parent="110">
         <Node _name="Event Data Node" fields="ScanCode" outputs="ScanCode:121.sc" uid="121" uid_parent="120"/>
@@ -56,6 +76,7 @@ xml = f"""<VI _name="Main.vi" description="{esc(desc)}">
         <Tunnel _id="Out1" inputs="value:122.sc" uid="125" uid_parent="120"/>
         <Tunnel _id="Out2" inputs="value:123.v" uid="126" uid_parent="120"/>
         <Tunnel _id="Out3" inputs="value:124.v" uid="127" uid_parent="120"/>
+        <Tunnel _id="Out4" inputs="value:124.v" uid="1027" uid_parent="120"/>
       </CaseFrame>
       <CaseFrame selector=" &quot;Stop&quot;\\3A Value Change " uid="130" uid_parent="110">
         <Control _name="Stop" type="bool" style="latched" value="false" outputs="value:131.v" uid="131" uid_parent="130"/>
@@ -64,17 +85,44 @@ xml = f"""<VI _name="Main.vi" description="{esc(desc)}">
         <Tunnel _id="Out1" inputs="value:132.v" uid="134" uid_parent="130"/>
         <Tunnel _id="Out2" inputs="value:133.v" uid="135" uid_parent="130"/>
         <Tunnel _id="Out3" inputs="value:131.v" uid="136" uid_parent="130"/>
+        <Tunnel _id="Out4" inputs="value:133.v" uid="1036" uid_parent="130"/>
+      </CaseFrame>
+      <CaseFrame selector=" Panel Close? " uid="160" uid_parent="110">
+        <Constant _name="discard" type="bool" value="true" outputs="value:161.v" uid="161" uid_parent="160"/>
+        <Node _name="Event Filter Node" fields="Discard?" inputs="Discard?:161.v" outputs="" uid="162" uid_parent="160"/>
+        <Constant type="int32" value="-1" outputs="value:163.v" uid="163" uid_parent="160"/>
+        <Constant type="bool" value="false" outputs="value:164.v" uid="164" uid_parent="160"/>
+        <Tunnel _id="Out1" inputs="value:163.v" uid="165" uid_parent="160"/>
+        <Tunnel _id="Out2" inputs="value:164.v" uid="166" uid_parent="160"/>
+        <Tunnel _id="Out3" inputs="value:161.v" uid="167" uid_parent="160"/>
+        <Tunnel _id="Out4" inputs="value:161.v" uid="168" uid_parent="160"/>
+      </CaseFrame>
+      <CaseFrame selector=" &quot;Screen&quot;\\3A Mouse Down " uid="170" uid_parent="110">
+        <Node _name="Event Data Node" fields="Coords" outputs="Coords:171.c" uid="171" uid_parent="170"/>
+        <Node _name="Unbundle By Name" fields="Horizontal,Vertical" inputs="input cluster:171.c" outputs="Horizontal:172.h,Vertical:172.v" uid="172" uid_parent="170"/>
+        <Constant _name="X button left" type="int32" value="{CLOSE_X}" outputs="value:173.v" uid="173" uid_parent="170"/>
+        <Constant _name="X button bottom" type="int32" value="{CLOSE_Y}" outputs="value:174.v" uid="174" uid_parent="170"/>
+        <Node _name="Greater Or Equal?" inputs="x:172.h,y:173.v" outputs="x &gt;= y?:175.v" uid="175" uid_parent="170"/>
+        <Node _name="Less Or Equal?" inputs="x:172.v,y:174.v" outputs="x &lt;= y?:176.v" uid="176" uid_parent="170"/>
+        <Node _name="And" inputs="x:175.v,y:176.v" outputs="x .and. y?:177.v" uid="177" uid_parent="170"/>
+        <Constant type="int32" value="-1" outputs="value:178.v" uid="178" uid_parent="170"/>
+        <Constant type="bool" value="false" outputs="value:179.v" uid="179" uid_parent="170"/>
+        <Tunnel _id="Out1" inputs="value:178.v" uid="180" uid_parent="170"/>
+        <Tunnel _id="Out2" inputs="value:179.v" uid="181" uid_parent="170"/>
+        <Tunnel _id="Out3" inputs="value:177.v" uid="182" uid_parent="170"/>
+        <Tunnel _id="Out4" inputs="value:177.v" uid="183" uid_parent="170"/>
       </CaseFrame>
       <Tunnel _id="Out1" outputs="value:141.sc" uid="141" uid_parent="110"/>
       <Tunnel _id="Out2" outputs="value:142.up" uid="142" uid_parent="110"/>
       <Tunnel _id="Out3" outputs="value:143.quit" uid="143" uid_parent="110"/>
+      <Tunnel _id="Out4" outputs="value:144.close" uid="144" uid_parent="110"/>
     </Structure>
     <Constant _name="no error" type="{ERR}" value="{ERR_V}" outputs="value:145.v" uid="145" uid_parent="100"/>
     <Call target="Key_Send.vi" inputs="Channels:101.v,ScanCode:141.sc,Released:142.up,Quit:143.quit,History:103.v,error in:145.v" outputs="Quit out:150.q,History out:150.h,error out:" uid="150" uid_parent="100"/>
     <Condition inputs="value:150.q" value="stop" uid="151" uid_parent="100"/>
   </Structure>
 
-  <Call target="Game_Loop.vi" inputs="Channels:11.k,State:12.st,Rooms:12.rooms,error in:22.e" outputs="error out:215.v" uid="215" uid_parent="root"/>
+  <Call target="Game_Loop.vi" inputs="Channels:11.k,State:12.st,Rooms:12.rooms,error in:22.e" outputs="Cheat used:215.ch,error out:215.v" uid="215" uid_parent="root"/>
 
   <Structure _name="While Loop" count="300i.v" uid="300" uid_parent="root" label="Picture">
     <Tunnel _id="In1" inputs="value:11.k" outputs="value:301.v" uid="301" uid_parent="300"/>
@@ -118,8 +166,8 @@ xml = f"""<VI _name="Main.vi" description="{esc(desc)}">
 
   <Node _name="Merge Errors" inputs="error in:215.v,error in:315.v" outputs="error out:500.e" uid="500" uid_parent="root"/>
   <Call target="App_Close.vi" inputs="Channels:11.k,error in:500.e" outputs="error out:501.e" uid="501" uid_parent="root"/>
-  <Call target="Audio_Close.vi" inputs="Task ID:17.task,error in:415.v" outputs="error out:" uid="502" uid_parent="root"/>
-{TIMING_SAVE}  <Indicator _name="error out" type="{ERR}" value="{ERR_V}" inputs="value:501.e" uid="510" uid_parent="root"/>
+  <Call target="Audio_Close.vi" inputs="Task ID:17.task,error in:415.v" outputs="error out:502.e" uid="502" uid_parent="root"/>
+{TIMING_SAVE}{CLOSE_PANEL}  <Indicator _name="error out" type="{ERR}" value="{ERR_V}" inputs="value:501.e" uid="510" uid_parent="root"/>
 </VI>
 """
 xml = xml.replace('{TIMING_SAVE}', TIMING_SAVE if TIMING_LOG else '')

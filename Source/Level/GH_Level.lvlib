@@ -7,7 +7,6 @@
 	<Property Name="NI.LV.All.SourceOnly" Type="Bool">true</Property>
 	<Item Name="Resource_Path.vi" Type="VI" URL="../Resource_Path.vi"/>
 	<Item Name="Room_Load.vi" Type="VI" URL="../Room_Load.vi"/>
-	<Item Name="Tile_At.vi" Type="VI" URL="../Tile_At.vi"/>
 	<Item Name="Tile_Read.vi" Type="VI" URL="../Tile_Read.vi"/>
 	<Item Name="World_Load.vi" Type="VI" URL="../World_Load.vi"/>
 </Library>

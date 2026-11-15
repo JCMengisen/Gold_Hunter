@@ -618,7 +618,8 @@ def snapshot_run():
     d.write()
 
 
-ALL = {f.__name__: f for f in (snapshot_room, test_world, test_bench, test_bench2, test_bench3, render_demo, snapshot_dirty, test_setup, test_run, snapshot_run)}
+# die alten Mess-VIs (snapshot_room, test_world, test_bench*, render_demo, snapshot_dirty) gibt es nicht mehr
+ALL = {f.__name__: f for f in (test_setup, test_run, snapshot_run)}
 if __name__ == '__main__':
     for name in (sys.argv[1:] or ALL):
         ALL[name]()

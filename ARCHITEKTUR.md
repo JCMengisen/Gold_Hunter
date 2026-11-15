@@ -163,11 +163,14 @@ UI-Schleife (Key Down/Up per ScanCode) --Queue--> Engine-Schleife (60 Hz, Frame_
 
 | Library | VIs | Aufgabe |
 |---|---|---|
-| `Source\Level\GH_Level.lvlib` | Resource_Path, World_Load, Room_Load, Tile_At, Entities_From_Tiles | Dateien lesen, Kachelzugriff |
-| `Source\Engine\GH_Engine.lvlib` | Game_Start, Game_Step, Game_Play, Player_Move, Room_Change, Floor_Cycle, Belt_Push, Spider_Step, Skull_Step, Snake_Step, Hit_Check, Items_Collect, Door_Open, Extra_Life, Treasure_Step, Level_Enter, Highscore_Load/Save/Insert, Demo_Input, Sound_Flags | Spiellogik, ohne Grafik |
-| `Source\Render\GH_Render.lvlib` | Image_Load, SpriteAtlas_Load, Sprite_Draw, Image_Draw, Room_Draw, Tile_Cut, Dirty_Tiles, Glyphs_Draw, Hud_Draw, Overlay_Draw, Scene_Draw | Bild aufbauen |
+| `Source\Level\GH_Level.lvlib` | Resource_Path, World_Load, Room_Load, Tile_Read | Dateien lesen, Kachelzugriff |
+| `Source\Engine\GH_Engine.lvlib` | Game_New, Game_Start, Game_Step, Game_Play, Level_Setup, Respawn, Player_Move (privat: Move_Ground, Move_Air, Move_Ladder, Move_Pole), Enemies_Init, Enemies_Step (privat: Enemy_Walk, Enemy_Climb), Room_Change, Hit_Check, Items_Collect, Door_Open, Keys_Apply, Highscore_Load/Save/Insert, Demo_Input | Spiellogik, ohne Grafik |
+| `Source\Render\GH_Render.lvlib` | Image_Load, Blit_Load, Room_Images, Light_Update, Frame_Draw, Scene_Blit, Room_Blit, Sprite_Blit, Enemies_Blit, Glyphs_Blit, Overlay_Blit | Bild aufbauen |
 | `Source\Audio\GH_Audio.lvlib` | Sound_Bank_Load, Sound_Mix | gestreamter Ton |
-| `Source\App\GH_App.lvlib` | App_Init, Window_Setup, Audio_Start, Key_Send, Engine_Tick, Render_Frame, Audio_Block, App_Close, Audio_Close | Bausteine von Main.vi |
+| `Source\App\GH_App.lvlib` | App_Init, Window_Setup, Window_Move, Audio_Start, Key_Send, Engine_Tick, Frame_Pace, Game_Loop, Render_Frame, Sound_Loop, Audio_Block, Timing_Save, App_Close, Audio_Close | Bausteine von Main.vi |
+
+Die Abschnitte unten über den Bildaufbau beschreiben auch frühere Wege (`Scene_Draw`, `Tile_Cut`, `Block_Cut`,
+`Test_Bench*`, `Render_Demo`); diese VIs sind seit dem 15.11.2026 gelöscht, siehe „Kleinere Blockdiagramme“.
 
 ### Zustand (ein Cluster, Typdefinition `GH_State.ctl`)
 
@@ -341,3 +344,19 @@ gleich bleibt). Reihenfolge: `plan_demo.py`, dann `jump_demo.py`, dann `gen_play
 `title.png` enthaelt zwei Seiten untereinander (1280 x 1440): oben das Titelbild, darunter die Kurzanleitung
 (`make_assets.py`, `draw_help`). Ablauf auf dem Titel: Titelbild `TITLE_CARD`, Kurzanleitung `TITLE_HELP`, Titelbild mit
 Bestenliste `TITLE_SCORES`, dann die Demo - und danach wieder von vorn. `Scene_Blit` waehlt die Haelfte nach PhaseTicks.
+
+## Kleinere Blockdiagramme (15.11.2026)
+
+- **Tile_Read ohne Fehlerkette:** `tile_reader` in `build\gen_move.py` legt eine einzige "no error"-Konstante an und
+  verkettet die Fehlerausgaenge der vielen Tile_Read-Aufrufe nicht mehr. Die Aufrufe haengen so nicht mehr in einer
+  langen Reihe und koennen nebeneinander liegen.
+- **Inline-SubVIs** (privat in GH_Engine, inline, preallocated, Debugging aus - kein Aufruf-Overhead):
+  `Player_Move` behaelt den waagrechten Schritt und die Wandpruefung und ruft je Modus `Move_Ground`, `Move_Air`
+  (liefert auch Dead), `Move_Ladder`, `Move_Pole`; `Enemies_Step` behaelt den Zufallsgenerator je Gegner und ruft
+  `Enemy_Walk` und `Enemy_Climb`. Generator: `build\gen_move.py` (von `gen_play.py` importiert).
+- **Geloescht** (unbenutzt): Block_Cut, Enemies_Draw, Glyphs_Draw, Grid_Block, Hud_Draw, Image_Draw, Overlay_Draw,
+  Piece_Compose, Room_Draw, Scene_Draw, SpriteAtlas_Load, Sprite_Draw, Tile_At, Tile_Cut sowie die Tests Render_Demo,
+  Snapshot_Dirty, Snapshot_Room, Test_Bench, Test_Bench2, Test_Bench3, Test_World. Die Zeichenfunktionen in
+  `gen_play.py` bleiben, weil `gen_blit.py` sie verwendet.
+- Diagrammgroesse vorher / nachher: Player_Move 10016 x 1211 -> 2867 x 866, Enemies_Step 5165 x 1466 -> 1854 x 362.
+- Geprueft: Demo bis Schritt 4500 gleich wie `sim_enemies.py` (Position, Punkte, Schluessel, Seed, Gegner), Pause-Tests.

@@ -292,7 +292,8 @@ def tile_read():
 
 
 
-BASIC = {f.__name__: f for f in (resource_path, room_load, world_load, tile_at, image_load, sprite_atlas_load, sprite_draw, image_draw, tile_cut, block_cut, tile_read)}
+# tile_at, sprite_atlas_load, sprite_draw, image_draw, tile_cut, block_cut: VIs des alten Bildaufbaus, nicht mehr erzeugt
+BASIC = {f.__name__: f for f in (resource_path, room_load, world_load, image_load, tile_read)}
 if __name__ == '__main__':
     for name in (sys.argv[1:] or BASIC):
         BASIC[name]()

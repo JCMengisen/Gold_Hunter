@@ -9,6 +9,12 @@
 	<Item Name="Door_Open.vi" Type="VI" URL="../Door_Open.vi"/>
 	<Item Name="Enemies_Init.vi" Type="VI" URL="../Enemies_Init.vi"/>
 	<Item Name="Enemies_Step.vi" Type="VI" URL="../Enemies_Step.vi"/>
+	<Item Name="Enemy_Climb.vi" Type="VI" URL="../Enemy_Climb.vi">
+		<Property Name="NI.LibItem.Scope" Type="Int">2</Property>
+	</Item>
+	<Item Name="Enemy_Walk.vi" Type="VI" URL="../Enemy_Walk.vi">
+		<Property Name="NI.LibItem.Scope" Type="Int">2</Property>
+	</Item>
 	<Item Name="Game_New.vi" Type="VI" URL="../Game_New.vi"/>
 	<Item Name="Game_Play.vi" Type="VI" URL="../Game_Play.vi"/>
 	<Item Name="Game_Start.vi" Type="VI" URL="../Game_Start.vi"/>
@@ -20,6 +26,18 @@
 	<Item Name="Items_Collect.vi" Type="VI" URL="../Items_Collect.vi"/>
 	<Item Name="Keys_Apply.vi" Type="VI" URL="../Keys_Apply.vi"/>
 	<Item Name="Level_Setup.vi" Type="VI" URL="../Level_Setup.vi"/>
+	<Item Name="Move_Air.vi" Type="VI" URL="../Move_Air.vi">
+		<Property Name="NI.LibItem.Scope" Type="Int">2</Property>
+	</Item>
+	<Item Name="Move_Ground.vi" Type="VI" URL="../Move_Ground.vi">
+		<Property Name="NI.LibItem.Scope" Type="Int">2</Property>
+	</Item>
+	<Item Name="Move_Ladder.vi" Type="VI" URL="../Move_Ladder.vi">
+		<Property Name="NI.LibItem.Scope" Type="Int">2</Property>
+	</Item>
+	<Item Name="Move_Pole.vi" Type="VI" URL="../Move_Pole.vi">
+		<Property Name="NI.LibItem.Scope" Type="Int">2</Property>
+	</Item>
 	<Item Name="Player_Move.vi" Type="VI" URL="../Player_Move.vi"/>
 	<Item Name="Respawn.vi" Type="VI" URL="../Respawn.vi"/>
 	<Item Name="Room_Change.vi" Type="VI" URL="../Room_Change.vi"/>

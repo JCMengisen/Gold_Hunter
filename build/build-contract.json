@@ -137,52 +137,6 @@
       ]
     },
     {
-      "path": "Source\\Level\\Tile_At.vi",
-      "builder": "level",
-      "purpose": "Tile_At",
-      "calls": [],
-      "inputs": [
-        {
-          "name": "Tiles",
-          "type": "@Tiles",
-          "conIdx": 0,
-          "connection": "required"
-        },
-        {
-          "name": "X",
-          "type": "int32",
-          "conIdx": 5,
-          "connection": "required"
-        },
-        {
-          "name": "Y",
-          "type": "int32",
-          "conIdx": 7,
-          "connection": "required"
-        },
-        {
-          "name": "error in",
-          "type": "@Error",
-          "conIdx": 11,
-          "connection": "required"
-        }
-      ],
-      "outputs": [
-        {
-          "name": "Tile",
-          "type": "uint8",
-          "conIdx": 4,
-          "connection": "recommended"
-        },
-        {
-          "name": "error out",
-          "type": "@Error",
-          "conIdx": 15,
-          "connection": "recommended"
-        }
-      ]
-    },
-    {
       "path": "Source\\Level\\Tile_Read.vi",
       "builder": "level",
       "purpose": "Tile_Read",
@@ -265,255 +219,15 @@
       ]
     },
     {
-      "path": "Source\\Render\\SpriteAtlas_Load.vi",
-      "builder": "render",
-      "purpose": "SpriteAtlas_Load",
-      "calls": [
-        "Source\\Level\\Resource_Path.vi"
-      ],
-      "inputs": [
-        {
-          "name": "error in",
-          "type": "@Error",
-          "conIdx": 11,
-          "connection": "required"
-        }
-      ],
-      "outputs": [
-        {
-          "name": "Sprites",
-          "type": "@Sprites",
-          "conIdx": 4,
-          "connection": "recommended"
-        },
-        {
-          "name": "error out",
-          "type": "@Error",
-          "conIdx": 15,
-          "connection": "recommended"
-        }
-      ]
-    },
-    {
-      "path": "Source\\Render\\Sprite_Draw.vi",
-      "builder": "render",
-      "purpose": "Sprite_Draw",
-      "calls": [],
-      "inputs": [
-        {
-          "name": "Picture",
-          "type": "picture",
-          "conIdx": 0,
-          "connection": "required"
-        },
-        {
-          "name": "Sprites",
-          "type": "@Sprites",
-          "conIdx": 5,
-          "connection": "required"
-        },
-        {
-          "name": "Index",
-          "type": "int32",
-          "conIdx": 7,
-          "connection": "required"
-        },
-        {
-          "name": "Position",
-          "type": "@Position",
-          "conIdx": 9,
-          "connection": "required"
-        },
-        {
-          "name": "error in",
-          "type": "@Error",
-          "conIdx": 11,
-          "connection": "required"
-        }
-      ],
-      "outputs": [
-        {
-          "name": "Picture out",
-          "type": "picture",
-          "conIdx": 4,
-          "connection": "recommended"
-        },
-        {
-          "name": "error out",
-          "type": "@Error",
-          "conIdx": 15,
-          "connection": "recommended"
-        }
-      ]
-    },
-    {
-      "path": "Source\\Render\\Image_Draw.vi",
-      "builder": "render",
-      "purpose": "Image_Draw",
-      "calls": [],
-      "inputs": [
-        {
-          "name": "Picture",
-          "type": "picture",
-          "conIdx": 0,
-          "connection": "required"
-        },
-        {
-          "name": "Image",
-          "type": "@ImageData",
-          "conIdx": 5,
-          "connection": "required"
-        },
-        {
-          "name": "Position",
-          "type": "@Position",
-          "conIdx": 7,
-          "connection": "required"
-        },
-        {
-          "name": "error in",
-          "type": "@Error",
-          "conIdx": 11,
-          "connection": "required"
-        }
-      ],
-      "outputs": [
-        {
-          "name": "Picture out",
-          "type": "picture",
-          "conIdx": 4,
-          "connection": "recommended"
-        },
-        {
-          "name": "error out",
-          "type": "@Error",
-          "conIdx": 15,
-          "connection": "recommended"
-        }
-      ]
-    },
-    {
-      "path": "Source\\Render\\Tile_Cut.vi",
-      "builder": "render",
-      "purpose": "Tile_Cut",
-      "calls": [],
-      "inputs": [
-        {
-          "name": "Image",
-          "type": "@ImageData",
-          "conIdx": 0,
-          "connection": "required"
-        },
-        {
-          "name": "Column",
-          "type": "int32",
-          "conIdx": 5,
-          "connection": "required"
-        },
-        {
-          "name": "Row",
-          "type": "int32",
-          "conIdx": 7,
-          "connection": "required"
-        },
-        {
-          "name": "Offset Y",
-          "type": "int32",
-          "conIdx": 9,
-          "connection": "required"
-        },
-        {
-          "name": "error in",
-          "type": "@Error",
-          "conIdx": 11,
-          "connection": "required"
-        }
-      ],
-      "outputs": [
-        {
-          "name": "Tile",
-          "type": "@ImageData",
-          "conIdx": 4,
-          "connection": "recommended"
-        },
-        {
-          "name": "error out",
-          "type": "@Error",
-          "conIdx": 15,
-          "connection": "recommended"
-        }
-      ]
-    },
-    {
-      "path": "Source\\Render\\Block_Cut.vi",
-      "builder": "render",
-      "purpose": "Block_Cut",
-      "calls": [],
-      "inputs": [
-        {
-          "name": "Image",
-          "type": "@ImageData",
-          "conIdx": 0,
-          "connection": "required"
-        },
-        {
-          "name": "Column",
-          "type": "int32",
-          "conIdx": 5,
-          "connection": "required"
-        },
-        {
-          "name": "Row",
-          "type": "int32",
-          "conIdx": 7,
-          "connection": "required"
-        },
-        {
-          "name": "Offset Y",
-          "type": "int32",
-          "conIdx": 9,
-          "connection": "required"
-        },
-        {
-          "name": "Columns",
-          "type": "int32",
-          "conIdx": 1,
-          "connection": "required"
-        },
-        {
-          "name": "Rows",
-          "type": "int32",
-          "conIdx": 2,
-          "connection": "required"
-        },
-        {
-          "name": "error in",
-          "type": "@Error",
-          "conIdx": 11,
-          "connection": "required"
-        }
-      ],
-      "outputs": [
-        {
-          "name": "Block",
-          "type": "@ImageData",
-          "conIdx": 4,
-          "connection": "recommended"
-        },
-        {
-          "name": "error out",
-          "type": "@Error",
-          "conIdx": 15,
-          "connection": "recommended"
-        }
-      ]
-    },
-    {
       "path": "Source\\Engine\\Player_Move.vi",
       "builder": "engine",
       "purpose": "Player_Move",
       "calls": [
-        "Source\\Level\\Tile_Read.vi"
+        "Source\\Level\\Tile_Read.vi",
+        "Source\\Engine\\Move_Ground.vi",
+        "Source\\Engine\\Move_Air.vi",
+        "Source\\Engine\\Move_Ladder.vi",
+        "Source\\Engine\\Move_Pole.vi"
       ],
       "inputs": [
         {
@@ -705,7 +419,8 @@
       "builder": "engine",
       "purpose": "Enemies_Step",
       "calls": [
-        "Source\\Level\\Tile_Read.vi"
+        "Source\\Engine\\Enemy_Walk.vi",
+        "Source\\Engine\\Enemy_Climb.vi"
       ],
       "inputs": [
         {
@@ -1377,490 +1092,13 @@
       ]
     },
     {
-      "path": "Source\\Render\\Grid_Block.vi",
-      "builder": "render",
-      "purpose": "Grid_Block",
-      "calls": [],
-      "inputs": [
-        {
-          "name": "Grid",
-          "type": "@Grid",
-          "conIdx": 0,
-          "connection": "required"
-        },
-        {
-          "name": "Template",
-          "type": "@ImageData",
-          "conIdx": 5,
-          "connection": "required"
-        },
-        {
-          "name": "Rect",
-          "type": "@Rect",
-          "conIdx": 7,
-          "connection": "required"
-        },
-        {
-          "name": "error in",
-          "type": "@Error",
-          "conIdx": 11,
-          "connection": "required"
-        }
-      ],
-      "outputs": [
-        {
-          "name": "Block",
-          "type": "@ImageData",
-          "conIdx": 4,
-          "connection": "recommended"
-        },
-        {
-          "name": "error out",
-          "type": "@Error",
-          "conIdx": 15,
-          "connection": "recommended"
-        }
-      ]
-    },
-    {
-      "path": "Source\\Render\\Room_Draw.vi",
-      "builder": "render",
-      "purpose": "Room_Draw",
-      "calls": [
-        "Source\\Render\\Sprite_Draw.vi"
-      ],
-      "inputs": [
-        {
-          "name": "Picture",
-          "type": "picture",
-          "conIdx": 0,
-          "connection": "required"
-        },
-        {
-          "name": "Sprites",
-          "type": "@Sprites",
-          "conIdx": 5,
-          "connection": "required"
-        },
-        {
-          "name": "Tiles",
-          "type": "@Tiles",
-          "conIdx": 7,
-          "connection": "required"
-        },
-        {
-          "name": "Region",
-          "type": "@Rect",
-          "conIdx": 9,
-          "connection": "required"
-        },
-        {
-          "name": "FloorPhase",
-          "type": "int32",
-          "conIdx": 1,
-          "connection": "required"
-        },
-        {
-          "name": "View",
-          "type": "@View",
-          "conIdx": 2,
-          "connection": "required"
-        },
-        {
-          "name": "error in",
-          "type": "@Error",
-          "conIdx": 11,
-          "connection": "required"
-        }
-      ],
-      "outputs": [
-        {
-          "name": "Picture out",
-          "type": "picture",
-          "conIdx": 4,
-          "connection": "recommended"
-        },
-        {
-          "name": "error out",
-          "type": "@Error",
-          "conIdx": 15,
-          "connection": "recommended"
-        }
-      ]
-    },
-    {
-      "path": "Source\\Render\\Enemies_Draw.vi",
-      "builder": "render",
-      "purpose": "Enemies_Draw",
-      "calls": [
-        "Source\\Render\\Sprite_Draw.vi"
-      ],
-      "inputs": [
-        {
-          "name": "Picture",
-          "type": "picture",
-          "conIdx": 0,
-          "connection": "required"
-        },
-        {
-          "name": "Sprites",
-          "type": "@Sprites",
-          "conIdx": 5,
-          "connection": "required"
-        },
-        {
-          "name": "Enemies",
-          "type": "@Enemies",
-          "conIdx": 7,
-          "connection": "required"
-        },
-        {
-          "name": "Tick",
-          "type": "uint32",
-          "conIdx": 9,
-          "connection": "required"
-        },
-        {
-          "name": "View",
-          "type": "@View",
-          "conIdx": 1,
-          "connection": "required"
-        },
-        {
-          "name": "error in",
-          "type": "@Error",
-          "conIdx": 11,
-          "connection": "required"
-        }
-      ],
-      "outputs": [
-        {
-          "name": "Picture out",
-          "type": "picture",
-          "conIdx": 4,
-          "connection": "recommended"
-        },
-        {
-          "name": "error out",
-          "type": "@Error",
-          "conIdx": 15,
-          "connection": "recommended"
-        }
-      ]
-    },
-    {
-      "path": "Source\\Render\\Glyphs_Draw.vi",
-      "builder": "render",
-      "purpose": "Glyphs_Draw",
-      "calls": [
-        "Source\\Render\\Sprite_Draw.vi"
-      ],
-      "inputs": [
-        {
-          "name": "Picture",
-          "type": "picture",
-          "conIdx": 0,
-          "connection": "required"
-        },
-        {
-          "name": "Sprites",
-          "type": "@Sprites",
-          "conIdx": 5,
-          "connection": "required"
-        },
-        {
-          "name": "Text",
-          "type": "string",
-          "conIdx": 7,
-          "connection": "required"
-        },
-        {
-          "name": "Position",
-          "type": "@Position",
-          "conIdx": 9,
-          "connection": "required"
-        },
-        {
-          "name": "error in",
-          "type": "@Error",
-          "conIdx": 11,
-          "connection": "required"
-        }
-      ],
-      "outputs": [
-        {
-          "name": "Picture out",
-          "type": "picture",
-          "conIdx": 4,
-          "connection": "recommended"
-        },
-        {
-          "name": "error out",
-          "type": "@Error",
-          "conIdx": 15,
-          "connection": "recommended"
-        }
-      ]
-    },
-    {
-      "path": "Source\\Render\\Hud_Draw.vi",
-      "builder": "render",
-      "purpose": "Hud_Draw",
-      "calls": [
-        "Source\\Render\\Sprite_Draw.vi",
-        "Source\\Render\\Glyphs_Draw.vi"
-      ],
-      "inputs": [
-        {
-          "name": "Sprites",
-          "type": "@Sprites",
-          "conIdx": 0,
-          "connection": "required"
-        },
-        {
-          "name": "Hud",
-          "type": "@ImageData",
-          "conIdx": 5,
-          "connection": "required"
-        },
-        {
-          "name": "State",
-          "type": "@State",
-          "conIdx": 7,
-          "connection": "required"
-        },
-        {
-          "name": "error in",
-          "type": "@Error",
-          "conIdx": 11,
-          "connection": "required"
-        }
-      ],
-      "outputs": [
-        {
-          "name": "Piece",
-          "type": "@ImageData",
-          "conIdx": 4,
-          "connection": "recommended"
-        },
-        {
-          "name": "error out",
-          "type": "@Error",
-          "conIdx": 15,
-          "connection": "recommended"
-        }
-      ]
-    },
-    {
-      "path": "Source\\Render\\Overlay_Draw.vi",
-      "builder": "render",
-      "purpose": "Overlay_Draw",
-      "calls": [
-        "Source\\Render\\Sprite_Draw.vi",
-        "Source\\Render\\Glyphs_Draw.vi"
-      ],
-      "inputs": [
-        {
-          "name": "Picture",
-          "type": "picture",
-          "conIdx": 0,
-          "connection": "required"
-        },
-        {
-          "name": "Sprites",
-          "type": "@Sprites",
-          "conIdx": 5,
-          "connection": "required"
-        },
-        {
-          "name": "State",
-          "type": "@State",
-          "conIdx": 7,
-          "connection": "required"
-        },
-        {
-          "name": "Clip",
-          "type": "@Rect",
-          "conIdx": 9,
-          "connection": "required"
-        },
-        {
-          "name": "error in",
-          "type": "@Error",
-          "conIdx": 11,
-          "connection": "required"
-        }
-      ],
-      "outputs": [
-        {
-          "name": "Picture out",
-          "type": "picture",
-          "conIdx": 4,
-          "connection": "recommended"
-        },
-        {
-          "name": "error out",
-          "type": "@Error",
-          "conIdx": 15,
-          "connection": "recommended"
-        }
-      ]
-    },
-    {
-      "path": "Source\\Render\\Piece_Compose.vi",
-      "builder": "render",
-      "purpose": "Piece_Compose",
-      "calls": [
-        "Source\\Render\\Grid_Block.vi",
-        "Source\\Render\\Room_Draw.vi",
-        "Source\\Render\\Enemies_Draw.vi",
-        "Source\\Render\\Sprite_Draw.vi",
-        "Source\\Render\\Overlay_Draw.vi"
-      ],
-      "inputs": [
-        {
-          "name": "Grid",
-          "type": "@Grid",
-          "conIdx": 0,
-          "connection": "required"
-        },
-        {
-          "name": "Template",
-          "type": "@ImageData",
-          "conIdx": 5,
-          "connection": "required"
-        },
-        {
-          "name": "Rect",
-          "type": "@Rect",
-          "conIdx": 7,
-          "connection": "required"
-        },
-        {
-          "name": "Sprites",
-          "type": "@Sprites",
-          "conIdx": 9,
-          "connection": "required"
-        },
-        {
-          "name": "State",
-          "type": "@State",
-          "conIdx": 1,
-          "connection": "required"
-        },
-        {
-          "name": "View",
-          "type": "@View",
-          "conIdx": 2,
-          "connection": "required"
-        },
-        {
-          "name": "error in",
-          "type": "@Error",
-          "conIdx": 11,
-          "connection": "required"
-        }
-      ],
-      "outputs": [
-        {
-          "name": "Piece",
-          "type": "@ImageData",
-          "conIdx": 4,
-          "connection": "recommended"
-        },
-        {
-          "name": "error out",
-          "type": "@Error",
-          "conIdx": 15,
-          "connection": "recommended"
-        }
-      ]
-    },
-    {
-      "path": "Source\\Render\\Scene_Draw.vi",
-      "builder": "render",
-      "purpose": "Scene_Draw",
-      "calls": [
-        "Source\\Render\\Grid_Block.vi",
-        "Source\\Render\\Room_Draw.vi",
-        "Source\\Render\\Enemies_Draw.vi",
-        "Source\\Render\\Sprite_Draw.vi",
-        "Source\\Render\\Glyphs_Draw.vi",
-        "Source\\Render\\Overlay_Draw.vi"
-      ],
-      "inputs": [
-        {
-          "name": "Grid",
-          "type": "@Grid",
-          "conIdx": 0,
-          "connection": "required"
-        },
-        {
-          "name": "Template",
-          "type": "@ImageData",
-          "conIdx": 5,
-          "connection": "required"
-        },
-        {
-          "name": "Sprites",
-          "type": "@Sprites",
-          "conIdx": 7,
-          "connection": "required"
-        },
-        {
-          "name": "State",
-          "type": "@State",
-          "conIdx": 9,
-          "connection": "required"
-        },
-        {
-          "name": "View",
-          "type": "@View",
-          "conIdx": 1,
-          "connection": "required"
-        },
-        {
-          "name": "Hud",
-          "type": "@ImageData",
-          "conIdx": 2,
-          "connection": "required"
-        },
-        {
-          "name": "Title",
-          "type": "@ImageData",
-          "conIdx": 3,
-          "connection": "required"
-        },
-        {
-          "name": "error in",
-          "type": "@Error",
-          "conIdx": 11,
-          "connection": "required"
-        }
-      ],
-      "outputs": [
-        {
-          "name": "Picture",
-          "type": "picture",
-          "conIdx": 4,
-          "connection": "recommended"
-        },
-        {
-          "name": "error out",
-          "type": "@Error",
-          "conIdx": 15,
-          "connection": "recommended"
-        }
-      ]
-    },
-    {
       "path": "Source\\Render\\Frame_Draw.vi",
       "builder": "render",
       "purpose": "Frame_Draw",
       "calls": [
         "Source\\Render\\Room_Images.vi",
         "Source\\Render\\Light_Update.vi",
-        "Source\\Render\\Scene_Draw.vi"
+        "Source\\Render\\Scene_Blit.vi"
       ],
       "inputs": [
         {
@@ -2709,6 +1947,378 @@
         }
       ],
       "outputs": [
+        {
+          "name": "error out",
+          "type": "@Error",
+          "conIdx": 15,
+          "connection": "recommended"
+        }
+      ]
+    },
+    {
+      "path": "Source\\Engine\\Move_Ground.vi",
+      "builder": "engine",
+      "purpose": "Move_Ground",
+      "calls": [
+        "Source\\Level\\Tile_Read.vi"
+      ],
+      "inputs": [
+        {
+          "name": "State",
+          "type": "@State",
+          "conIdx": 0,
+          "connection": "required"
+        },
+        {
+          "name": "Jump",
+          "type": "bool",
+          "conIdx": 5,
+          "connection": "recommended"
+        },
+        {
+          "name": "XA10",
+          "type": "int32",
+          "conIdx": 7,
+          "connection": "required"
+        },
+        {
+          "name": "error in",
+          "type": "@Error",
+          "conIdx": 11,
+          "connection": "required"
+        }
+      ],
+      "outputs": [
+        {
+          "name": "Mode",
+          "type": "int32",
+          "conIdx": 4,
+          "connection": "recommended"
+        },
+        {
+          "name": "X10",
+          "type": "int32",
+          "conIdx": 6,
+          "connection": "recommended"
+        },
+        {
+          "name": "Y10",
+          "type": "int32",
+          "conIdx": 8,
+          "connection": "recommended"
+        },
+        {
+          "name": "VY10",
+          "type": "int32",
+          "conIdx": 10,
+          "connection": "recommended"
+        },
+        {
+          "name": "error out",
+          "type": "@Error",
+          "conIdx": 15,
+          "connection": "recommended"
+        }
+      ]
+    },
+    {
+      "path": "Source\\Engine\\Move_Air.vi",
+      "builder": "engine",
+      "purpose": "Move_Air",
+      "calls": [
+        "Source\\Level\\Tile_Read.vi"
+      ],
+      "inputs": [
+        {
+          "name": "State",
+          "type": "@State",
+          "conIdx": 0,
+          "connection": "required"
+        },
+        {
+          "name": "XA10",
+          "type": "int32",
+          "conIdx": 7,
+          "connection": "required"
+        },
+        {
+          "name": "error in",
+          "type": "@Error",
+          "conIdx": 11,
+          "connection": "required"
+        }
+      ],
+      "outputs": [
+        {
+          "name": "Mode",
+          "type": "int32",
+          "conIdx": 4,
+          "connection": "recommended"
+        },
+        {
+          "name": "X10",
+          "type": "int32",
+          "conIdx": 6,
+          "connection": "recommended"
+        },
+        {
+          "name": "Y10",
+          "type": "int32",
+          "conIdx": 8,
+          "connection": "recommended"
+        },
+        {
+          "name": "VY10",
+          "type": "int32",
+          "conIdx": 10,
+          "connection": "recommended"
+        },
+        {
+          "name": "Dead",
+          "type": "bool",
+          "conIdx": 13,
+          "connection": "recommended"
+        },
+        {
+          "name": "error out",
+          "type": "@Error",
+          "conIdx": 15,
+          "connection": "recommended"
+        }
+      ]
+    },
+    {
+      "path": "Source\\Engine\\Move_Ladder.vi",
+      "builder": "engine",
+      "purpose": "Move_Ladder",
+      "calls": [
+        "Source\\Level\\Tile_Read.vi"
+      ],
+      "inputs": [
+        {
+          "name": "State",
+          "type": "@State",
+          "conIdx": 0,
+          "connection": "required"
+        },
+        {
+          "name": "Jump",
+          "type": "bool",
+          "conIdx": 5,
+          "connection": "recommended"
+        },
+        {
+          "name": "XA10",
+          "type": "int32",
+          "conIdx": 7,
+          "connection": "required"
+        },
+        {
+          "name": "error in",
+          "type": "@Error",
+          "conIdx": 11,
+          "connection": "required"
+        }
+      ],
+      "outputs": [
+        {
+          "name": "Mode",
+          "type": "int32",
+          "conIdx": 4,
+          "connection": "recommended"
+        },
+        {
+          "name": "Y10",
+          "type": "int32",
+          "conIdx": 8,
+          "connection": "recommended"
+        },
+        {
+          "name": "VY10",
+          "type": "int32",
+          "conIdx": 10,
+          "connection": "recommended"
+        },
+        {
+          "name": "error out",
+          "type": "@Error",
+          "conIdx": 15,
+          "connection": "recommended"
+        }
+      ]
+    },
+    {
+      "path": "Source\\Engine\\Move_Pole.vi",
+      "builder": "engine",
+      "purpose": "Move_Pole",
+      "calls": [
+        "Source\\Level\\Tile_Read.vi"
+      ],
+      "inputs": [
+        {
+          "name": "State",
+          "type": "@State",
+          "conIdx": 0,
+          "connection": "required"
+        },
+        {
+          "name": "XA10",
+          "type": "int32",
+          "conIdx": 7,
+          "connection": "required"
+        },
+        {
+          "name": "error in",
+          "type": "@Error",
+          "conIdx": 11,
+          "connection": "required"
+        }
+      ],
+      "outputs": [
+        {
+          "name": "Mode",
+          "type": "int32",
+          "conIdx": 4,
+          "connection": "recommended"
+        },
+        {
+          "name": "Y10",
+          "type": "int32",
+          "conIdx": 8,
+          "connection": "recommended"
+        },
+        {
+          "name": "error out",
+          "type": "@Error",
+          "conIdx": 15,
+          "connection": "recommended"
+        }
+      ]
+    },
+    {
+      "path": "Source\\Engine\\Enemy_Walk.vi",
+      "builder": "engine",
+      "purpose": "Enemy_Walk",
+      "calls": [
+        "Source\\Level\\Tile_Read.vi"
+      ],
+      "inputs": [
+        {
+          "name": "Tiles",
+          "type": "@Tiles",
+          "conIdx": 0,
+          "connection": "required"
+        },
+        {
+          "name": "Enemy",
+          "type": "cluster{int32.Kind,int32.X10,int32.Y10,int32.Dir,int32.Mode}",
+          "conIdx": 5,
+          "connection": "required"
+        },
+        {
+          "name": "Speed",
+          "type": "int32",
+          "conIdx": 7,
+          "connection": "required"
+        },
+        {
+          "name": "Random",
+          "type": "int32",
+          "conIdx": 9,
+          "connection": "required"
+        },
+        {
+          "name": "error in",
+          "type": "@Error",
+          "conIdx": 11,
+          "connection": "required"
+        }
+      ],
+      "outputs": [
+        {
+          "name": "X10",
+          "type": "int32",
+          "conIdx": 4,
+          "connection": "recommended"
+        },
+        {
+          "name": "Dir",
+          "type": "int32",
+          "conIdx": 6,
+          "connection": "recommended"
+        },
+        {
+          "name": "Mode",
+          "type": "int32",
+          "conIdx": 8,
+          "connection": "recommended"
+        },
+        {
+          "name": "error out",
+          "type": "@Error",
+          "conIdx": 15,
+          "connection": "recommended"
+        }
+      ]
+    },
+    {
+      "path": "Source\\Engine\\Enemy_Climb.vi",
+      "builder": "engine",
+      "purpose": "Enemy_Climb",
+      "calls": [
+        "Source\\Level\\Tile_Read.vi"
+      ],
+      "inputs": [
+        {
+          "name": "Tiles",
+          "type": "@Tiles",
+          "conIdx": 0,
+          "connection": "required"
+        },
+        {
+          "name": "Enemy",
+          "type": "cluster{int32.Kind,int32.X10,int32.Y10,int32.Dir,int32.Mode}",
+          "conIdx": 5,
+          "connection": "required"
+        },
+        {
+          "name": "Speed",
+          "type": "int32",
+          "conIdx": 7,
+          "connection": "required"
+        },
+        {
+          "name": "Random",
+          "type": "int32",
+          "conIdx": 9,
+          "connection": "required"
+        },
+        {
+          "name": "error in",
+          "type": "@Error",
+          "conIdx": 11,
+          "connection": "required"
+        }
+      ],
+      "outputs": [
+        {
+          "name": "Y10",
+          "type": "int32",
+          "conIdx": 4,
+          "connection": "recommended"
+        },
+        {
+          "name": "Dir",
+          "type": "int32",
+          "conIdx": 6,
+          "connection": "recommended"
+        },
+        {
+          "name": "Mode",
+          "type": "int32",
+          "conIdx": 8,
+          "connection": "recommended"
+        },
         {
           "name": "error out",
           "type": "@Error",

@@ -6,6 +6,8 @@ import json
 import sys
 from gh_lib import *
 from gen_game import lut, read_lines, moved, BASIC
+from gen_move import (tile_reader, player_move, enemies_step, move_ground, move_air, move_ladder, move_pole,
+                      enemy_walk, enemy_climb)
 
 c_ = None
 
@@ -50,15 +52,6 @@ def condition(d, loop_uid, net):
     d.add(f'<Condition inputs="value:{net}" value="stop" uid="{d.nu()}" uid_parent="{loop_uid}"/>')
 
 
-def tile_reader(d, tiles, err):
-    """liefert tile(x, y) -> int32 ueber Tile_Read; err ist eine Liste [netz] fuer die Fehlerkette"""
-    def tile(x, y):
-        r = d.call('Tile_Read.vi', [('Tiles', tiles), ('X', x), ('Y', y), ('error in', err[0])], ['Tile', 'error out'])
-        err[0] = r['error out']
-        return d.i32(r['Tile'])
-    return tile
-
-
 def put_tile(d, tiles, row, col, value_u8):
     return d.node('Replace Array Subset', [('array', tiles), ('new element/subarray', value_u8), ('index (row)', row), ('index (col)', col)],
                   ['output array'], extra='dimensions="2"')['output array']
@@ -72,122 +65,6 @@ def u8(d, v): return d.node('To Unsigned Byte Integer', [('number', v)], ['unsig
 
 
 # ================================================================== Engine
-def player_move():
-    d = Doc('Player_Move.vi', 'Moves Claude by one tick. Ground: walk, conveyor push, jump, step onto a ladder or rope, fall off an edge, '
-            'grab a pole over its hole. Air: gravity, head bump, landing on walls, thin floors (only from above) and ladder tops, '
-            'grabbing a ladder (with Up/Down), a rope or a pole while falling. Ladder/rope: climb, stop at the top, floor or ceiling, '
-            'step off sideways, jump off. Pole: slide down. A vanishing floor carries only while FloorPhase < 2. '
-            'Dead = landed more than the allowed height below the last firm stand. Positions are tenths of a pixel.')
-    st = d.ctrl('State', STATE, STATE_V, 0)
-    jump = d.ctrl('Jump', 'bool', 'false', 5, 'recommended')
-    e = d.err_in()
-    tiles, x10, y10, vy10, mode, facing, run, vert, stand, fphase, room = d.unb(
-        st, ['Tiles', 'X10', 'Y10', 'VY10', 'Mode', 'Facing', 'Run', 'Vert', 'StandY', 'FloorPhase', 'Room'])
-    chute = d.eq(room, d.i32c(TREASURE_IDX))        # Schatzkammer: Fallschirm
-    n = max(TILE_CODE.values()) + 1
-    L_SOL = d.const('array{int32}', lut({k: 1 for k in SOLID}, n), 'Solid')
-    L_PLA = d.const('array{int32}', lut({k: 1 for k in PLATFORM}, n), 'Thin floor')
-    L_LAD = d.const('array{int32}', lut({k: 1 for k in CLIMBABLE}, n), 'Ladder or rope')
-    c = d.i32c
-    err = [e]
-    tile = tile_reader(d, tiles, err)
-    off = d.eq(fphase, c(2))
-
-    def has(code, tbl): return d.gt(d.idx(tbl, code), c(0))
-    def sol(code): return has(code, L_SOL)
-    def pla(code): return d.and_(has(code, L_PLA), d.not_(d.and_(d.eq(code, c(T['~'])), off)))
-    def lad(code): return has(code, L_LAD)
-    def pol(code): return d.eq(code, c(T['|']))
-    def row_top(y): return d.mul(d.qr(y, c(TILE))[1], c(TILE))
-
-    x, y = px(d, x10), px(d, y10)
-    feet = d.add2(y, c(CLAUDE_H))
-    m0, m1, m2 = d.eq(mode, c(0)), d.eq(mode, c(1)), d.eq(mode, c(2))
-    no_jump = d.not_(jump)
-    under = tile(d.add2(x, c(16)), feet)
-    belt = d.sel(d.eq(under, c(T['<'])), c(-BELT10), d.sel(d.eq(under, c(T['>'])), c(BELT10), c(0)))
-    dx = d.add2(d.sel(d.or_(m0, m2), d.mul(run, c(WALK10)), c(0)), d.sel(m0, belt, c(0)))
-    nx10 = d.add2(x10, dx)
-    nx = px(d, nx10)
-    lead = d.sel(d.gt(dx, c(0)), d.add2(nx, c(BOX_R)), d.add2(nx, c(BOX_L)))
-    wall = anyb(d, sol(tile(lead, d.add2(y, c(2)))), sol(tile(lead, d.add2(y, c(24)))), sol(tile(lead, d.sub(feet, c(2)))))
-    xa10 = d.sel(d.and_(d.ne(dx, c(0)), wall), x10, nx10)
-    xa = px(d, xa10)
-    cx, lf, rt = d.add2(xa, c(16)), d.add2(xa, c(BOX_L)), d.add2(xa, c(BOX_R))
-    snap10 = d.mul(d.qr(cx, c(TILE))[1], c(TILE * 10))
-    # ---- Boden
-    gL, gR, gC = tile(lf, feet), tile(rt, feet), tile(cx, feet)
-    sup = anyb(d, sol(gL), sol(gR), pla(gL), pla(gR), lad(gC))
-    to_lad = d.or_(d.and_(d.eq(vert, c(-1)), lad(tile(cx, d.sub(feet, c(2))))), d.and_(d.eq(vert, c(1)), lad(gC)))
-    on_pole = d.and_(d.not_(sup), pol(tile(cx, d.add2(y, c(24)))))
-    g_mode = d.sel(jump, c(2), d.sel(to_lad, c(1), d.sel(sup, c(0), d.sel(on_pole, c(3), c(2)))))
-    g_snap = d.and_(no_jump, d.or_(to_lad, on_pole))
-    g_x10 = d.sel(g_snap, snap10, xa10)
-    g_y10 = d.sel(d.and_(no_jump, to_lad), d.add2(y10, d.mul(vert, c(CLIMB10))), y10)
-    g_vy = d.sel(jump, c(JUMP10), c(0))
-    # ---- Luft
-    v1 = d.add2(vy10, c(GRAVITY10))
-    vmax = d.sel(chute, c(CHUTE10), c(VY_MAX10))
-    vy = d.sel(d.gt(v1, vmax), vmax, v1)
-    ay10 = d.add2(y10, vy)
-    ay = px(d, ay10)
-    afeet = d.add2(ay, c(CLAUDE_H))
-    rising = d.lt(vy, c(0))
-    bump = d.and_(rising, d.or_(sol(tile(lf, ay)), sol(tile(rt, ay))))
-    a_top = row_top(afeet)
-    crossed = d.and_(le(d, feet, a_top), ge(d, afeet, a_top))
-    aL, aR, aC = tile(lf, afeet), tile(rt, afeet), tile(cx, afeet)
-    lad_top = d.and_(lad(aC), d.not_(lad(tile(cx, d.sub(afeet, c(TILE))))))
-    land = allb(d, d.not_(rising), crossed, anyb(d, sol(aL), sol(aR), pla(aL), pla(aR), lad_top))
-    land_y = d.sub(a_top, c(CLAUDE_H))
-    mid = tile(cx, d.add2(ay, c(24)))
-    falling = d.gt(vy, c(0))
-    grab_l = d.and_(lad(mid), d.or_(d.ne(vert, c(0)), d.and_(d.eq(mid, c(T[':'])), falling)))
-    grab_p = d.and_(pol(mid), falling)
-    grab = d.and_(d.not_(land), d.or_(grab_l, grab_p))
-    a_mode = d.sel(land, c(0), d.sel(grab_l, c(1), d.sel(grab_p, c(3), c(2))))
-    a_y10 = d.sel(land, d.mul(land_y, c(10)), d.sel(bump, y10, ay10))
-    a_vy = d.sel(anyb(d, land, bump, grab), c(0), vy)
-    a_x10 = d.sel(grab, snap10, xa10)
-    dead = allb(d, m2, land, d.gt(d.sub(land_y, stand), c(MAX_FALL)), d.not_(chute))
-    # ---- Leiter / Seil
-    ly10 = d.add2(y10, d.mul(vert, c(CLIMB10)))
-    ly = px(d, ly10)
-    lfeet = d.add2(ly, c(CLAUDE_H))
-    up, down = d.eq(vert, c(-1)), d.eq(vert, c(1))
-    ceiling = d.and_(up, sol(tile(cx, ly)))
-    l_above = d.sub(lfeet, c(2))
-    at_top = allb(d, up, d.not_(ceiling), d.not_(lad(tile(cx, l_above))))
-    top_y = d.sub(d.add2(row_top(l_above), c(TILE)), c(CLAUDE_H))
-    floor = d.and_(down, sol(tile(cx, lfeet)))
-    floor_y = d.sub(row_top(lfeet), c(CLAUDE_H))
-    rope_end = allb(d, down, d.not_(lad(tile(cx, l_above))), d.not_(lad(tile(cx, lfeet))))
-    step_off = d.and_(d.ne(run, c(0)), d.eq(vert, c(0)))
-    l_mode = d.sel(jump, c(2), d.sel(d.or_(at_top, floor), c(0), d.sel(d.or_(rope_end, step_off), c(2), c(1))))
-    l_y10 = d.sel(at_top, d.mul(top_y, c(10)), d.sel(floor, d.mul(floor_y, c(10)), d.sel(ceiling, y10, ly10)))
-    l_vy = d.sel(jump, c(JUMP10), c(0))
-    # ---- Rutschstange
-    py10 = d.add2(y10, c(SLIDE10))
-    py = px(d, py10)
-    pfeet = d.add2(py, c(CLAUDE_H))
-    p_floor = sol(tile(cx, pfeet))
-    p_end = d.and_(d.not_(pol(tile(cx, d.add2(py, c(24))))), d.not_(pol(tile(cx, pfeet))))
-    p_mode = d.sel(p_floor, c(0), d.sel(p_end, c(2), c(3)))
-    p_y10 = d.sel(p_floor, d.mul(d.sub(row_top(pfeet), c(CLAUDE_H)), c(10)), py10)
-
-    def pick(g, l, a, p): return d.sel(m0, g, d.sel(m1, l, d.sel(m2, a, p)))
-    n_mode = pick(g_mode, l_mode, a_mode, p_mode)
-    n_x10 = pick(g_x10, x10, a_x10, x10)
-    n_y10 = pick(g_y10, l_y10, a_y10, p_y10)
-    n_vy = pick(g_vy, l_vy, a_vy, c(0))
-    n_stand = d.sel(d.eq(n_mode, c(2)), stand, px(d, n_y10))
-    n_face = d.sel(d.gt(run, c(0)), c(0), d.sel(d.lt(run, c(0)), c(1), facing))
-    out = d.bun(st, [('X10', n_x10), ('Y10', n_y10), ('VY10', n_vy), ('Mode', n_mode), ('Facing', n_face), ('StandY', n_stand), ('Dead', dead)])
-    d.indic('State out', STATE, STATE_V, out, 4)
-    d.err_out(err[0])
-    d.write()
-
-
 def enemies_init():
     d = Doc('Enemies_Init.vi', 'Builds the enemies of a room from its tiles: S spider (Kind 0), Z snake (1), K skull (2) at their start tiles, '
             'walking left or right (by the tile position), not climbing.')
@@ -337,98 +214,6 @@ def door_open():
     d.indic('State out', STATE, STATE_V, d.sel(opening, out, st), 4)
     d.indic('Opened', 'bool', 'false', opening, 6)
     d.err_out(e)
-    d.write()
-
-
-def enemies_step():
-    d = Doc('Enemies_Step.vi', 'Moves every enemy by one tick. Snake: stays. Skull: rolls on its floor and turns at walls, doors, edges, '
-            'ladder holes, vanishing floors and the room edge. Spider: walks like the skull but also over ladder tops; when it passes a ladder or rope it '
-            'may climb up or down (random), and on reaching a floor it walks on in a random direction. Spiders never leave the room and '
-            'never jump. Speeds per level (tenths of a pixel per tick). Random numbers from Seed (LCG).')
-    st = d.ctrl('State', STATE, STATE_V, 0)
-    e = d.err_in()
-    c = d.i32c
-    tiles, enemies, level, seed, fphase = d.unb(st, ['Tiles', 'Enemies', 'Level', 'Seed', 'FloorPhase'])
-    li = lvl_index(d, level)
-    sp_spider, sp_skull = d.idx(table(d, LV_SPIDER, 'Spider speed'), li), d.idx(table(d, LV_SKULL, 'Skull speed'), li)
-    speeds = d.node('Build Array', [('element', sp_spider), ('element', c(0)), ('element', sp_skull)], ['appended array'])['appended array']
-    n = max(TILE_CODE.values()) + 1
-    L_SOL = d.const('array{int32}', lut({k: 1 for k in SOLID}, n), 'Solid')
-    L_PLA = d.const('array{int32}', lut({k: 1 for k in PLATFORM}, n), 'Thin floor')
-    L_LAD = d.const('array{int32}', lut({k: 1 for k in CLIMBABLE}, n), 'Ladder or rope')
-    lp = d.begin('For Loop', 'count="" maxin="" maxout=""')
-    en = d.tunnel_in(1, enemies, 'index')
-    t_, spd_t = d.tunnel_in(2, tiles), d.tunnel_in(3, speeds)
-    lsol, lpla, llad = d.tunnel_in(4, L_SOL), d.tunnel_in(5, L_PLA), d.tunnel_in(6, L_LAD)
-    s_l, s_r = shiftreg(d, lp, seed)
-    e_l, e_r = shiftreg(d, lp, e)
-    err = [e_l]
-    tile = tile_reader(d, t_, err)
-    has = lambda code, tbl: d.gt(d.idx(tbl, code), c(0))
-    sol = lambda code: has(code, lsol)
-    lad = lambda code: has(code, llad)
-    sup_any = lambda code: anyb(d, sol(code), has(code, lpla), lad(code))
-    kind, x10, y10, dir_, mode = d.unb(en, ['Kind', 'X10', 'Y10', 'Dir', 'Mode'])
-    seed2 = d.add2(d.mul(s_l, d.const('uint32', '1103515245')), d.const('uint32', '12345'))
-    rnd = d.i32(d.qr(d.qr(seed2, d.const('uint32', '65536'))[1], d.const('uint32', '32768'))[0])
-    spd = d.idx(spd_t, kind)
-    spider = d.eq(kind, c(0))
-    x, y = px(d, x10), px(d, y10)
-    # ---- waagrecht
-    nx10 = d.add2(x10, d.mul(dir_, spd))
-    nx = px(d, nx10)
-    front = d.sel(d.gt(dir_, c(0)), d.add2(nx, c(31)), nx)
-    ahead = tile(front, d.add2(y, c(32)))
-    # Schwundboeden ('~') betreten Gegner nie: sie koennten nicht rechtzeitig herunter, bevor der Boden durchsichtig wird.
-    # Steht einer schon darauf (Startplatz), darf er weiterlaufen, bis er festen Boden erreicht.
-    hatch_ahead = d.eq(ahead, c(T['~']))
-    on_hatch = d.eq(tile(d.add2(x, c(16)), d.add2(y, c(32))), c(T['~']))
-    support = d.and_(d.sel(spider, sup_any(ahead), d.or_(sol(ahead), has(ahead, lpla))), d.or_(d.not_(hatch_ahead), on_hatch))
-    blocked = anyb(d, sol(tile(front, d.add2(y, c(16)))), d.lt(nx, c(0)), d.gt(nx, c(W - 32)), d.not_(support))
-    w_x10 = d.sel(blocked, x10, nx10)
-    w_dir = d.sel(blocked, d.sub(c(0), dir_), dir_)
-    # Spinne an einer Leiter: beim Ueberqueren einer Kachelgrenze
-    passing = allb(d, spider, d.not_(blocked), d.lt(d.qr(nx10, c(TILE * 10))[0], spd))
-    colx = d.add2(d.mul(d.qr(nx, c(TILE))[1], c(TILE)), c(16))
-    can_up = lad(tile(colx, d.add2(y, c(16))))
-    # nur Leitern, die im Raum enden: die kleine Leiter im Boden der untersten Reihe fuehrt in den Raum darunter - dort steckte die
-    # Spinne sonst unsichtbar im Loch am Bildrand fest, genau wo Claude hinunterklettert
-    can_down = d.and_(lad(tile(colx, d.add2(y, c(33)))), d.lt(d.add2(y, c(33)), c(FIELD_H - TILE)))
-    pick = d.qr(rnd, c(4))[0]
-    go_up = allb(d, passing, can_up, d.eq(pick, c(0)))
-    go_down = allb(d, passing, can_down, d.not_(go_up), d.eq(pick, c(1)))
-    climb = d.or_(go_up, go_down)
-    w_mode = d.sel(climb, c(1), c(0))
-    w_x10b = d.sel(climb, d.mul(d.sub(colx, c(16)), c(10)), w_x10)
-    w_dirb = d.sel(go_up, c(-1), d.sel(go_down, c(1), w_dir))
-    # ---- klettern (nur Spinnen)
-    ny10 = d.add2(y10, d.mul(dir_, spd))
-    ny = px(d, ny10)
-    cxm = d.add2(x, c(16))
-    rdir = d.sub(d.mul(d.qr(rnd, c(2))[0], c(2)), c(1))
-    down_floor = d.and_(d.gt(dir_, c(0)), d.or_(sol(tile(cxm, d.add2(ny, c(32)))), ge(d, d.add2(ny, c(32)), c(FIELD_H))))
-    floor_y = d.sub(d.mul(d.qr(d.add2(ny, c(32)), c(TILE))[1], c(TILE)), c(32))
-    down_end = allb(d, d.gt(dir_, c(0)), d.not_(down_floor), d.not_(lad(tile(cxm, d.add2(ny, c(31))))), d.not_(lad(tile(cxm, d.add2(ny, c(33))))))
-    up_top = d.and_(d.lt(dir_, c(0)), d.not_(lad(tile(cxm, d.add2(ny, c(31))))))
-    top_y = d.sub(d.mul(d.inc(d.qr(d.add2(ny, c(31)), c(TILE))[1]), c(TILE)), c(32))
-    up_wall = d.and_(d.lt(dir_, c(0)), le(d, ny, c(0)))
-    c_mode = d.sel(d.or_(down_floor, up_top), c(0), c(1))
-    c_y10 = d.sel(down_floor, d.mul(floor_y, c(10)), d.sel(up_top, d.mul(top_y, c(10)), d.sel(d.or_(down_end, up_wall), y10, ny10)))
-    c_dir = d.sel(d.or_(down_floor, up_top), rdir, d.sel(d.or_(down_end, up_wall), d.sub(c(0), dir_), dir_))
-    # ---- zusammenfuehren
-    still = d.eq(kind, c(1))
-    climbing = d.eq(mode, c(1))
-    n_x10 = d.sel(still, x10, d.sel(climbing, x10, w_x10b))
-    n_y10 = d.sel(still, y10, d.sel(climbing, c_y10, y10))
-    n_dir = d.sel(still, dir_, d.sel(climbing, c_dir, w_dirb))
-    n_mode = d.sel(still, c(0), d.sel(climbing, c_mode, w_mode))
-    en2 = d.bun(en, [('X10', n_x10), ('Y10', n_y10), ('Dir', n_dir), ('Mode', n_mode)])
-    out_arr = d.tunnel_out(1, en2, 'index')
-    d.end()
-    seed_out = close_reg(d, s_r, seed2)
-    err_out = close_reg(d, e_r, err[0])
-    d.indic('State out', STATE, STATE_V, d.bun(st, [('Enemies', out_arr), ('Seed', seed_out)]), 4)
-    d.err_out(err_out)
     d.write()
 
 
@@ -2119,9 +1904,10 @@ def audio_close():
     d.write()
 
 
-ENGINE = (player_move, enemies_init, room_change, items_collect, door_open, enemies_step, hit_check, respawn, level_setup, game_new,
+ENGINE = (move_ground, move_air, move_ladder, move_pole, enemy_walk, enemy_climb, player_move, enemies_init, room_change, items_collect, door_open, enemies_step, hit_check, respawn, level_setup, game_new,
           keys_apply, game_play, demo_input, highscore_load, highscore_save, highscore_insert, game_start, game_step)
-RENDER = (room_images, light_update, grid_block, room_draw, enemies_draw, glyphs_draw, hud_draw, overlay_draw, piece_compose, scene_draw, frame_draw)
+# room_draw, enemies_draw, glyphs_draw und overlay_draw erzeugen die Blit-VIs (gen_blit.py); die Picture-VIs selbst gibt es nicht mehr
+RENDER = (room_images, light_update, frame_draw)
 AUDIO = (sound_bank_load, sound_mix)
 APP = (app_init, app_close, window_setup, key_send, engine_tick, frame_pace, render_frame, audio_start, audio_block, audio_close,
        game_loop, sound_loop, timing_save, window_move)
@@ -2141,24 +1927,14 @@ def contract():
         (LV, 'Resource_Path', [], [i('File name', 'string', 0), i('Subfolder', 'string', 5), E], [o('Path', 'path', 4), EO]),
         (LV, 'Room_Load', [LV + 'Resource_Path.vi'], [i('Room ID', 'string', 0), E], [o('Tiles', '@Tiles', 4), EO]),
         (LV, 'World_Load', [LV + 'Resource_Path.vi', LV + 'Room_Load.vi'], [E], [o('Rooms', RO, 4), o('Grid', 'array.2{string}', 6), EO]),
-        (LV, 'Tile_At', [], [i('Tiles', '@Tiles', 0), i('X', 'int32', 5), i('Y', 'int32', 7), E], [o('Tile', 'uint8', 4), EO]),
         (LV, 'Tile_Read', [], [i('Tiles', '@Tiles', 0), i('X', 'int32', 5), i('Y', 'int32', 7), E], [o('Tile', 'uint8', 4), EO]),
         (RE, 'Image_Load', [LV + 'Resource_Path.vi'], [i('File name', 'string', 0), E], [o('Image', '@ImageData', 4), EO]),
-        (RE, 'SpriteAtlas_Load', [LV + 'Resource_Path.vi'], [E], [o('Sprites', '@Sprites', 4), EO]),
-        (RE, 'Sprite_Draw', [], [i('Picture', 'picture', 0), i('Sprites', '@Sprites', 5), i('Index', 'int32', 7), i('Position', '@Position', 9), E],
-         [o('Picture out', 'picture', 4), EO]),
-        (RE, 'Image_Draw', [], [i('Picture', 'picture', 0), i('Image', '@ImageData', 5), i('Position', '@Position', 7), E], [o('Picture out', 'picture', 4), EO]),
-        (RE, 'Tile_Cut', [], [i('Image', '@ImageData', 0), i('Column', 'int32', 5), i('Row', 'int32', 7), i('Offset Y', 'int32', 9), E],
-         [o('Tile', '@ImageData', 4), EO]),
-        (RE, 'Block_Cut', [], [i('Image', '@ImageData', 0), i('Column', 'int32', 5), i('Row', 'int32', 7), i('Offset Y', 'int32', 9),
-                               i('Columns', 'int32', 1), i('Rows', 'int32', 2), E], [o('Block', '@ImageData', 4), EO]),
-        # Engine
-        (EN, 'Player_Move', [LV + 'Tile_Read.vi'], [i('State', S, 0), i('Jump', 'bool', 5, 'recommended'), E], [o('State out', S, 4), EO]),
+        (EN, 'Player_Move', [LV + 'Tile_Read.vi'] + [EN + n + '.vi' for n in ('Move_Ground', 'Move_Air', 'Move_Ladder', 'Move_Pole')], [i('State', S, 0), i('Jump', 'bool', 5, 'recommended'), E], [o('State out', S, 4), EO]),
         (EN, 'Enemies_Init', [], [i('Tiles', '@Tiles', 0), E], [o('Enemies', '@Enemies', 4), EO]),
         (EN, 'Room_Change', [EN + 'Enemies_Init.vi'], [i('State', S, 0), E], [o('State out', S, 4), o('Changed', 'bool', 6), EO]),
         (EN, 'Items_Collect', [], [i('State', S, 0), E], [o('State out', S, 4), EO]),
         (EN, 'Door_Open', [], [i('State', S, 0), E], [o('State out', S, 4), o('Opened', 'bool', 6), EO]),
-        (EN, 'Enemies_Step', [LV + 'Tile_Read.vi'], [i('State', S, 0), E], [o('State out', S, 4), EO]),
+        (EN, 'Enemies_Step', [EN + 'Enemy_Walk.vi', EN + 'Enemy_Climb.vi'], [i('State', S, 0), E], [o('State out', S, 4), EO]),
         (EN, 'Hit_Check', [], [i('State', S, 0), E], [o('Hit', 'bool', 4), EO]),
         (EN, 'Respawn', [EN + 'Enemies_Init.vi'], [i('State', S, 0), E], [o('State out', S, 4), EO]),
         (EN, 'Level_Setup', [EN + 'Enemies_Init.vi'], [i('State', S, 0), i('Rooms', RO, 5), i('Level', 'int32', 7), E], [o('State out', S, 4), EO]),
@@ -2179,25 +1955,7 @@ def contract():
          [o('Lit', '@Grid', 4), o('Dim', '@Grid', 6), o('Dark', '@Grid', 8), o('Template', '@ImageData', 10), EO]),
         (RE, 'Light_Update', [], [i('Comp', '@Grid', 0), i('Lit', '@Grid', 5), i('Dim', '@Grid', 7), i('Dark', '@Grid', 9), i('Old CX', 'int32', 1),
                                   i('Old CY', 'int32', 2), i('CX', 'int32', 3), i('CY', 'int32', 13), E], [o('Comp out', '@Grid', 4), o('Rect', '@Rect', 6), EO]),
-        (RE, 'Grid_Block', [], [i('Grid', '@Grid', 0), i('Template', '@ImageData', 5), i('Rect', '@Rect', 7), E], [o('Block', '@ImageData', 4), EO]),
-        (RE, 'Room_Draw', [RE + 'Sprite_Draw.vi'], [i('Picture', 'picture', 0), i('Sprites', '@Sprites', 5), i('Tiles', '@Tiles', 7), i('Region', '@Rect', 9),
-                                                    i('FloorPhase', 'int32', 1), i('View', '@View', 2), E], [o('Picture out', 'picture', 4), EO]),
-        (RE, 'Enemies_Draw', [RE + 'Sprite_Draw.vi'], [i('Picture', 'picture', 0), i('Sprites', '@Sprites', 5), i('Enemies', '@Enemies', 7),
-                                                       i('Tick', 'uint32', 9), i('View', '@View', 1), E], [o('Picture out', 'picture', 4), EO]),
-        (RE, 'Glyphs_Draw', [RE + 'Sprite_Draw.vi'], [i('Picture', 'picture', 0), i('Sprites', '@Sprites', 5), i('Text', 'string', 7), i('Position', '@Position', 9), E],
-         [o('Picture out', 'picture', 4), EO]),
-        (RE, 'Hud_Draw', [RE + 'Sprite_Draw.vi', RE + 'Glyphs_Draw.vi'], [i('Sprites', '@Sprites', 0), i('Hud', '@ImageData', 5), i('State', S, 7), E],
-         [o('Piece', '@ImageData', 4), EO]),
-        (RE, 'Overlay_Draw', [RE + 'Sprite_Draw.vi', RE + 'Glyphs_Draw.vi'], [i('Picture', 'picture', 0), i('Sprites', '@Sprites', 5), i('State', S, 7),
-                                                                              i('Clip', '@Rect', 9), E], [o('Picture out', 'picture', 4), EO]),
-        (RE, 'Piece_Compose', [RE + n + '.vi' for n in ('Grid_Block', 'Room_Draw', 'Enemies_Draw', 'Sprite_Draw', 'Overlay_Draw')],
-         [i('Grid', '@Grid', 0), i('Template', '@ImageData', 5), i('Rect', '@Rect', 7), i('Sprites', '@Sprites', 9), i('State', S, 1), i('View', '@View', 2), E],
-         [o('Piece', '@ImageData', 4), EO]),
-        (RE, 'Scene_Draw', [RE + n + '.vi' for n in ('Grid_Block', 'Room_Draw', 'Enemies_Draw', 'Sprite_Draw', 'Glyphs_Draw', 'Overlay_Draw')],
-         [i('Grid', '@Grid', 0), i('Template', '@ImageData', 5), i('Sprites', '@Sprites', 7), i('State', S, 9), i('View', '@View', 1),
-          i('Hud', '@ImageData', 2), i('Title', '@ImageData', 3), E],
-         [o('Picture', 'picture', 4), EO]),
-        (RE, 'Frame_Draw', [RE + n + '.vi' for n in ('Room_Images', 'Light_Update', 'Scene_Draw')],
+        (RE, 'Frame_Draw', [RE + n + '.vi' for n in ('Room_Images', 'Light_Update', 'Scene_Blit')],
          [i('State', S, 0), i('Sprites', '@Sprites', 5), i('Hud', '@ImageData', 7), i('Title', '@ImageData', 9), i('Memory', '@RenderMemory', 1), E],
          [o('Picture', 'picture', 4), o('Pieces', '@Pieces', 6), o('Memory out', '@RenderMemory', 8), EO]),
         # Audio
@@ -2230,6 +1988,17 @@ def contract():
         (AP, 'Audio_Block', [AU + 'Sound_Mix.vi'], [i('Channels', '@Channels', 0), i('Bank', '@Bank', 5), i('Task ID', 'uint32', 7), i('Mixer', '@Mixer', 9),
                                                    i('Sound', 'bool', 1, 'recommended'), E], [o('Mixer out', '@Mixer', 4), o('Stop', 'bool', 6), EO]),
         (AP, 'Audio_Close', [], [i('Task ID', 'uint32', 0), E], [EO]),
+        (EN, 'Move_Ground', [LV + 'Tile_Read.vi'], [i('State', S, 0), i('Jump', 'bool', 5, 'recommended'), i('XA10', 'int32', 7), E],
+         [o('Mode', 'int32', 4), o('X10', 'int32', 6), o('Y10', 'int32', 8), o('VY10', 'int32', 10), EO]),
+        (EN, 'Move_Air', [LV + 'Tile_Read.vi'], [i('State', S, 0), i('XA10', 'int32', 7), E],
+         [o('Mode', 'int32', 4), o('X10', 'int32', 6), o('Y10', 'int32', 8), o('VY10', 'int32', 10), o('Dead', 'bool', 13), EO]),
+        (EN, 'Move_Ladder', [LV + 'Tile_Read.vi'], [i('State', S, 0), i('Jump', 'bool', 5, 'recommended'), i('XA10', 'int32', 7), E],
+         [o('Mode', 'int32', 4), o('Y10', 'int32', 8), o('VY10', 'int32', 10), EO]),
+        (EN, 'Move_Pole', [LV + 'Tile_Read.vi'], [i('State', S, 0), i('XA10', 'int32', 7), E], [o('Mode', 'int32', 4), o('Y10', 'int32', 8), EO]),
+        (EN, 'Enemy_Walk', [LV + 'Tile_Read.vi'], [i('Tiles', '@Tiles', 0), i('Enemy', ENEMY, 5), i('Speed', 'int32', 7), i('Random', 'int32', 9), E],
+         [o('X10', 'int32', 4), o('Dir', 'int32', 6), o('Mode', 'int32', 8), EO]),
+        (EN, 'Enemy_Climb', [LV + 'Tile_Read.vi'], [i('Tiles', '@Tiles', 0), i('Enemy', ENEMY, 5), i('Speed', 'int32', 7), i('Random', 'int32', 9), E],
+         [o('Y10', 'int32', 4), o('Dir', 'int32', 6), o('Mode', 'int32', 8), EO]),
     ]
     data = {
         "application": "Gold Hunter",

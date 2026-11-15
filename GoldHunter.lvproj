@@ -14,13 +14,13 @@
 		<Property Name="server.vi.callsEnabled" Type="Bool">true</Property>
 		<Property Name="server.vi.propertiesEnabled" Type="Bool">true</Property>
 		<Property Name="specify.custom.address" Type="Bool">false</Property>
-		<Item Name="GH_Level.lvlib" Type="Library" URL="../Source/Level/GH_Level.lvlib"/>
-		<Item Name="GH_Render.lvlib" Type="Library" URL="../Source/Render/GH_Render.lvlib"/>
 		<Item Name="Tests" Type="Folder">
 			<Item Name="Test_Setup.vi" Type="VI" URL="../Tests/Test_Setup.vi"/>
 			<Item Name="Snapshot_Run.vi" Type="VI" URL="../Tests/Snapshot_Run.vi"/>
 			<Item Name="Test_Run.vi" Type="VI" URL="../Tests/Test_Run.vi"/>
 		</Item>
+		<Item Name="GH_Level.lvlib" Type="Library" URL="../Source/Level/GH_Level.lvlib"/>
+		<Item Name="GH_Render.lvlib" Type="Library" URL="../Source/Render/GH_Render.lvlib"/>
 		<Item Name="GH_Engine.lvlib" Type="Library" URL="../Source/Engine/GH_Engine.lvlib"/>
 		<Item Name="GH_App.lvlib" Type="Library" URL="../Source/App/GH_App.lvlib"/>
 		<Item Name="GH_Audio.lvlib" Type="Library" URL="../Source/Audio/GH_Audio.lvlib"/>

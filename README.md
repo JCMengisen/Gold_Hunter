@@ -20,7 +20,7 @@ diagrams, runs the tests and verifies the result.
 
 ## Playing
 
-Requirements: LabVIEW 2026 (32-bit) on Windows, and a screen of at least 1280 × 720.
+Requirements: LabVIEW 2020 (32-bit) on Windows, and a screen of at least 1280 × 720.
 
 Open `GoldHunter.lvproj`, run `Main.vi` and click into the window.
 

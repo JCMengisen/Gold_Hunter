@@ -115,56 +115,93 @@ def scene_blit():
     c = d.i32c
     phase, = d.unb(st, ['Phase'])
     is_title = d.eq(phase, c(PH['Title']))
-    full = d.const(RECT, f'[0,0,{W},{H}]', 'Whole screen')
-
-    def raster(img, rows):
-        data, = d.unb(img, ['image'])
-        return d.node('Reshape Array', [('array', data), ('dimension size', d.i32c(rows)), ('dimension size', d.i32c(W * 3))], ['output array'])['output array']
 
     def f_title(i):
-        tt, sp, s, clip, err = i[:5]
-        # title.png hat zwei Seiten untereinander: Titelbild, darunter die Kurzanleitung (nach dem Titelbild TITLE_HELP Ticks lang)
-        pt, = d.unb(s, ['PhaseTicks'])
-        help_page = d.and_(gp.ge(d, pt, c(TITLE_CARD)), d.lt(pt, c(TITLE_CARD + TITLE_HELP)))
-        data, = d.unb(tt, ['image'])
-        page = d.node('Array Subset', [('array', data), ('index', d.sel(help_page, c(H * W * 3), c(0))), ('length', c(H * W * 3))],
-                      ['subarray'])['subarray']
-        rast = d.node('Reshape Array', [('array', page), ('dimension size', c(H)), ('dimension size', c(W * 3))], ['output array'])['output array']
-        ov = d.call('Overlay_Blit.vi', [('Picture', rast), ('Sprites', sp), ('State', s), ('Clip', clip), ('error in', err)],
-                    ['Picture out', 'error out'])
-        return [ov['Picture out'], ov['error out']]
+        tt, sp, s, err = i[:4]
+        r = d.call('Title_Blit.vi', [('Title', tt), ('Sprites', sp), ('State', s), ('error in', err)], ['Picture', 'error out'])
+        return [r['Picture'], r['error out']]
 
     def f_game(i):
-        _, sp, s, clip, err, g, vw, hd = i
-        fr = d.node('Build Array', [('array', raster(hd, HUD_H)), ('array', g)], ['appended array'], extra='concat="true"')['appended array']
-        Doc.RENAME = dict(NAMES)        # hud_ops ruft Sprite_Draw/Glyphs_Draw -> hier die Blit-VIs
-        try:
-            p1, err1 = gp.hud_ops(d, fr, sp, s, err)
-        finally:
-            Doc.RENAME = {}
+        _, sp, s, err, g, vw, hd = i
+        data, = d.unb(hd, ['image'])
+        hr = d.node('Reshape Array', [('array', data), ('dimension size', c(HUD_H)), ('dimension size', c(W * 3))], ['output array'])['output array']
+        fr = d.node('Build Array', [('array', hr), ('array', g)], ['appended array'], extra='concat="true"')['appended array']
+        hb = d.call('Hud_Blit.vi', [('Picture', fr), ('Sprites', sp), ('State', s), ('error in', err)], ['Picture out', 'error out'])
         tiles, enemies, tick, fphase = d.unb(s, ['Tiles', 'Enemies', 'Tick', 'FloorPhase'])
-        rd = d.call('Room_Blit.vi', [('Picture', p1), ('Sprites', sp), ('Tiles', tiles), ('Region', d.const(RECT, f'[0,0,{COLS},{ROWS}]')),
-                                     ('FloorPhase', fphase), ('View', vw), ('error in', err1)], ['Picture out', 'error out'])
+        rd = d.call('Room_Blit.vi', [('Picture', hb['Picture out']), ('Sprites', sp), ('Tiles', tiles), ('Region', d.const(RECT, f'[0,0,{COLS},{ROWS}]')),
+                                     ('FloorPhase', fphase), ('View', vw), ('error in', hb['error out'])], ['Picture out', 'error out'])
         ed = d.call('Enemies_Blit.vi', [('Picture', rd['Picture out']), ('Sprites', sp), ('Enemies', enemies), ('Tick', tick), ('View', vw),
                                         ('error in', rd['error out'])], ['Picture out', 'error out'])
-        cix, cxp, cyp = d.unb(vw, ['ClaudeIdx', 'ClaudeX', 'ClaudeY'])
-        cpos = d.bun(d.const(POS, '[0,0]'), [('X', cxp), ('Y', d.sel(gp.ge(d, cix, c(0)), cyp, c(-2000)))])
-        cd = d.call('Sprite_Blit.vi', [('Picture', ed['Picture out']), ('Sprites', sp), ('Index', gp.maxv(d, cix, c(0))), ('Position', cpos),
-                                       ('error in', ed['error out'])], ['Picture out', 'error out'])
-        # Fallschirm ueber Claude, solange er in der Schatzkammer faellt
-        rm, md, vy = d.unb(s, ['Room', 'Mode', 'VY10'])
-        chute = allb(d, d.eq(rm, c(TREASURE_IDX)), d.eq(md, c(2)), d.gt(vy, c(0)))
-        ppos = d.bun(d.const(POS, '[0,0]'), [('X', d.sub(cxp, c(8))), ('Y', d.sel(chute, d.sub(cyp, c(30)), c(-2000)))])
-        pc = d.call('Sprite_Blit.vi', [('Picture', cd['Picture out']), ('Sprites', sp), ('Index', c(SPR['parachute'])), ('Position', ppos),
-                                       ('error in', cd['error out'])], ['Picture out', 'error out'])
-        cd = pc
-        ov = d.call('Overlay_Blit.vi', [('Picture', cd['Picture out']), ('Sprites', sp), ('State', s), ('Clip', clip), ('error in', cd['error out'])],
+        cd = d.call('Claude_Blit.vi', [('Picture', ed['Picture out']), ('Sprites', sp), ('State', s), ('View', vw), ('error in', ed['error out'])],
                     ['Picture out', 'error out'])
+        ov = d.call('Overlay_Blit.vi', [('Picture', cd['Picture out']), ('Sprites', sp), ('State', s), ('Clip', d.const(RECT, f'[0,0,{W},{H}]', 'Whole screen')),
+                                        ('error in', cd['error out'])], ['Picture out', 'error out'])
         return [ov['Picture out'], ov['error out']]
 
-    pic, err = d.case(is_title, [title, spr, st, full, e, grid, view, hud], [('True', f_title), ('False', f_game)], 2)
+    pic, err = d.case(is_title, [title, spr, st, e, grid, view, hud], [('True', f_title), ('False', f_game)], 2)
     d.indic('Picture', FRAME, FRAME_V, pic, 4)
     d.err_out(err)
+    d.write()
+
+
+def title_blit():
+    d = Doc('Title_Blit.vi', 'The title screen as one raster (rows x width*3 RGB): title.png holds two pages one below the other - the title '
+            'image and below it the short help (shown TITLE_HELP ticks after the title card) - with the overlay of the phase on top.')
+    tt = d.ctrl('Title', IMG, IMG_V, 0)
+    sp = d.ctrl('Sprites', BSPRITES, '[]', 5)
+    s = d.ctrl('State', STATE, STATE_V, 7)
+    err = d.err_in()
+    c = d.i32c
+    pt, = d.unb(s, ['PhaseTicks'])
+    help_page = d.and_(gp.ge(d, pt, c(TITLE_CARD)), d.lt(pt, c(TITLE_CARD + TITLE_HELP)))
+    data, = d.unb(tt, ['image'])
+    page = d.node('Array Subset', [('array', data), ('index', d.sel(help_page, c(H * W * 3), c(0))), ('length', c(H * W * 3))],
+                  ['subarray'])['subarray']
+    rast = d.node('Reshape Array', [('array', page), ('dimension size', c(H)), ('dimension size', c(W * 3))], ['output array'])['output array']
+    ov = d.call('Overlay_Blit.vi', [('Picture', rast), ('Sprites', sp), ('State', s), ('Clip', d.const(RECT, f'[0,0,{W},{H}]', 'Whole screen')),
+                                    ('error in', err)], ['Picture out', 'error out'])
+    d.indic('Picture', FRAME, FRAME_V, ov['Picture out'], 4)
+    d.err_out(ov['error out'])
+    d.write()
+
+
+def hud_blit():
+    d = Doc('Hud_Blit.vi', f'Draws the HUD values into the screen raster (the HUD image itself is already there): lives (at most {MAX_LIVES} '
+            'heads), keys with their number, the torch, level, gold (score) and in the treasure room the seconds left.')
+    pic = d.ctrl('Picture', FRAME, FRAME_V, 0)
+    sp = d.ctrl('Sprites', BSPRITES, '[]', 5)
+    s = d.ctrl('State', STATE, STATE_V, 7)
+    e = d.err_in()
+    Doc.RENAME = dict(NAMES)            # hud_ops ruft Sprite_Draw/Glyphs_Draw -> hier die Blit-VIs
+    try:
+        p1, err1 = gp.hud_ops(d, pic, sp, s, e)
+    finally:
+        Doc.RENAME = {}
+    d.indic('Picture out', FRAME, FRAME_V, p1, 4)
+    d.err_out(err1)
+    d.write()
+
+
+def claude_blit():
+    d = Doc('Claude_Blit.vi', 'Draws Claude (View: ClaudeIdx < 0 hides him) into the screen raster and, while he falls in the treasure room, '
+            'the parachute above him.')
+    pic = d.ctrl('Picture', FRAME, FRAME_V, 0)
+    sp = d.ctrl('Sprites', BSPRITES, '[]', 5)
+    s = d.ctrl('State', STATE, STATE_V, 7)
+    vw = d.ctrl('View', VIEW, VIEW_V, 9)
+    e = d.err_in()
+    c = d.i32c
+    cix, cxp, cyp = d.unb(vw, ['ClaudeIdx', 'ClaudeX', 'ClaudeY'])
+    cpos = d.bun(d.const(POS, '[0,0]'), [('X', cxp), ('Y', d.sel(gp.ge(d, cix, c(0)), cyp, c(-2000)))])
+    cd = d.call('Sprite_Blit.vi', [('Picture', pic), ('Sprites', sp), ('Index', gp.maxv(d, cix, c(0))), ('Position', cpos),
+                                   ('error in', e)], ['Picture out', 'error out'])
+    rm, md, vy = d.unb(s, ['Room', 'Mode', 'VY10'])
+    chute = allb(d, d.eq(rm, c(TREASURE_IDX)), d.eq(md, c(2)), d.gt(vy, c(0)))
+    ppos = d.bun(d.const(POS, '[0,0]'), [('X', d.sub(cxp, c(8))), ('Y', d.sel(chute, d.sub(cyp, c(30)), c(-2000)))])
+    pc = d.call('Sprite_Blit.vi', [('Picture', cd['Picture out']), ('Sprites', sp), ('Index', c(SPR['parachute'])), ('Position', ppos),
+                                   ('error in', cd['error out'])], ['Picture out', 'error out'])
+    d.indic('Picture out', FRAME, FRAME_V, pc['Picture out'], 4)
+    d.err_out(pc['error out'])
     d.write()
 
 
@@ -200,7 +237,8 @@ def overlay_blit():
         variants_off()
 
 
-ALL = {f.__name__: f for f in (blit_load, sprite_blit, glyphs_blit, room_blit, enemies_blit, overlay_blit, scene_blit)}
+ALL = {f.__name__: f for f in (blit_load, sprite_blit, glyphs_blit, room_blit, enemies_blit, overlay_blit, title_blit, hud_blit, claude_blit,
+                               scene_blit)}
 if __name__ == '__main__':
     for name in (sys.argv[1:] or ALL):
         ALL[name]()

@@ -1,0 +1,89 @@
+<VI _name="GH_Render.lvlib:Claude_View.vi" description="What the drawing needs to know about Claude: his sprite (standing, walking, jumping, falling, climbing, sliding, dying with flashing; -1 on the title), his screen position, his tile (CX, CY, centre of the light circle) and Hide = Dark.">
+  <Control _name="State" type="cluster{uint32.Tick,int32.Phase,int32.PhaseTicks,int32.Level,int32.Room,int32.X10,int32.Y10,int32.VY10,int32.Mode,int32.Facing,int32.Run,int32.Vert,int32.StandY,int32.EntryX10,int32.EntryY10,int32.EntryMode,int32.Lives,int32.Score,int32.NextLife,int32.KeyR,int32.KeyB,int32.KeyY,bool.Torch,int32.FloorPhase,bool.Dead,bool.LevelStart,bool.Quit,int32.Sound,uint32.Seed,int32.DemoStep,array.2{uint8}.Tiles,array{cluster{string.ID,int32.Depth,int32.Column,array.2{uint8}.Tiles}}.World,array{cluster{int32.Kind,int32.X10,int32.Y10,int32.Dir,int32.Mode}}.Enemies,array{cluster{int32.Score,string.Name}}.Highscores,array{int32}.Name,int32.Cursor}" value="[0,0,0,1,0,0,0,0,0,0,0,0,0,0,0,0,4,0,10000,0,0,0,false,0,false,false,false,0,12345,0,[],[],[],[],[0,0,0],0]" conIdx="0" connection="required" outputs="value:1001.v" uid="1001" uid_parent="root"/>
+  <Control _name="Dark" type="bool" value="false" conIdx="5" connection="recommended" outputs="value:1002.v" uid="1002" uid_parent="root"/>
+  <Node _name="Unbundle By Name" fields="Phase,PhaseTicks,X10,Y10,VY10,Mode,Facing,Run,Tick" inputs="input cluster:1001.v" outputs="Phase:1003.o0,PhaseTicks:1003.o1,X10:1003.o2,Y10:1003.o3,VY10:1003.o4,Mode:1003.o5,Facing:1003.o6,Run:1003.o7,Tick:1003.o8" uid="1003" uid_parent="root"/>
+  <Constant type="int32" value="0" outputs="value:1004.v" uid="1004" uid_parent="root"/>
+  <Node _name="Equal?" inputs="x:1003.o0,y:1004.v" outputs="x = y?:1005.o0" uid="1005" uid_parent="root"/>
+  <Constant type="int32" value="10" outputs="value:1006.v" uid="1006" uid_parent="root"/>
+  <Node _name="Quotient &amp; Remainder" inputs="x:1003.o2,y:1006.v" outputs="x-y*floor(x/y):1007.o0,floor(x/y):1007.o1" uid="1007" uid_parent="root"/>
+  <Constant type="int32" value="10" outputs="value:1008.v" uid="1008" uid_parent="root"/>
+  <Node _name="Quotient &amp; Remainder" inputs="x:1003.o3,y:1008.v" outputs="x-y*floor(x/y):1009.o0,floor(x/y):1009.o1" uid="1009" uid_parent="root"/>
+  <Constant type="int32" value="16" outputs="value:1010.v" uid="1010" uid_parent="root"/>
+  <Node _name="Add" inputs="x:1007.o1,y:1010.v" outputs="x+y:1011.o0" uid="1011" uid_parent="root"/>
+  <Constant type="int32" value="32" outputs="value:1012.v" uid="1012" uid_parent="root"/>
+  <Node _name="Quotient &amp; Remainder" inputs="x:1011.o0,y:1012.v" outputs="x-y*floor(x/y):1013.o0,floor(x/y):1013.o1" uid="1013" uid_parent="root"/>
+  <Constant type="int32" value="24" outputs="value:1014.v" uid="1014" uid_parent="root"/>
+  <Node _name="Add" inputs="x:1009.o1,y:1014.v" outputs="x+y:1015.o0" uid="1015" uid_parent="root"/>
+  <Constant type="int32" value="32" outputs="value:1016.v" uid="1016" uid_parent="root"/>
+  <Node _name="Quotient &amp; Remainder" inputs="x:1015.o0,y:1016.v" outputs="x-y*floor(x/y):1017.o0,floor(x/y):1017.o1" uid="1017" uid_parent="root"/>
+  <Constant type="int32" value="7" outputs="value:1018.v" uid="1018" uid_parent="root"/>
+  <Node _name="Multiply" inputs="x:1003.o6,y:1018.v" outputs="x*y:1019.o0" uid="1019" uid_parent="root"/>
+  <Node _name="To Long Integer" inputs="number:1003.o8" outputs="32bit integer:1020.o0" uid="1020" uid_parent="root"/>
+  <Constant type="int32" value="6" outputs="value:1021.v" uid="1021" uid_parent="root"/>
+  <Node _name="Quotient &amp; Remainder" inputs="x:1020.o0,y:1021.v" outputs="x-y*floor(x/y):1022.o0,floor(x/y):1022.o1" uid="1022" uid_parent="root"/>
+  <Constant type="int32" value="4" outputs="value:1023.v" uid="1023" uid_parent="root"/>
+  <Node _name="Quotient &amp; Remainder" inputs="x:1022.o1,y:1023.v" outputs="x-y*floor(x/y):1024.o0,floor(x/y):1024.o1" uid="1024" uid_parent="root"/>
+  <Node _name="Increment" inputs="x:1024.o0" outputs="x+1:1025.o0" uid="1025" uid_parent="root"/>
+  <Constant type="int32" value="0" outputs="value:1026.v" uid="1026" uid_parent="root"/>
+  <Node _name="Not Equal?" inputs="x:1003.o7,y:1026.v" outputs="x != y?:1027.o0" uid="1027" uid_parent="root"/>
+  <Constant type="int32" value="0" outputs="value:1028.v" uid="1028" uid_parent="root"/>
+  <Node _name="Select" inputs="s:1027.o0,t:1025.o0,f:1028.v" outputs="s? t\3Af:1029.o0" uid="1029" uid_parent="root"/>
+  <Node _name="Add" inputs="x:1019.o0,y:1029.o0" outputs="x+y:1030.o0" uid="1030" uid_parent="root"/>
+  <Constant type="int32" value="0" outputs="value:1031.v" uid="1031" uid_parent="root"/>
+  <Node _name="Less?" inputs="x:1003.o4,y:1031.v" outputs="x &lt; y?:1032.o0" uid="1032" uid_parent="root"/>
+  <Constant type="int32" value="5" outputs="value:1033.v" uid="1033" uid_parent="root"/>
+  <Constant type="int32" value="6" outputs="value:1034.v" uid="1034" uid_parent="root"/>
+  <Node _name="Select" inputs="s:1032.o0,t:1033.v,f:1034.v" outputs="s? t\3Af:1035.o0" uid="1035" uid_parent="root"/>
+  <Node _name="Add" inputs="x:1019.o0,y:1035.o0" outputs="x+y:1036.o0" uid="1036" uid_parent="root"/>
+  <Constant type="int32" value="14" outputs="value:1037.v" uid="1037" uid_parent="root"/>
+  <Constant type="int32" value="8" outputs="value:1038.v" uid="1038" uid_parent="root"/>
+  <Node _name="Quotient &amp; Remainder" inputs="x:1009.o1,y:1038.v" outputs="x-y*floor(x/y):1039.o0,floor(x/y):1039.o1" uid="1039" uid_parent="root"/>
+  <Constant type="int32" value="2" outputs="value:1040.v" uid="1040" uid_parent="root"/>
+  <Node _name="Quotient &amp; Remainder" inputs="x:1039.o1,y:1040.v" outputs="x-y*floor(x/y):1041.o0,floor(x/y):1041.o1" uid="1041" uid_parent="root"/>
+  <Node _name="Add" inputs="x:1037.v,y:1041.o0" outputs="x+y:1042.o0" uid="1042" uid_parent="root"/>
+  <Constant type="int32" value="0" outputs="value:1043.v" uid="1043" uid_parent="root"/>
+  <Node _name="Subtract" inputs="x:1042.o0,y:1043.v" outputs="x-y:1044.o0" uid="1044" uid_parent="root"/>
+  <Constant type="int32" value="0" outputs="value:1045.v" uid="1045" uid_parent="root"/>
+  <Constant type="int32" value="0" outputs="value:1046.v" uid="1046" uid_parent="root"/>
+  <Node _name="Equal?" inputs="x:1003.o5,y:1046.v" outputs="x = y?:1047.o0" uid="1047" uid_parent="root"/>
+  <Constant type="int32" value="1" outputs="value:1048.v" uid="1048" uid_parent="root"/>
+  <Node _name="Equal?" inputs="x:1003.o5,y:1048.v" outputs="x = y?:1049.o0" uid="1049" uid_parent="root"/>
+  <Constant type="int32" value="2" outputs="value:1050.v" uid="1050" uid_parent="root"/>
+  <Node _name="Equal?" inputs="x:1003.o5,y:1050.v" outputs="x = y?:1051.o0" uid="1051" uid_parent="root"/>
+  <Constant type="int32" value="16" outputs="value:1052.v" uid="1052" uid_parent="root"/>
+  <Node _name="Select" inputs="s:1051.o0,t:1036.o0,f:1052.v" outputs="s? t\3Af:1053.o0" uid="1053" uid_parent="root"/>
+  <Node _name="Select" inputs="s:1049.o0,t:1044.o0,f:1053.o0" outputs="s? t\3Af:1054.o0" uid="1054" uid_parent="root"/>
+  <Node _name="Select" inputs="s:1047.o0,t:1030.o0,f:1054.o0" outputs="s? t\3Af:1055.o0" uid="1055" uid_parent="root"/>
+  <Node _name="Add" inputs="x:1045.v,y:1055.o0" outputs="x+y:1056.o0" uid="1056" uid_parent="root"/>
+  <Constant type="int32" value="4" outputs="value:1057.v" uid="1057" uid_parent="root"/>
+  <Node _name="Equal?" inputs="x:1003.o0,y:1057.v" outputs="x = y?:1058.o0" uid="1058" uid_parent="root"/>
+  <Constant type="int32" value="7" outputs="value:1059.v" uid="1059" uid_parent="root"/>
+  <Node _name="Equal?" inputs="x:1003.o0,y:1059.v" outputs="x = y?:1060.o0" uid="1060" uid_parent="root"/>
+  <Node _name="Or" inputs="x:1058.o0,y:1060.o0" outputs="x .or. y?:1061.o0" uid="1061" uid_parent="root"/>
+  <Constant type="int32" value="40" outputs="value:1062.v" uid="1062" uid_parent="root"/>
+  <Node _name="Less?" inputs="x:1003.o1,y:1062.v" outputs="x &lt; y?:1063.o0" uid="1063" uid_parent="root"/>
+  <Constant type="int32" value="4" outputs="value:1064.v" uid="1064" uid_parent="root"/>
+  <Node _name="Quotient &amp; Remainder" inputs="x:1003.o1,y:1064.v" outputs="x-y*floor(x/y):1065.o0,floor(x/y):1065.o1" uid="1065" uid_parent="root"/>
+  <Constant type="int32" value="2" outputs="value:1066.v" uid="1066" uid_parent="root"/>
+  <Node _name="Quotient &amp; Remainder" inputs="x:1065.o1,y:1066.v" outputs="x-y*floor(x/y):1067.o0,floor(x/y):1067.o1" uid="1067" uid_parent="root"/>
+  <Constant type="int32" value="0" outputs="value:1068.v" uid="1068" uid_parent="root"/>
+  <Node _name="Equal?" inputs="x:1067.o0,y:1068.v" outputs="x = y?:1069.o0" uid="1069" uid_parent="root"/>
+  <Node _name="And" inputs="x:1063.o0,y:1069.o0" outputs="x .and. y?:1070.o0" uid="1070" uid_parent="root"/>
+  <Constant type="int32" value="4" outputs="value:1071.v" uid="1071" uid_parent="root"/>
+  <Node _name="Equal?" inputs="x:1003.o0,y:1071.v" outputs="x = y?:1072.o0" uid="1072" uid_parent="root"/>
+  <Constant type="int32" value="40" outputs="value:1073.v" uid="1073" uid_parent="root"/>
+  <Node _name="Less?" inputs="x:1003.o1,y:1073.v" outputs="x &lt; y?:1074.o0" uid="1074" uid_parent="root"/>
+  <Node _name="And" inputs="x:1072.o0,y:1074.o0" outputs="x .and. y?:1075.o0" uid="1075" uid_parent="root"/>
+  <Constant type="int32" value="17" outputs="value:1076.v" uid="1076" uid_parent="root"/>
+  <Node _name="Select" inputs="s:1070.o0,t:1076.v,f:1056.o0" outputs="s? t\3Af:1077.o0" uid="1077" uid_parent="root"/>
+  <Constant type="int32" value="18" outputs="value:1078.v" uid="1078" uid_parent="root"/>
+  <Node _name="Select" inputs="s:1075.o0,t:1077.o0,f:1078.v" outputs="s? t\3Af:1079.o0" uid="1079" uid_parent="root"/>
+  <Constant type="int32" value="-1" outputs="value:1080.v" uid="1080" uid_parent="root"/>
+  <Node _name="Select" inputs="s:1061.o0,t:1079.o0,f:1056.o0" outputs="s? t\3Af:1081.o0" uid="1081" uid_parent="root"/>
+  <Node _name="Select" inputs="s:1005.o0,t:1080.v,f:1081.o0" outputs="s? t\3Af:1082.o0" uid="1082" uid_parent="root"/>
+  <Constant type="cluster{bool.Hide,int32.CX,int32.CY,int32.ClaudeIdx,int32.ClaudeX,int32.ClaudeY}" value="[false,0,0,-1,0,0]" outputs="value:1083.v" uid="1083" uid_parent="root"/>
+  <Constant type="int32" value="80" outputs="value:1084.v" uid="1084" uid_parent="root"/>
+  <Node _name="Add" inputs="x:1009.o1,y:1084.v" outputs="x+y:1085.o0" uid="1085" uid_parent="root"/>
+  <Node _name="Bundle By Name" fields="Hide,CX,CY,ClaudeIdx,ClaudeX,ClaudeY" inputs="Hide:1002.v,CX:1013.o1,CY:1017.o1,ClaudeIdx:1082.o0,ClaudeX:1007.o1,ClaudeY:1085.o0,input cluster:1083.v" outputs="output cluster:1086.o0" uid="1086" uid_parent="root"/>
+  <Indicator _name="View" type="cluster{bool.Hide,int32.CX,int32.CY,int32.ClaudeIdx,int32.ClaudeX,int32.ClaudeY}" value="[false,0,0,-1,0,0]" conIdx="4" connection="recommended" inputs="value:1086.o0" uid="1087" uid_parent="root"/>
+</VI>

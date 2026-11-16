@@ -6,14 +6,29 @@
 	<Property Name="NI.Lib.Version" Type="Str">1.0.0.0</Property>
 	<Property Name="NI.LV.All.SourceOnly" Type="Bool">true</Property>
 	<Item Name="Blit_Load.vi" Type="VI" URL="../Blit_Load.vi"/>
+	<Item Name="Claude_Blit.vi" Type="VI" URL="../Claude_Blit.vi">
+		<Property Name="NI.LibItem.Scope" Type="Int">2</Property>
+	</Item>
+	<Item Name="Claude_View.vi" Type="VI" URL="../Claude_View.vi">
+		<Property Name="NI.LibItem.Scope" Type="Int">2</Property>
+	</Item>
 	<Item Name="Enemies_Blit.vi" Type="VI" URL="../Enemies_Blit.vi"/>
 	<Item Name="Frame_Draw.vi" Type="VI" URL="../Frame_Draw.vi"/>
 	<Item Name="Glyphs_Blit.vi" Type="VI" URL="../Glyphs_Blit.vi"/>
+	<Item Name="Hud_Blit.vi" Type="VI" URL="../Hud_Blit.vi">
+		<Property Name="NI.LibItem.Scope" Type="Int">2</Property>
+	</Item>
 	<Item Name="Image_Load.vi" Type="VI" URL="../Image_Load.vi"/>
 	<Item Name="Light_Update.vi" Type="VI" URL="../Light_Update.vi"/>
 	<Item Name="Overlay_Blit.vi" Type="VI" URL="../Overlay_Blit.vi"/>
 	<Item Name="Room_Blit.vi" Type="VI" URL="../Room_Blit.vi"/>
+	<Item Name="Room_Grid.vi" Type="VI" URL="../Room_Grid.vi">
+		<Property Name="NI.LibItem.Scope" Type="Int">2</Property>
+	</Item>
 	<Item Name="Room_Images.vi" Type="VI" URL="../Room_Images.vi"/>
 	<Item Name="Scene_Blit.vi" Type="VI" URL="../Scene_Blit.vi"/>
 	<Item Name="Sprite_Blit.vi" Type="VI" URL="../Sprite_Blit.vi"/>
+	<Item Name="Title_Blit.vi" Type="VI" URL="../Title_Blit.vi">
+		<Property Name="NI.LibItem.Scope" Type="Int">2</Property>
+	</Item>
 </Library>

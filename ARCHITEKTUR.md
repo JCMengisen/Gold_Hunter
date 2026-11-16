@@ -165,7 +165,7 @@ UI-Schleife (Key Down/Up per ScanCode) --Queue--> Engine-Schleife (60 Hz, Frame_
 |---|---|---|
 | `Source\Level\GH_Level.lvlib` | Resource_Path, World_Load, Room_Load, Tile_Read | Dateien lesen, Kachelzugriff |
 | `Source\Engine\GH_Engine.lvlib` | Game_New, Game_Start, Game_Step, Game_Play, Level_Setup, Respawn, Player_Move (privat: Move_Ground, Move_Air, Move_Ladder, Move_Pole), Enemies_Init, Enemies_Step (privat: Enemy_Walk, Enemy_Climb), Room_Change, Hit_Check, Items_Collect, Door_Open, Keys_Apply, Highscore_Load/Save/Insert, Demo_Input | Spiellogik, ohne Grafik |
-| `Source\Render\GH_Render.lvlib` | Image_Load, Blit_Load, Room_Images, Light_Update, Frame_Draw, Scene_Blit, Room_Blit, Sprite_Blit, Enemies_Blit, Glyphs_Blit, Overlay_Blit | Bild aufbauen |
+| `Source\Render\GH_Render.lvlib` | Image_Load, Blit_Load, Room_Images, Light_Update, Frame_Draw (privat: Room_Grid, Claude_View), Scene_Blit (privat: Title_Blit, Hud_Blit, Claude_Blit), Room_Blit, Sprite_Blit, Enemies_Blit, Glyphs_Blit, Overlay_Blit | Bild aufbauen |
 | `Source\Audio\GH_Audio.lvlib` | Sound_Bank_Load, Sound_Mix | gestreamter Ton |
 | `Source\App\GH_App.lvlib` | App_Init, Window_Setup, Window_Move, Audio_Start, Key_Send, Engine_Tick, Frame_Pace, Game_Loop, Render_Frame, Sound_Loop, Audio_Block, Timing_Save, App_Close, Audio_Close | Bausteine von Main.vi |
 
@@ -360,3 +360,13 @@ Bestenliste `TITLE_SCORES`, dann die Demo - und danach wieder von vorn. `Scene_B
   `gen_play.py` bleiben, weil `gen_blit.py` sie verwendet.
 - Diagrammgroesse vorher / nachher: Player_Move 10016 x 1211 -> 2867 x 866, Enemies_Step 5165 x 1466 -> 1854 x 362.
 - Geprueft: Demo bis Schritt 4500 gleich wie `sim_enemies.py` (Position, Punkte, Schluessel, Seed, Gegner), Pause-Tests.
+
+**Bildaufbau (16.11.2026)**, ebenfalls Inline-SubVIs, privat in GH_Render:
+- `Frame_Draw` ruft nur noch `Room_Grid` (Raumbilder laden, Lichtkreis im dunklen Raum, Memory), `Claude_View` (Sprite und
+  Position von Claude) und `Scene_Blit`, dann ein Draw Flattened Pixmap. Der alte Weg ueber Scene_Draw ist entfernt.
+- `Scene_Blit` ruft `Title_Blit` (Titel/Kurzanleitung mit Overlay) oder HUD-Bild + `Hud_Blit`, Room_Blit, Enemies_Blit,
+  `Claude_Blit` (Claude und Fallschirm), Overlay_Blit.
+- `Hud_Blit` (`gen_play.hud_ops`): die drei Schluessel und die drei Zahlenfelder (Level, Gold, Zeit) je in einer For-Schleife.
+- Diagrammgroesse: Scene_Blit 4894 x 841 -> 922 x 254, Frame_Draw 3966 x 995 -> 647 x 279.
+- Geprueft: Snapshot_Run (Titel, Kurzanleitung, dunkler Raum mit Schluesseln, Schatzkammer mit Fallschirm) pixelgleich
+  zur vorherigen Version.

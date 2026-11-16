@@ -1092,12 +1092,95 @@
       ]
     },
     {
+      "path": "Source\\Render\\Room_Grid.vi",
+      "builder": "render",
+      "purpose": "Room_Grid",
+      "calls": [
+        "Source\\Render\\Room_Images.vi",
+        "Source\\Render\\Light_Update.vi"
+      ],
+      "inputs": [
+        {
+          "name": "State",
+          "type": "@State",
+          "conIdx": 0,
+          "connection": "required"
+        },
+        {
+          "name": "Memory",
+          "type": "@RenderMemory",
+          "conIdx": 5,
+          "connection": "required"
+        },
+        {
+          "name": "error in",
+          "type": "@Error",
+          "conIdx": 11,
+          "connection": "required"
+        }
+      ],
+      "outputs": [
+        {
+          "name": "Grid",
+          "type": "@Grid",
+          "conIdx": 4,
+          "connection": "recommended"
+        },
+        {
+          "name": "Memory out",
+          "type": "@RenderMemory",
+          "conIdx": 6,
+          "connection": "recommended"
+        },
+        {
+          "name": "Dark",
+          "type": "bool",
+          "conIdx": 8,
+          "connection": "recommended"
+        },
+        {
+          "name": "error out",
+          "type": "@Error",
+          "conIdx": 15,
+          "connection": "recommended"
+        }
+      ]
+    },
+    {
+      "path": "Source\\Render\\Claude_View.vi",
+      "builder": "render",
+      "purpose": "Claude_View",
+      "calls": [],
+      "inputs": [
+        {
+          "name": "State",
+          "type": "@State",
+          "conIdx": 0,
+          "connection": "required"
+        },
+        {
+          "name": "Dark",
+          "type": "bool",
+          "conIdx": 5,
+          "connection": "recommended"
+        }
+      ],
+      "outputs": [
+        {
+          "name": "View",
+          "type": "@View",
+          "conIdx": 4,
+          "connection": "recommended"
+        }
+      ]
+    },
+    {
       "path": "Source\\Render\\Frame_Draw.vi",
       "builder": "render",
       "purpose": "Frame_Draw",
       "calls": [
-        "Source\\Render\\Room_Images.vi",
-        "Source\\Render\\Light_Update.vi",
+        "Source\\Render\\Room_Grid.vi",
+        "Source\\Render\\Claude_View.vi",
         "Source\\Render\\Scene_Blit.vi"
       ],
       "inputs": [

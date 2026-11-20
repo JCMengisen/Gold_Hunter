@@ -56,7 +56,14 @@ is always reachable and that no choice of doors leads into a dead end.
 | `Resources\` | rooms, sprites, sounds and music; all of them are generated |
 | `build\` | the Python generators for the VIs, graphics, levels, sounds and music |
 
-The design is documented in German in [ARCHITEKTUR.md](ARCHITEKTUR.md).
+## Architecture
+
+An interactive overview shows the runtime loops of `Main.vi`, the libraries, the resource files and the build chain
+with the LabVIEW MCP: **[open the architecture diagram](https://htmlpreview.github.io/?https://github.com/JCMengisen/Gold_Hunter/blob/main/docs/architecture.html)**.
+The diagram is the standalone HTML file [docs/architecture.html](docs/architecture.html), which you can also download
+and open locally.
+
+The design is documented in detail, in German, in [ARCHITEKTUR.md](ARCHITEKTUR.md).
 
 ## License
 
